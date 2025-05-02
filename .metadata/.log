@@ -73,3 +73,9 @@ END
 
 !ENTRY org.springframework.tooling.boot.ls 1 0 2025-05-02 15:20:21.474
 !MESSAGE Classpath changed for project: ssafit_yumikim_eunlee
+
+!ENTRY org.springframework.tooling.boot.ls 1 0 2025-05-02 15:49:12.246
+!MESSAGE Classpath changed for project: ssafit_yumikim_eunlee
+
+!ENTRY org.springframework.tooling.boot.ls 1 0 2025-05-02 15:49:12.246
+!MESSAGE Boot project REMOVED: ssafit_yumikim_eunlee
