@@ -1,0 +1,1 @@
+INDEX VERSION 1.134+C:\Users\SSAFY\Desktop\SSAFIT_YUMI_EUN\.metadata\.plugins\org.eclipse.jdt.core

@@ -1,0 +1,23 @@
+2025-05-02 15:19:59,968 [Worker-4: Loading available Gradle versions] INFO  o.e.b.c.i.u.g.PublishedGradleVersions - Gradle version information cache is not available. Remote download required.
+2025-05-02 15:20:11,676 [Worker-6: Update Maven projects configuration] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update started
+2025-05-02 15:20:13,621 [Worker-6: Update Maven projects configuration] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.ttuikong:FinalProject:0.0.1-SNAPSHOT @ C:\Users\SSAFY\Desktop\SSAFIT_YUMI_EUN\ssafit_yumikim_eunlee\pom.xml.
+2025-05-02 15:20:16,740 [Worker-6: Update Maven projects configuration] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /ssafit_yumikim_eunlee/src/main/java
+2025-05-02 15:20:16,745 [Worker-6: Update Maven projects configuration] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /ssafit_yumikim_eunlee/src/main/resources
+2025-05-02 15:20:16,752 [Worker-6: Update Maven projects configuration] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /ssafit_yumikim_eunlee/src/main/resources
+2025-05-02 15:20:16,758 [Worker-6: Update Maven projects configuration] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /ssafit_yumikim_eunlee/src/test/java
+2025-05-02 15:20:16,759 [Worker-6: Update Maven projects configuration] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /ssafit_yumikim_eunlee/src/test/resources
+2025-05-02 15:20:18,274 [Worker-6: Update Maven projects configuration] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update completed for 1 poms: local refresh takes 0.00 sec, refresh facades takes 4.00 sec, update config takes 2.00 sec 
+2025-05-02 15:20:18,578 [Worker-10: Building] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 1 resource from src\main\resources to target\classes
+2025-05-02 15:20:18,591 [Worker-10: Building] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 1 resource from src\main\resources to target\classes
+2025-05-02 15:20:18,599 [Worker-10: Building] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - skip non existing resourceDirectory C:\Users\SSAFY\Desktop\SSAFIT_YUMI_EUN\ssafit_yumikim_eunlee\src\test\resources
+2025-05-02 15:20:20,080 [Worker-0: Updating Maven Project] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update started
+2025-05-02 15:20:20,514 [Worker-0: Updating Maven Project] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.ttuikong:FinalProject:0.0.1-SNAPSHOT @ C:\Users\SSAFY\Desktop\SSAFIT_YUMI_EUN\ssafit_yumikim_eunlee\pom.xml.
+2025-05-02 15:20:21,200 [Worker-0: Updating Maven Project] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /ssafit_yumikim_eunlee/src/main/java
+2025-05-02 15:20:21,202 [Worker-0: Updating Maven Project] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /ssafit_yumikim_eunlee/src/main/resources
+2025-05-02 15:20:21,203 [Worker-0: Updating Maven Project] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /ssafit_yumikim_eunlee/src/main/resources
+2025-05-02 15:20:21,204 [Worker-0: Updating Maven Project] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /ssafit_yumikim_eunlee/src/test/java
+2025-05-02 15:20:21,205 [Worker-0: Updating Maven Project] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /ssafit_yumikim_eunlee/src/test/resources
+2025-05-02 15:20:21,526 [Worker-0: Updating Maven Project] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update completed for 1 poms: local refresh takes 0.00 sec, refresh facades takes 1.00 sec, update config takes 0.00 sec 
+2025-05-02 15:20:21,815 [Worker-10: Building] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 1 resource from src\main\resources to target\classes
+2025-05-02 15:20:21,828 [Worker-10: Building] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - Copying 1 resource from src\main\resources to target\classes
+2025-05-02 15:20:21,834 [Worker-10: Building] INFO  o.a.m.s.f.DefaultMavenResourcesFiltering - skip non existing resourceDirectory C:\Users\SSAFY\Desktop\SSAFIT_YUMI_EUN\ssafit_yumikim_eunlee\src\test\resources
