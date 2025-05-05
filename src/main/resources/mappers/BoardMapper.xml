@@ -9,30 +9,101 @@
 		SELECT *
 		FROM Board;
 	</select>
-	
+
 	<!-- 상세 게시글 조회 -->
 	<select id="selectOne" resultType="Board" parameterType="int">
-		SELECT * FROM Board
+		SELECT *
+		FROM Board
 		WHERE id = #{id};
 	</select>
-	
+
 	<!-- 게시글 등록 -->
-	<insert id="insertBoard" parameterType="Board" keyProperty="id" useGeneratedKeys="true">
+	<insert id="insertBoard" parameterType="Board" keyProperty="id"
+		useGeneratedKeys="true">
 		INSERT INTO Board (user_id, title, content, category)
 		VALUES (#{userId}, #{title}, #{content}, #{category});
 	</insert>
-	
+
 	<!-- 게시글 삭제 -->
 	<delete id="deleteBoard" parameterType="int">
 		DELETE FROM Board
-		WHERE id = #{id};
+		WHERE id
+		= #{id};
 	</delete>
-	
+
 	<!-- 게시글 수정 -->
 	<update id="updateBoard" parameterType="Board">
 		UPDATE Board
-		SET title = #{title}, content = #{content}, reg_date = now()
-		WHERE id = #{id};
+		SET title = #{title},
+		content = #{content},
+		updated_at = now()
+		WHERE id = #{id}
 	</update>
+
+	<!-- 댓글 작성 -->
+	<insert id="insertComment" parameterType="map">
+		INSERT INTO Comment
+		(board_id, user_id, content)
+		VALUES (#{postId}, #{comment.userId},
+		#{comment.content})
+	</insert>
+
+	<!-- 댓글 조회 -->
+	<select id="selectComment" parameterType="int"
+		resultType="com.ttuikong.spring.model.dto.Comment">
+		SELECT
+		c.id,
+		c.board_id as boardId,
+		c.user_id as userId,
+		c.content,
+		c.created_at as createdAt,
+		c.updated_at as updatedAt,
+		u.nickname as userNickname
+		FROM
+		Comment c
+		LEFT JOIN User u ON c.user_id =
+		u.id
+		WHERE
+		c.id = #{commentId}
+	</select>
+
+	<!-- 댓글 목록 조회 -->
+	<select id="selectAllComments" parameterType="int"
+		resultType="com.ttuikong.spring.model.dto.Comment">
+		SELECT
+		c.id,
+		c.board_id as boardId,
+		c.user_id as userId,
+		c.content,
+		c.created_at as createdAt,
+		c.updated_at as updatedAt,
+		u.nickname as userNickname
+		FROM
+		Comment c
+		LEFT JOIN User u ON c.user_id =
+		u.id
+		WHERE
+		c.board_id = #{postId}
+		ORDER BY
+		c.created_at DESC
+	</select>
+
+	<!-- 댓글 수정 -->
+	<update id="updateComment" parameterType="map">
+		UPDATE Comment
+		SET
+		content = #{comment.content},
+		updated_at = CURRENT_TIMESTAMP
+		WHERE
+		id =
+		#{comment.id}
+		AND board_id = #{postId}
+	</update>
+
+	<!-- 댓글 삭제 -->
+	<delete id="deleteComment" parameterType="int">
+		DELETE FROM Comment
+		WHERE id = #{commentId}
+	</delete>
 
 </mapper>

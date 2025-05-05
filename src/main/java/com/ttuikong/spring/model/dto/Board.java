@@ -11,20 +11,17 @@ public class Board {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
-    // Default constructor
     public Board() {
-        this.category = "자유"; // Default value as specified in the table
+        this.category = "자유";
     }
     
-    // Constructor with required fields
     public Board(int userId, String title, String content) {
         this.userId = userId;
         this.title = title;
         this.content = content;
-        this.category = "자유"; // Default value
+        this.category = "자유"; 
     }
     
-    // Full constructor
     public Board(int postId, Integer userId, String title, String content, 
                     String category, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.postId = postId;
@@ -36,7 +33,6 @@ public class Board {
         this.updatedAt = updatedAt;
     }
     
-    // Getters and Setters
     public Integer getId() {
         return postId;
     }
