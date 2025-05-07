@@ -171,14 +171,9 @@ public class BoardServiceImpl implements BoardService {
             throw new IllegalArgumentException("수정할 댓글이 존재하지 않습니다.");
         }
         
-        // 댓글이 해당 게시글에 속하는지 확인
-//        if (existingComment.getBoardId() != postId) {
-//            throw new IllegalArgumentException("해당 게시글의 댓글이 아닙니다.");
-//        }
-        
+        //댓글이 해당 게시글에 속하는지 확인
         if (existingComment.getBoardId() != postId) {
-            throw new IllegalArgumentException("해당 게시글의 댓글이 아닙니다. (댓글 boardId: " + 
-                existingComment.getBoardId() + ", 요청 postId: " + postId + ")");
+            throw new IllegalArgumentException("해당 게시글의 댓글이 아닙니다.");
         }
         
         if (comment.getContent() == null || comment.getContent().trim().isEmpty()) {
