@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ttuikong.spring.model.dao.UserFollowDao">
+
+	<resultMap id="userFollowMap" type="com.ttuikong.spring.model.dto.UserFollow">
+	    <id property="id" column="id"/>
+	    <result property="follower_id" column="follower_id"/>
+	    <result property="following_id" column="following_id"/>
+	    <result property="created_at" column="created_at"/>
+	</resultMap>
+
+    <!-- 팔로우 추가 -->
+    <insert id="addFollow" parameterType="com.ttuikong.spring.model.dto.UserFollow">
+        INSERT INTO Follow (follower_id, following_id)
+        VALUES (#{follower_id}, #{following_id})
+    </insert>
+
+    <!-- 팔로우 삭제 -->
+    <delete id="removeFollow">
+        DELETE FROM Follow
+        WHERE follower_id = #{followerId} AND following_id = #{followingId}
+    </delete>
+
+    <!-- 특정 팔로우 관계 조회 -->
+    <select id="getFollow" parameterType="map" resultType="com.ttuikong.spring.model.dto.UserFollow">
+        SELECT id, follower_id, following_id, created_at
+        FROM Follow
+        WHERE follower_id = #{followerId} AND following_id = #{followingId}
+    </select>
+
+    <!-- 팔로워 목록 조회 -->
+    <select id="getFollowers" parameterType="int" resultMap="userFollowMap">
+        SELECT id, follower_id, following_id, created_at
+        FROM Follow
+        WHERE following_id = #{id}
+    </select>
+
+    <!-- 팔로잉 목록 조회 -->
+	<select id="getFollowings" parameterType="int" resultMap="userFollowMap">
+	    SELECT id, follower_id, following_id, created_at
+	    FROM Follow
+	    WHERE follower_id = #{id}
+	</select>
+
+</mapper>
