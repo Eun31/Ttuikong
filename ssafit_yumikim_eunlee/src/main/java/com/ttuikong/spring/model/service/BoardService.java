@@ -3,28 +3,20 @@ package com.ttuikong.spring.model.service;
 import java.util.List;
 
 import com.ttuikong.spring.model.dto.Board;
-import com.ttuikong.spring.model.dto.Comment;
 
 public interface BoardService {
-
-	void writeBoard(Board board);
-
-	List<Board> getBoardList();
-
-	Board readBoard(int postId);
-
-	boolean modifyBoard(Board board);
-
-	boolean removeBoard(int postId);
-
-	void writeComment(int postId, Comment comment);
-
-	List<Comment> getCommentList(int postId);
-
-	Comment getComment(int commentId);
-	
-	void modifyComment(int postId, Comment comment);
-
-	boolean removeComment(int commentId);
-
+    // 전체 게시글 조회
+    List<Board> getBoardList();
+    
+    // 게시글 상세 조회
+    Board readBoard(int boardId);
+    
+    // 게시글 작성
+    void writeBoard(Board board);
+    
+    // 게시글 수정
+    boolean modifyBoard(Board board);
+    
+    // 게시글 삭제
+    boolean removeBoard(int boardId);
 }
