@@ -19,11 +19,16 @@ CREATE TABLE User (
 
 -- 운동 경로 테이블
 CREATE TABLE Route (
-    id INT AUTO_INCREMENT PRIMARY KEY, -- 운동 경로 아이디
-    start_point VARCHAR(255),
-    end_point VARCHAR(255),
-    distance FLOAT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    start_time VARCHAR(30) NOT NULL,
+    end_time VARCHAR(30) NOT NULL,
+    distance DOUBLE NOT NULL,
+    duration BIGINT NOT NULL,
+    points TEXT NOT NULL,  -- JSON 형식의 경로 포인트 데이터
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES User(id)
 );
 
 -- 운동 기록 테이블
