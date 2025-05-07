@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ttuikong.spring.model.dao.DailyRecordDao">
+
+    <!-- 사용자 운동 기록 추가 -->
+    <insert id="addRecord" parameterType="com.ttuikong.spring.model.dto.DailyRecord">
+        INSERT INTO daily_record (user_id, date, exercise_time, distance, calories, mood, route_id)
+        VALUES (#{userId}, #{date}, #{exerciseTime}, #{distance}, #{calories}, #{mood}, #{routeId})
+    </insert>
+
+    <!-- Route 테이블에서 날짜로 route_id 찾기 -->
+    <select id="findRouteIdByDate" parameterType="java.util.Date" resultType="int">
+        SELECT id FROM route
+        WHERE DATE(created_at) = #{date}
+        LIMIT 1
+    </select>
+
+    <!-- 사용자 운동 기록 조회 (월 단위) -->
+    <select id="getRecordsByMonth" parameterType="map" resultType="com.ttuikong.spring.model.dto.DailyRecord">
+        SELECT * FROM daily_record
+        WHERE user_id = #{userId}
+        AND YEAR(date) = #{year}
+        AND MONTH(date) = #{month}
+    </select>
+
+    <!-- 사용자의 모든 운동 기록 조회 -->
+    <select id="findByUserId" parameterType="int" resultType="com.ttuikong.spring.model.dto.DailyRecord">
+        SELECT * FROM daily_record
+        WHERE user_id = #{userId}
+    </select>
+
+</mapper>

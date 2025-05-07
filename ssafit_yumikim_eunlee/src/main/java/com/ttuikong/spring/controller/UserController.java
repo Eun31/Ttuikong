@@ -1,5 +1,9 @@
 package com.ttuikong.spring.controller;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,11 +18,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ttuikong.spring.annotation.LoginRequired;
 import com.ttuikong.spring.annotation.LoginUser;
+import com.ttuikong.spring.model.dto.DailyRecord;
 import com.ttuikong.spring.model.dto.User;
+import com.ttuikong.spring.model.service.DailyRecordService;
 import com.ttuikong.spring.model.service.UserFollowService;
 import com.ttuikong.spring.model.service.UserService;
 import com.ttuikong.spring.util.JwtUtil;
@@ -33,13 +40,15 @@ public class UserController {
 
 	@Autowired
 	private UserService userService;
-
 	@Autowired
 	private UserFollowService userFollowService;
+	@Autowired
+	private DailyRecordService dailyRecordService;
 
 	@Autowired
 	private JwtUtil jwtUtil;
 
+	// ADMIN -> 모든 사용자 목록 조회 허용
 	@Operation(summary = "모든 사용자 목록 조회", description = "관리자가 모든 사용자 정보를 조회합니다.")
 	@GetMapping
 	@LoginRequired
@@ -165,7 +174,8 @@ public class UserController {
 	@Operation(summary = "팔로잉 목록 조회", description = "사용자 ID로 팔로우한 사용자 목록을 조회합니다.")
 	@GetMapping("/{userId}/followings")
 	@LoginRequired
-	public ResponseEntity<List<Integer>> getFollowingById(@PathVariable int userId, @Parameter(hidden = true) @LoginUser User loginUser) {
+	public ResponseEntity<List<Integer>> getFollowingById(@PathVariable int userId,
+			@Parameter(hidden = true) @LoginUser User loginUser) {
 		if (loginUser.getId() != userId) {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
@@ -179,7 +189,8 @@ public class UserController {
 	@Operation(summary = "팔로워 목록 조회", description = "사용자 ID로 팔로워 목록을 조회합니다.")
 	@GetMapping("/{userId}/followers")
 	@LoginRequired
-	public ResponseEntity<List<Integer>> getFollowersById(@PathVariable int userId, @Parameter(hidden = true) @LoginUser User loginUser) {
+	public ResponseEntity<List<Integer>> getFollowersById(@PathVariable int userId,
+			@Parameter(hidden = true) @LoginUser User loginUser) {
 		if (loginUser.getId() != userId) {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
@@ -193,7 +204,8 @@ public class UserController {
 	@Operation(summary = "팔로우 추가", description = "특정 사용자를 팔로우합니다.")
 	@PostMapping("/{userId}/follow/{targetId}")
 	@LoginRequired
-	public ResponseEntity<Void> followUser(@PathVariable int userId, @PathVariable int targetId, @Parameter(hidden = true) @LoginUser User loginUser) {
+	public ResponseEntity<Void> followUser(@PathVariable int userId, @PathVariable int targetId,
+			@Parameter(hidden = true) @LoginUser User loginUser) {
 		if (loginUser.getId() != userId) {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
@@ -213,7 +225,8 @@ public class UserController {
 	@Operation(summary = "팔로우 취소", description = "특정 사용자에 대한 팔로우를 취소합니다.")
 	@DeleteMapping("/{userId}/follow/{targetId}")
 	@LoginRequired
-	public ResponseEntity<Void> unfollowUser(@PathVariable int userId, @PathVariable int targetId, @Parameter(hidden = true) @LoginUser User loginUser) {
+	public ResponseEntity<Void> unfollowUser(@PathVariable int userId, @PathVariable int targetId,
+			@Parameter(hidden = true) @LoginUser User loginUser) {
 		if (loginUser.getId() != userId) {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
@@ -224,4 +237,29 @@ public class UserController {
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 
+	/*
+	 * 사용자 운동 기록 조회(월 단위), 운동 기록 추가
+	 */
+	@Operation(summary = "사용자 운동 기록 조회 (월 단위-캘린더)", description = "사용자의 월별 운동 기록을 조회합니다.")
+	@LoginRequired
+	@GetMapping("/{userId}/records")
+	public List<DailyRecord> getRecordsByMonth(@PathVariable int userId, @RequestParam int year,
+	        @RequestParam int month) {
+	    return dailyRecordService.getRecordsByMonth(userId, year, month);
+	}
+
+	@Operation(summary = "사용자 운동 기록 추가", description = "사용자의 하루 운동 기록을 추가합니다.")
+	@LoginRequired
+	@PostMapping("/{userId}/records")
+	public ResponseEntity<Void> addRecord(@PathVariable int userId, @RequestBody DailyRecord record) {
+	    record.setUserId(userId);
+
+	    // date가 비어있으면 에러 처리
+	    if (record.getDate() == null) {
+	        return ResponseEntity.badRequest().build();
+	    }
+
+	    dailyRecordService.addRecord(record);
+	    return ResponseEntity.ok().build();
+	}
 }
