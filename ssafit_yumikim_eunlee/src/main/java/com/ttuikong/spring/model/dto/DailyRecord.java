@@ -1,14 +1,15 @@
 package com.ttuikong.spring.model.dto;
 
+import java.math.BigInteger;
 import java.util.Date;
 
 public class DailyRecord {
 	private int id;
 	private int userId;
 	private Date date;
-	private int exerciseTime;
-	private float distance;
-	private int calories;
+	private BigInteger duration;
+	private double distance;
+	private double calories;
 	private String mood;
 	private Integer routeId; // null값 허용
 	private String createdAt;
@@ -16,13 +17,13 @@ public class DailyRecord {
 	public DailyRecord() {
 	}
 
-	public DailyRecord(int id, int userId, Date date, int exerciseTime, float distance, int calories, String mood,
+	public DailyRecord(int id, int userId, Date date, BigInteger duration, double distance, double calories, String mood,
 			Integer routeId, String createdAt) {
 		super();
 		this.id = id;
 		this.userId = userId;
 		this.date = date;
-		this.exerciseTime = exerciseTime;
+		this.duration = duration;
 		this.distance = distance;
 		this.calories = calories;
 		this.mood = mood;
@@ -54,27 +55,27 @@ public class DailyRecord {
 		this.date = date;
 	}
 
-	public int getExerciseTime() {
-		return exerciseTime;
+	public BigInteger getExerciseTime() {
+		return duration;
 	}
 
-	public void setExerciseTime(int exerciseTime) {
-		this.exerciseTime = exerciseTime;
+	public void setExerciseTime(BigInteger exerciseTime) {
+		this.duration = exerciseTime;
 	}
 
-	public float getDistance() {
+	public double getDistance() {
 		return distance;
 	}
 
-	public void setDistance(float distance) {
+	public void setDistance(double distance) {
 		this.distance = distance;
 	}
 
-	public int getCalories() {
+	public double getCalories() {
 		return calories;
 	}
 
-	public void setCalories(int calories) {
+	public void setCalories(double calories) {
 		this.calories = calories;
 	}
 
@@ -104,7 +105,7 @@ public class DailyRecord {
 
 	@Override
 	public String toString() {
-		return "DailyRecord [id=" + id + ", userId=" + userId + ", date=" + date + ", exerciseTime=" + exerciseTime
+		return "DailyRecord [id=" + id + ", userId=" + userId + ", date=" + date + ", exerciseTime=" + duration
 				+ ", distance=" + distance + ", calories=" + calories + ", mood=" + mood + ", routeId=" + routeId
 				+ ", createdAt=" + createdAt + "]";
 	}

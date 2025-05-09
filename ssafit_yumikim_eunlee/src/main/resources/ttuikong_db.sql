@@ -14,6 +14,8 @@ CREATE TABLE User (
     weight FLOAT DEFAULT NULL,
     activity_level ENUM('느긋한 코알라', '산책하는 거북이', '신나는 강아지', '힘찬 질주 말', '전광석화 치타') DEFAULT NULL, -- 활동성
     activity_goal ENUM('느긋한 코알라', '산책하는 거북이', '신나는 강아지', '힘찬 질주 말', '전광석화 치타') DEFAULT NULL, -- 운동 목표
+    avg_distance DOUBLE,
+    total_distance DOUBLE,
     role ENUM('USER', 'ADMIN') NOT NULL DEFAULT 'USER'
 );
 
@@ -21,11 +23,12 @@ CREATE TABLE User (
 CREATE TABLE Route (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    name VARCHAR(100) NOT NULL,
+    route_name VARCHAR(100) NOT NULL,
     start_time VARCHAR(30) NOT NULL,
     end_time VARCHAR(30) NOT NULL,
-    distance DOUBLE NOT NULL,
     duration BIGINT NOT NULL,
+    distance DOUBLE NOT NULL,
+	calories DOUBLE,
     points TEXT NOT NULL,  -- JSON 형식의 경로 포인트 데이터
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES User(id)
@@ -35,12 +38,12 @@ CREATE TABLE Route (
 CREATE TABLE Daily_Record (
     id INT AUTO_INCREMENT PRIMARY KEY, -- 기록 아이디
     user_id INT NOT NULL,
-    date DATE NOT NULL,
-    exercise_time INT, -- 운동 시간 (분)
-    distance FLOAT, -- 거리 (km)
-    calories INT, -- 소모한 칼로리
-    mood ENUM('기쁨', '뿌듯함', '아쉬움', '화남', '슬픔', '쏘쏘') DEFAULT NULL, -- 오늘의 기분 
     route_id INT,
+    date DATE,
+    duration BIGINT DEFAULT NULL, -- 운동 시간 (분)
+    distance DOUBLE DEFAULT NULL, -- 거리 (km)
+    calories DOUBLE DEFAULT NULL, -- 소모한 칼로리
+    mood ENUM('기쁨', '뿌듯함', '아쉬움', '화남', '슬픔', '쏘쏘') DEFAULT NULL, -- 오늘의 기분 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE,
     FOREIGN KEY (route_id) REFERENCES Route(id) ON DELETE SET NULL
@@ -93,19 +96,20 @@ CREATE TABLE Follow (
 );
 
 -- 채팅방 테이블
-CREATE TABLE Chat_Room (
+CREATE TABLE Crew (
     id INT AUTO_INCREMENT PRIMARY KEY,
     room_name VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 채팅 메시지 테이블
-CREATE TABLE Chat_Message (
+-- 채팅 테이블
+CREATE TABLE Chat (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    chat_room_id INT NOT NULL,
+    chat_id INT NOT NULL,
     sender_id INT NOT NULL,
     message TEXT NOT NULL,
+    member_count INT DEFAULT 0,
     sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (chat_room_id) REFERENCES Chat_Room(id) ON DELETE CASCADE,
+    FOREIGN KEY (chat_id) REFERENCES Chat(id) ON DELETE CASCADE,
     FOREIGN KEY (sender_id) REFERENCES User(id) ON DELETE CASCADE
 );
