@@ -55,3 +55,6 @@
 
 [Figma 프로토타입 바로가기](https://www.figma.com/proto/jh9kHsRlVjcg47PD4Qx74S/%EB%9B%B0%EC%BD%A9?node-id=2104-4&t=0kcP3nLkVWImOs8q-1&starting-point-node-id=2104%3A4)
 
+## 🐶 협업 툴 
+
+[Notion 바로가기](https://www.notion.so/1dffead1fed780d282dcd55fa5046f0f?pvs=4)
