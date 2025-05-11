@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ttuikong.spring.chat.model.dao.ChatDao">
+
+    <insert id="insertChat">
+        INSERT INTO chat (crew_id, sender_id, message)
+        VALUES (#{crewId}, #{senderId}, #{message})
+    </insert>
+
+    <select id="selectChatsByCrewId" resultType="com.ttuikong.spring.chat.model.dto.Chat">
+        SELECT *
+        FROM chat
+        WHERE crew_id = #{crewId}
+        ORDER BY sent_at ASC
+    </select>
+
+</mapper>
