@@ -7,8 +7,8 @@
 
     <!-- 사용자 운동 기록 추가 -->
     <insert id="addRecord" parameterType="com.ttuikong.spring.model.dto.DailyRecord">
-        INSERT INTO daily_record (user_id, date, exercise_time, distance, calories, mood, route_id)
-        VALUES (#{userId}, #{date}, #{exerciseTime}, #{distance}, #{calories}, #{mood}, #{routeId})
+        INSERT INTO daily_record (user_id, date, duration, distance, calories, mood, route_id)
+        VALUES (#{userId}, #{date}, #{duration}, #{distance}, #{calories}, #{mood}, #{routeId})
     </insert>
 
     <!-- Route 테이블에서 날짜로 route_id 찾기 -->

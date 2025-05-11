@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ttuikong.spring.chat.model.dao.CrewMemberDao">
+
+    <insert id="insertCrewMember">
+        INSERT INTO crew_member (crew_id, user_id)
+        VALUES (#{crewId}, #{userId})
+    </insert>
+    
+    <delete id="deleteCrewMember">
+	    DELETE FROM crew_member
+	    WHERE crew_id = #{crewId} AND user_id = #{userId}
+	</delete>
+	
+
+    <select id="getUserIdsByCrewId" resultType="int">
+        SELECT user_id FROM crew_member WHERE crew_id = #{crewId}
+    </select>
+
+    <select id="countMembersInCrew" resultType="int">
+        SELECT COUNT(*) FROM crew_member WHERE crew_id = #{crewId}
+    </select>
+
+ <resultMap id="userResultMap" type="com.ttuikong.spring.model.dto.User">
+        <id property="id" column="id"/>
+        <result property="email" column="email"/>
+        <result property="password" column="password"/>
+        <result property="nickname" column="nickname"/>
+        <result property="gender" column="gender"/>
+        <result property="age" column="age"/>
+        <result property="height" column="height"/>
+        <result property="weight" column="weight"/>
+        <result property="activityLevel" column="activity_level"/>
+        <result property="activityGoal" column="activity_goal"/>
+        <result property="role" column="role"/>
+    </resultMap>
+
+    <select id="selectMembersByCrewId" resultMap="userResultMap">
+        SELECT u.*
+        FROM crew_member cm
+        JOIN user u ON cm.user_id = u.id
+        WHERE cm.crew_id = #{crewId}
+    </select>
+</mapper>
