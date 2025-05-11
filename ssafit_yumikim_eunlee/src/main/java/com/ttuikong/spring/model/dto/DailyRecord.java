@@ -55,12 +55,12 @@ public class DailyRecord {
 		this.date = date;
 	}
 
-	public BigInteger getExerciseTime() {
+	public BigInteger getDuration() {
 		return duration;
 	}
 
-	public void setExerciseTime(BigInteger exerciseTime) {
-		this.duration = exerciseTime;
+	public void setDuration(BigInteger duration) {
+		this.duration = duration;
 	}
 
 	public double getDistance() {
@@ -105,7 +105,7 @@ public class DailyRecord {
 
 	@Override
 	public String toString() {
-		return "DailyRecord [id=" + id + ", userId=" + userId + ", date=" + date + ", exerciseTime=" + duration
+		return "DailyRecord [id=" + id + ", userId=" + userId + ", date=" + date + ", duration=" + duration
 				+ ", distance=" + distance + ", calories=" + calories + ", mood=" + mood + ", routeId=" + routeId
 				+ ", createdAt=" + createdAt + "]";
 	}

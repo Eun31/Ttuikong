@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public class Chat {
 	private int id;
-	private int chatRoomId;
+	private int crewId;
 	private int senderId;
 	private String message;
 	private LocalDateTime sentAt;
@@ -12,10 +12,10 @@ public class Chat {
 	public Chat() {
 	}
 
-	public Chat(int id, int chatRoomId, int senderId, String message, LocalDateTime sentAt) {
+	public Chat(int id, int crewId, int senderId, String message, LocalDateTime sentAt) {
 		super();
 		this.id = id;
-		this.chatRoomId = chatRoomId;
+		this.crewId = crewId;
 		this.senderId = senderId;
 		this.message = message;
 		this.sentAt = sentAt;
@@ -29,12 +29,12 @@ public class Chat {
 		this.id = id;
 	}
 
-	public int getChatRoomId() {
-		return chatRoomId;
+	public int getCrewId() {
+		return crewId;
 	}
 
-	public void setChatRoomId(int chatRoomId) {
-		this.chatRoomId = chatRoomId;
+	public void setCrewId(int crewId) {
+		this.crewId = crewId;
 	}
 
 	public int getSenderId() {
@@ -63,8 +63,8 @@ public class Chat {
 
 	@Override
 	public String toString() {
-		return "ChatMessage [id=" + id + ", chatRoomId=" + chatRoomId + ", senderId=" + senderId + ", message="
-				+ message + ", sentAt=" + sentAt + "]";
+		return "Chat [id=" + id + ", crewId=" + crewId + ", senderId=" + senderId + ", message=" + message + ", sentAt="
+				+ sentAt + "]";
 	}
 
 }

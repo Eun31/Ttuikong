@@ -95,21 +95,43 @@ CREATE TABLE Follow (
     UNIQUE KEY unique_follow (follower_id, following_id) -- 중복 팔로우 방지
 );
 
--- 채팅방 테이블
+-- 크루 테이블
 CREATE TABLE Crew (
     id INT AUTO_INCREMENT PRIMARY KEY,
     room_name VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    creator_id INT NOT NULL,
+	room_description TEXT NOT NULL,
+	goal_type ENUM('SUM', 'AVERAGE') NOT NULL,
+	goal_time DOUBLE NOT NULL,  -- 총 목표 시간 또는 평균 목표 시간
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	end_date DATE NOT NULL,
+    start_date DATE NOT NULL,
+    
+    FOREIGN KEY (creator_id) REFERENCES user(id)
+);
+
+
+-- 크루-멤버 테이블
+CREATE TABLE Crew_Member (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    crew_id INT NOT NULL,
+    user_id INT NOT NULL,
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (crew_id) REFERENCES Crew(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE,
+
+    UNIQUE (crew_id, user_id)  -- 중복 가입 방지
 );
 
 -- 채팅 테이블
 CREATE TABLE Chat (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    chat_id INT NOT NULL,
+    crew_id INT NOT NULL,  
     sender_id INT NOT NULL,
     message TEXT NOT NULL,
-    member_count INT DEFAULT 0,
     sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (chat_id) REFERENCES Chat(id) ON DELETE CASCADE,
+    FOREIGN KEY (crew_id) REFERENCES Crew(id) ON DELETE CASCADE,
     FOREIGN KEY (sender_id) REFERENCES User(id) ON DELETE CASCADE
 );
+

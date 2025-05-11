@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ttuikong.spring.chat.model.dao.CrewDao">
+
+ <insert id="insertCrew" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO crew (
+        room_name, creator_id, room_description,
+        goal_type, goal_time, start_date, end_date
+    ) VALUES (
+        #{roomName}, #{creatorId}, #{roomDescription},
+        #{goalType}, #{goalTime}, #{startDate}, #{endDate}
+    )
+    </insert>
+
+    <select id="selectCrewById" resultType="com.ttuikong.spring.chat.model.dto.Crew">
+        SELECT * FROM crew WHERE id = #{id}
+    </select>
+
+    <delete id="deleteCrewById">
+        DELETE FROM crew WHERE id = #{id}
+    </delete>
+
+    <select id="selectAllCrews" resultType="com.ttuikong.spring.chat.model.dto.Crew">
+        SELECT * FROM crew
+    </select>
+</mapper>
