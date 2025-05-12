@@ -11,7 +11,11 @@ public class User {
 	private float weight;
 	private String activityLevel;
 	private String activityGoal;
-	private String role; // 관리자 여부
+	private String role;
+	
+	private float avgDistance;
+	private float totalDistance;
+
 
 	public User() {
 	}
@@ -125,6 +129,22 @@ public class User {
 		this.role = role;
 	}
 
+	public Float getAvgDistance() {
+		return avgDistance;
+	}
+	
+	public void setAvgDistance(float avgDistance) {
+		this.avgDistance = avgDistance;
+	}
+	
+	public Float getTotalDistance() {
+		return totalDistance;
+	}
+	
+	public void setTotalDistance(float totalDistance) {
+		this.totalDistance = totalDistance;
+	}
+	
 	@Override
 	public String toString() {
 		return "User [id=" + id + ", email=" + email + ", password=" + password + ", nickname=" + nickname + ", gender="

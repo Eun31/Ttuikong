@@ -31,5 +31,10 @@
         SELECT * FROM daily_record
         WHERE user_id = #{userId}
     </select>
+    
+    <!-- 사용자의 운동 기록 개수 -->
+    <select id="countByUserId" parameterType="int" resultType="int">
+    	SELECT COUNT(*) FROM daily_record WHERE user_id=#{user_id}
+    </select>
 
 </mapper>
