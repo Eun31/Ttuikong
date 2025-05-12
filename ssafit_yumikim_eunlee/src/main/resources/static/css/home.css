@@ -1,94 +1,93 @@
-        body {
-            background: #f3fbe9;
-            font-family: 'Noto Sans KR', sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            width: 100%;
-            max-width: 100%;
-            min-height: 100vh;
-            justify-content: center;  /* 세로 가운데 정렬 */
-            align-items: center;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            flex-direction: column; 
-            gap: 1.5rem;
-        }
-        .goal {
-            text-align: center;
-            margin-bottom: 24px;
-        }
-        .goal p {
-            color: #8b9a8c;
-            font-size: 13px;
-            margin-bottom: 8px;
-            letter-spacing: 0.4px;
-        }
-        .goal h2 {
-            font-size: 21px;
-            margin: 10px 0 0 0;
-            color: #3e4e3b;
-            font-weight: 700;
-        }
-        .goal-text span {
-            display: block;
-            font-size: 1.15rem;
-            font-weight: 600;
-            color: #4e7d4c;
-            margin-top: 12px;
-            background: linear-gradient(90deg, #e2f9c6 60%, #d2f2ff 100%);
-            border-radius: 12px;
-            padding: 7px 18px;
-            box-shadow: 0 1px 8px rgba(80,140,100,0.07);
-            }
+body {
+    background: #f3fbe9;
+    font-family: 'Noto Sans KR', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+.container {
+    width: 100%;
+    max-width: 100%;
+    min-height: 100vh;
+    justify-content: center;  /* 세로 가운데 정렬 */
+    align-items: center;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column; 
+    gap: 1.5rem;
+}
+.goal {
+    text-align: center;
+    margin-bottom: 24px;
+}
+.goal p {
+    color: #8b9a8c;
+    font-size: 13px;
+    margin-bottom: 8px;
+    letter-spacing: 0.4px;
+}
+.goal h2 {
+    font-size: 21px;
+    margin: 10px 0 0 0;
+    color: #3e4e3b;
+    font-weight: 700;
+}
+.goal-text span {
+    display: block;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #4e7d4c;
+    margin-top: 12px;
+    background: linear-gradient(90deg, #e2f9c6 60%, #d2f2ff 100%);
+    border-radius: 12px;
+    padding: 7px 18px;
+    box-shadow: 0 1px 8px rgba(80,140,100,0.07);
+    }
 
-        .card-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1.2rem;
-            padding: 0 1.2rem 2rem;
-            }
+.card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    padding: 0 1.2rem 2rem;
+    }
 
-        .card {
-            display: flex;
-            align-items: flex-end;
-            background-size: cover;
-            background-position: center;
-            border-radius: 15px;
-            box-shadow: 0 4px 16px rgba(60, 80, 60, 0.08);
-            transition: transform 0.15s, box-shadow 0.15s;
-            position: relative;
-            cursor: pointer;
-            overflow: hidden;
-            width: 80vw; /*  가로 전체 */
-            height: 160px; 
-        }
-        .card:hover {
-            transform: translateY(-4px) scale(1.03);
-            box-shadow: 0 8px 24px rgba(60, 80, 60, 0.18);
-        }
-        .card-text {
-            background: rgba(0,0,0,0.40);
-            color: #fff;
-            padding: 18px 26px;
-            font-size: 1.18em;
-            border-radius: 0 0 22px 22px;
-            width: 100%;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-        /* 이미지별 카드 배경 */
-        .card1 { background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80'); }
-        .card2 { background-image: url('https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=800&q=80'); }
-        .card3 { background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=800&q=80'); }
-        .card4 { background-image: url('https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=800&q=80'); }
-        
-        
-        @media (max-width: 500px) {
-            .container { padding: 6px; }
-            .card { height: 130px; }
-            .card-text { padding: 12px 14px; font-size: 1em; }
-        }
-        
+.card {
+    display: flex;
+    align-items: flex-end;
+    background-size: cover;
+    background-position: center;
+    border-radius: 15px;
+    box-shadow: 0 4px 16px rgba(60, 80, 60, 0.08);
+    transition: transform 0.15s, box-shadow 0.15s;
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+    width: 80vw; /*  가로 전체 */
+    height: 160px; 
+}
+.card:hover {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 8px 24px rgba(60, 80, 60, 0.18);
+}
+.card-text {
+    background: rgba(0,0,0,0.40);
+    color: #fff;
+    padding: 18px 26px;
+    font-size: 1.18em;
+    border-radius: 0 0 22px 22px;
+    width: 100%;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+/* 이미지별 카드 배경 */
+.card1 { background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80'); }
+.card2 { background-image: url('https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=800&q=80'); }
+.card3 { background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=800&q=80'); }
+.card4 { background-image: url('https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=800&q=80'); }
+
+
+@media (max-width: 500px) {
+    .container { padding: 6px; }
+    .card { height: 130px; }
+    .card-text { padding: 12px 14px; font-size: 1em; }
+}
