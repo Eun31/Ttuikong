@@ -1,0 +1,144 @@
+body {
+  background: #f3fbe9;
+  font-family: 'Noto Sans KR', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  gap: 1rem;
+}
+
+.logo {
+  height: 60px;
+  margin-bottom: 0.6rem;
+  filter: drop-shadow(0 2px 6px rgba(69, 97, 56, 0.1));
+}
+
+.container h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #3a5030;
+  margin-bottom: 1.2rem;
+}
+
+.container p {
+  margin: 0.3rem 0 0.3rem;
+  font-size: 0.9rem;
+  color: #2f3e2f;
+}
+
+.container input[type="email"],
+.container input[type="password"],
+.container input[type="text"],
+.container input[type="number"] {
+  width: 260px;
+  max-width: 80vw;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid #cdd8c9;
+  border-radius: 8px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.container input[type="checkbox"] {
+  width: auto;
+  margin-right: 6px;
+}
+
+.container input[type="button"] {
+  width: 260px;
+  max-width: 80vw;
+  margin-top: 1rem;
+  background-color: #456138;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.container input[type="button"]:hover {
+  background-color: #3a5030;
+}
+
+.container a p {
+  font-size: 0.85rem;
+  margin-top: 0.6rem;
+  text-align: center;
+  color: #456138;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.bottom {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.btn-back, .btn-front {
+  background-color: #456138;
+  border: none;
+  color: #fff;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.btn-back:hover, .btn-front:hover {
+  background-color: #3a5030;
+}
+
+.btn-back a, .btn-front a {
+  color: white;
+  text-decoration: none;
+}
+
+@media screen and (max-width: 400px) {
+  .container input[type="email"],
+  .container input[type="password"],
+  .container input[type="button"],
+  .container input[type="text"],
+  .container input[type="number"] {
+    width: 90vw;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .container input[type="email"],
+  .container input[type="password"],
+  .container input[type="button"],
+  .container input[type="text"],
+  .container input[type="number"] {
+    width: 400px;
+    font-size: 1.1rem;
+    padding: 0.8rem 1.2rem;
+  }
+
+  .container input[type="button"] {
+    width: 400px;
+    font-size: 1.1rem;
+    padding: 0.8rem 1.2rem;
+  }
+
+  .container p {
+    font-size: 1rem;
+  }
+
+  .container a p {
+    font-size: 1rem;
+  }
+}
