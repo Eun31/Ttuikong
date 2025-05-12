@@ -18,4 +18,7 @@ public interface DailyRecordDao {
 
     // 사용자의 모든 운동 기록 조회
     List<DailyRecord> findByUserId(int userId);
+    
+    //사용자의 운동 기록 개수 조회
+    int countByUserId(int userId);
 }

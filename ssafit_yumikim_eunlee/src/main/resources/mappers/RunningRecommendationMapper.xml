@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.ttuikong.spring.model.dao.RunningRecommendationDao">
+
+	<!-- 추천 저장 -->
+	<insert id="insertRecommendation"
+		parameterType="com.ttuikong.spring.model.dto.RunningRecommendation">
+		INSERT INTO Recommendations (
+		user_id, recommended_distance, estimated_time, estimated_calories,
+		average_pace, speed, improvement,
+		created_at, expires_at, followed
+		) VALUES (
+		#{userId}, #{recommendedDistance}, #{estimatedTime}, #{estimatedCalories},
+		#{averagePace}, #{speed}, #{improvement},
+		#{createdAt}, #{expiresAt}, #{followed}
+		)
+		<selectKey keyProperty="id" resultType="int" order="AFTER">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+	</insert>
+
+	<!-- 최신 유효한 추천 조회 -->
+	<select id="getLatestValidRecommendation"
+		resultType="com.ttuikong.spring.model.dto.RunningRecommendation">
+		SELECT
+		id, user_id AS userId, recommended_distance AS recommendedDistance,
+		estimated_time AS estimatedTime, estimated_calories AS
+		estimatedCalories,
+		average_pace AS averagePace, speed, improvement,
+		created_at AS createdAt,
+		expires_at AS expiresAt, followed
+		FROM Recommendations
+		WHERE user_id = #{userId}
+		AND expires_at > #{now}
+		ORDER BY created_at DESC
+		LIMIT 1
+	</select>
+
+	<!-- 팔로우 상태 업데이트 -->
+	<update id="updateRecommendationFollowed">
+		UPDATE Recommendations
+		SET followed = #{param2}
+		WHERE id = #{param1}
+	</update>
+
+	<!-- 만료된 추천 삭제 -->
+	<delete id="deleteExpiredRecommendations">
+		DELETE FROM Recommendations
+		WHERE expires_at &lt;= #{now}
+	</delete>
+
+</mapper>

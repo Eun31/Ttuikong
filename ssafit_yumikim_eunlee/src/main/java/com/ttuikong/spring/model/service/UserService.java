@@ -25,4 +25,7 @@ public interface UserService {
 
 	// 사용자 삭제
 	void deleteUser(int id);
+	
+	//평균 거리 계산
+	void calculateAverageDistance(int id);
 }

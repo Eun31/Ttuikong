@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ttuikong.spring.model.dao.DailyRecordDao;
 import com.ttuikong.spring.model.dao.UserDao;
 import com.ttuikong.spring.model.dto.User;
 
@@ -17,6 +18,9 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private UserDao userDao;
 
+	@Autowired
+	private DailyRecordDao dailyRecordDao;
+	
 	@Override
 	public List<User> getUserList() {
 		return userDao.selectAll();
@@ -57,5 +61,19 @@ public class UserServiceImpl implements UserService {
 	public void deleteUser(int id) {
 		userDao.deleteUser(id);
 	}
+
+	@Override
+	public void calculateAverageDistance(int id) {
+		User user = userDao.selectById(id);
+		int recordCount = dailyRecordDao.countByUserId(id);
+		
+		if(recordCount > 0 && user != null) {
+			float avgDistance = user.getTotalDistance() / recordCount;
+			user.setAvgDistance(avgDistance);
+			userDao.updateUser(user);
+		}
+	}
+	
+	
 
 }
