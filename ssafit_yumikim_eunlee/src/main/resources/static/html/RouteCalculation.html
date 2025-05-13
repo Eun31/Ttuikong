@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#ebfae3">
+  <title>My 루트 찾기</title>
+  <link rel="stylesheet" href="../css/RouteCalculation.css">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+  <script
+    src="https://apis.openapi.sk.com/tmap/jsv2?version=1&appKey=mqrjE2sC0W8sX1UeeDEpO4k9dLeON1p01iT6Ianw"></script>
+</head>
+
+<body>
+  <div id="app" class="app-container">
+    <div id="header-container"></div>
+    <h1 class="title">My 루트 찾기</h1>
+    <p class="subtitle">출발지와 도착지를 선택해 걷기 경로를 확인하세요!</p>
+
+    <div class="stats-container">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="9" stroke="white" stroke-width="2" />
+            <path d="M12 7V12L15 15" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Time</span>
+          <span class="stat-value">{{ walkTime }}</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 19L5 19V5L8 5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M16 5L19 5V19L16 19" stroke="white" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+            <path d="M16 12L18 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M8 12L6 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <rect x="8" y="5" width="8" height="14" rx="2" stroke="white" stroke-width="2" />
+            <path d="M12 5V19" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Burn</span>
+          <span class="stat-value">{{ caloriesBurned }}</span>
+        </div>
+      </div>
+    </div>
+
+    
+        <div class="address-input-box">
+          <label for="start-address">출발지:</label>
+          <div class="input-with-button">
+            <input type="text" id="start-address" v-model="startAddress" placeholder="예: 서울특별시 중구 명동길 14">
+            <button @click="searchStartAddress" :disabled="!startAddress || isSearching">검색</button>
+          </div>
+        </div>
+        <div class="address-input-box">
+          <label for="end-address">도착지:</label>
+          <div class="input-with-button">
+            <input type="text" id="end-address" v-model="endAddress" placeholder="예: 서울특별시 종로구 종로 1">
+            <button @click="searchEndAddress" :disabled="!endAddress || isSearching">검색</button>
+          </div>
+        </div>
+     
+
+    <div class="map-wrapper">
+      <div id="map_div"></div>
+
+      <div class="distance-box">
+        <span class="distance-label">Distance</span>
+        <span class="distance-value">{{ formattedDistance }}</span>
+      </div>
+
+      <div v-if="selectionState !== 'complete'" class="map-overlay">
+        <span class="map-instruction" v-if="selectionState === 'start'">
+          출발 지점을 선택하세요
+        </span>
+        <span class="map-instruction" v-else-if="selectionState === 'end'">
+          도착 지점을 선택하세요
+        </span>
+      </div>
+    </div>
+
+    <div class="buttons-container">
+      <button class="reset-btn" @click="resetSelection">경로 다시 선택</button>
+      <button class="save-btn" :disabled="!routeCalculated">경로 저장하기</button>
+    </div>
+
+    <div v-if="error" class="error-message">{{ error }}</div>
+  </div>
+
+  <script>
+    // Vue 애플리케이션 생성
+    new Vue({
+      el: '#app',
+      data: {
+        map: null,
+        error: null,
+        markers: {
+          start: null,
+          end: null
+        },
+        coords: {
+          start: null,
+          end: null
+        },
+        routePolyline: null,
+        selectionState: 'start', // 'start', 'end', 'complete'
+        totalDistance: 0, // 미터 단위
+        walkTime: '0분',
+        caloriesBurned: '0 kcal',
+        routeCalculated: false,
+        // 걷기 속도 (초당 미터)
+        walkSpeed: 1.4, // 평균 걷기 속도 (약 5km/h)
+        // 칼로리 소모율 (kg당 km당 kcal)
+        calorieRate: 0.8,
+        // 평균 체중 (kg)
+        averageWeight: 65,
+        // 주소 입력 기능
+        startAddress: '',
+        endAddress: '',
+        isSearching: false
+      },
+      computed: {
+        formattedDistance() {
+          if (this.totalDistance < 1000) {
+            return `${this.totalDistance}m`;
+          } else {
+            return `${(this.totalDistance / 1000).toFixed(1)}km`;
+          }
+        }
+      },
+      mounted() {
+        // DOM이 마운트된 후 TMAP 초기화
+        this.initMap();
+      },
+      methods: {
+        initMap() {
+          try {
+            // API 로드 확인
+            if (typeof Tmapv2 === 'undefined') {
+              this.error = "TMAP API가 로드되지 않았습니다. API 키를 확인해주세요.";
+              return;
+            }
+
+            // 1. 지도 생성 (서울시청 위치)
+            this.map = new Tmapv2.Map("map_div", {
+              center: new Tmapv2.LatLng(37.566, 126.978),
+              width: "100%",
+              height: "300px",
+              zoom: 14
+            });
+
+            // 사용자가 지도를 클릭하여 지점을 선택할 수 있도록 이벤트 리스너 추가
+            this.map.addListener("click", this.handleMapClick);
+            console.log("지도 클릭 리스너 등록됨");
+
+          } catch (e) {
+            this.error = "지도 초기화 오류: " + e.message;
+            console.error("지도 초기화 오류:", e);
+          }
+        },
+
+        handleMapClick(e) {
+          console.log("지도 클릭됨", e.latLng.toString());
+          const clickedPosition = e.latLng;
+
+          // 클릭한 위치의 주소 검색 (역지오코딩)
+          this.getAddressFromCoords(clickedPosition, (address) => {
+            if (this.selectionState === 'start') {
+              // 출발지 선택
+              this.startAddress = address || '주소를 찾을 수 없습니다';
+              this.setStartPosition(clickedPosition);
+              this.selectionState = 'end';
+              console.log("출발지 설정 완료, 도착지 선택 모드로 전환");
+            } else if (this.selectionState === 'end') {
+              // 도착지 선택
+              this.endAddress = address || '주소를 찾을 수 없습니다';
+              this.setEndPosition(clickedPosition);
+              this.selectionState = 'complete';
+              console.log("도착지 설정 완료, 경로 계산 시작");
+              // 경로 계산 시작
+              this.calculateRoute();
+            }
+          });
+        },
+
+        // 좌표로부터 주소 검색 (역지오코딩)
+        getAddressFromCoords(position, callback) {
+          const apiUrl = "https://apis.openapi.sk.com/tmap/geo/reversegeocoding?version=1&format=json";
+          
+          const reqParams = {
+            appKey: "mqrjE2sC0W8sX1UeeDEpO4k9dLeON1p01iT6Ianw",
+            coordType: "WGS84GEO",
+            addressType: "A10",
+            lon: position.lng(),
+            lat: position.lat()
+          };
+          
+          // 쿼리 문자열 생성
+          const queryString = Object.keys(reqParams)
+            .map(key => `${key}=${encodeURIComponent(reqParams[key])}`)
+            .join('&');
+          
+          fetch(`${apiUrl}&${queryString}`)
+            .then(response => response.json())
+            .then(data => {
+              let address = '';
+              if (data && data.addressInfo) {
+                // 전체 주소 구성
+                const info = data.addressInfo;
+                address = `${info.fullAddress}`;
+              }
+              callback(address);
+            })
+            .catch(e => {
+              console.error("주소 검색 오류:", e);
+              callback(null);
+            });
+        },
+
+        setStartPosition(position) {
+          // 기존 마커가 있으면 제거
+          if (this.markers.start) {
+            this.markers.start.setMap(null);
+          }
+
+          // 기본 아이콘 마커 생성
+          this.markers.start = new Tmapv2.Marker({
+            position: position,
+            icon: {
+              url: 'data:image/png;base64,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',
+              size: new Tmapv2.Size(48, 48),
+              anchor: new Tmapv2.Point(24, 48)
+            },
+            map: this.map,
+            title: '출발지'
+          });
+
+          // 좌표 저장
+          this.coords.start = position;
+          console.log("출발지 마커 생성", position.toString());
+        },
+
+        setEndPosition(position) {
+          // 기존 마커가 있으면 제거
+          if (this.markers.end) {
+            this.markers.end.setMap(null);
+          }
+
+          // 기본 아이콘 마커 생성
+          this.markers.end = new Tmapv2.Marker({
+            position: position,
+            icon: {
+              url: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFTklEQVR4nO1ZW2xURRj+Zu7Z3e72QmmgvQhtoRQhYAWClKuiiIYQQwgGQwLqgxee9EVijAkxGhMT9cGYaIwxKvpgjAkiGlR8IASEaAsUaAFLtJS2fdhLL9vd7Z49x9nZs93d7p6zZ9uH8iWTnZ3/MvPN/8//zfwzoA/9qDDU1EzF7NlzoMgGCxe+gKlTH4CigXg8jq6ubvT19cLv9+PGjWu4cOE8rl69gpGREchAFgFOHEJVTXhkwaLFsNsdCAT8aG6+A03TZE/wADIIcPI6ASEgRCX52c890DRVmoDJCPKu42fOkQmpBGQRuEWca4Gfh+dKI0DtXSUCGtMYh6prIEJSCRRKnJPQNBWaGoem0nMMsWgUsWgUkUgIsVgMibgK1SDAncPvV1FZeTt4pUtBSsLY3j4wLAJTXn8T9sWN0jaaWi6h94s9CD8aBnQ5+35PNYGjqnoWdDQBfzDkfP1NVC1ehJ4vvxZ+16gmzL11K2oaFoHYbcK2qSQQ8HkRj8fZ2q5OJZx/Oip3Y1BUFUnvIF+j4qhD9YpV8v2Q5+LnzoPn6lUEvV4EvF4EfV74vV44HS7YbHao3M9ENXz7HWzNbbDNnQN2LIcBnw+e1laEevvgnD8fVXW1wnZpGnRo7Fug8ZdfC5ue5O/sXDcT2zPOpB5MUQx16GcnDJfL3tCg35naxrZu027TvimqC0g5vxw8CAqSfzQ2QWJpZtdW0wYlGETojTcRi4QzdFJRXu7EX7X1mH/7LLyyfHna7/HAd6sdvdeu4fbaSsGbJXvRIrF1eUg5v69v0t8lirC9T7vzYKtZgjtvP4Hnl6xOq0M0FIZryVIEvvhSwEUXEHsLkwFj8t7eXvT29CQGWF+3ENt37cGX+7+D8+7Z6ZMZDDDOnSscX0RAZLeSEIsFcfz4UTQ3X0Y4HILb3YHdu3fixo0WZZGrFp+tfwrPRVrx9vTvYa+uzlkumSaWQqBcpqn0+bk/0dT0E2KxiG4j4XAIv/9+XFlUVYU9j9XixYbFWFG9D6+sfBjhQCBvuUwnLpeACNE/fjuC69evpfmC8bvL5VZ2b38eKx9aAYdWi1eePAiLxZqyLnN9y3J6Mgnk44rNzRcxMNBveCfGfouC3t4ePHH/1FRbYyQK10cfC+ebKQAykT+BggnwIrT1Zisikbv0Maa83C2HTqPGCbx2Ygt6e3uSY1y4gMC+fQh6PJjimCLJKUt8KZVzZ8LXLmN3/duvh+BwONFwTwPMZgtsNjtsVhtsNiucjjvx0esbMX36DHS0XcJHW5/G7XfMwOvPvgHnaXkmBBFVaqqUiTb2LTk8wAkEAz5s2LAR8+Y9nnFwahoalq3G1KlLUTX2w3Ky+WRRJtTomkbjPE06S33iSjV1s5eFfbHg2E3O0rWoqJiMCJIg7p0Yrzg1TUv7TlOTlslcpvOkiWK27Uxl+VhqP/3W3tyM5usfIO6YBOuyBkzavEkoLCQRMB44kvMNXIwc5d2GMT+vHvjwEG5+eRjwh+B86CHYn3km9XyiEEkfSCPAqZj1vM/rxZEjPyKRSOgD2GTcVXkH1q1bL/RjEoFgA5mbI1HFQpn5fG/frm/lPz/1M7xeLxoaGmGxikOkPW+OLsQ0oOZsYW6dnXxCTeTY8TMEaEKBQCBEUVfTr9TMJSdPHsfguJ0F7y76l5YR2TZGwoQ6Pj+RIoqXLFmGx+o/SB97LJ6XdJWquomTYIrktpTkDPLsiQICSE2B9U2cJn9aZuLPME1IQG67yXyE2a+IaYqFO+JMpDTFxgdKuXXI26wnS4y0zWqyVB4VFRT9V4b+A/RPraxeEyNQAAAAAElFTkSuQmCC',
+              size: new Tmapv2.Size(48, 48),
+              anchor: new Tmapv2.Point(24, 48)
+            },
+            map: this.map,
+            title: '도착지'
+          });
+
+          // 좌표 저장
+          this.coords.end = position;
+          console.log("도착지 마커 생성", position.toString());
+        },
+
+        calculateRoute() {
+          try {
+            // 기존 경로가 있으면 제거
+            if (this.routePolyline) {
+              this.routePolyline.setMap(null);
+            }
+
+            // 요청 URL 및 파라미터 설정
+            const apiUrl = "https://apis.openapi.sk.com/tmap/routes/pedestrian?version=1&format=json";
+            
+            // 요청 파라미터
+            const params = {
+              startX: this.coords.start.lng(),
+              startY: this.coords.start.lat(),
+              endX: this.coords.end.lng(),
+              endY: this.coords.end.lat(),
+              reqCoordType: "WGS84GEO",
+              resCoordType: "WGS84GEO", // 여기를 EPSG3857에서 WGS84GEO로 변경
+              startName: encodeURIComponent("출발지"),
+              endName: encodeURIComponent("도착지")
+            };
+
+            // API 요청
+            fetch(apiUrl, {
+              method: 'POST',
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'appKey': 'mqrjE2sC0W8sX1UeeDEpO4k9dLeON1p01iT6Ianw'
+              },
+              body: JSON.stringify(params)
+            })
+            .then(response => response.json())
+            .then(data => {
+              // 응답 데이터 처리
+              if (data.features && data.features.length > 0) {
+                // 총 거리 정보 업데이트 (미터 단위)
+                this.totalDistance = data.features[0].properties.totalDistance;
+                
+                // 총 시간 정보 업데이트 (초 단위)
+                const totalTimeSeconds = data.features[0].properties.totalTime;
+                this.walkTime = this.formatTime(totalTimeSeconds);
+                
+                // 칼로리 소모량 계산
+                const caloriesBurned = Math.round(this.totalDistance / 1000 * this.calorieRate * this.averageWeight);
+                this.caloriesBurned = `${caloriesBurned} kcal`;
+                
+                // 경로 그리기
+                let lineArray = [];
+                
+                // 응답의 features 배열에서 coordinates 값 가져오기
+                for (let i in data.features) {
+                  const feature = data.features[i];
+                  
+                  if (feature.geometry.type === "LineString") {
+                    for (let j in feature.geometry.coordinates) {
+                      const coordinates = feature.geometry.coordinates[j];
+                      // WGS84GEO 좌표를 사용하므로 변환이 필요 없음
+                      const convertedCoords = new Tmapv2.LatLng(coordinates[1], coordinates[0]);
+                      lineArray.push(convertedCoords);
+                    }
+                  }
+                }
+                
+                // 경로 그리기
+                this.routePolyline = new Tmapv2.Polyline({
+                  path: lineArray,
+                  strokeColor: "#FF4500", // 선명한 오렌지 레드
+                  strokeWeight: 8, // 두께 증가
+                  map: this.map
+                });
+                
+                // 경로 계산 완료 표시
+                this.routeCalculated = true;
+                
+                // 경로가 모두 보이도록 지도 경계 조정
+                const bounds = new Tmapv2.LatLngBounds();
+                for (let i in lineArray) {
+                  bounds.extend(lineArray[i]);
+                }
+                this.map.fitBounds(bounds);
+              } else {
+                this.error = "경로를 찾을 수 없습니다.";
+              }
+            })
+            .catch(e => {
+              this.error = "경로 계산 API 오류: " + e.message;
+              console.error("경로 계산 API 오류:", e);
+            });
+          } catch (e) {
+            this.error = "경로 계산 오류: " + e.message;
+            console.error("경로 계산 오류:", e);
+          }
+        },
+
+        calculateDistance(startLatLng, endLatLng) {
+          // 헤버사인 공식을 사용한 두 지점 사이의 거리 계산 (미터 단위)
+          const R = 6371000; // 지구의 반지름 (미터)
+          const dLat = this.toRad(endLatLng[0] - startLatLng[0]);
+          const dLon = this.toRad(endLatLng[1] - startLatLng[1]);
+          const lat1 = this.toRad(startLatLng[0]);
+          const lat2 = this.toRad(endLatLng[0]);
+
+          const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          const distance = R * c;
+
+          // 직선거리에 약간의 가중치를 줘서 실제 도보 거리를 추정
+          return Math.round(distance * 1.2);
+        },
+
+        toRad(degrees) {
+          return degrees * Math.PI / 180;
+        },
+
+        formatTime(seconds) {
+          const hours = Math.floor(seconds / 3600);
+          const minutes = Math.floor((seconds % 3600) / 60);
+
+          if (hours > 0) {
+            return `${hours}시간 ${minutes}분`;
+          } else {
+            return `${minutes}분`;
+          }
+        },
+
+        // 경로 다시 선택 기능
+        resetSelection() {
+          // 선택 상태 초기화
+          this.selectionState = 'start';
+          
+          // 마커 제거
+          if (this.markers.start) {
+            this.markers.start.setMap(null);
+            this.markers.start = null;
+          }
+          if (this.markers.end) {
+            this.markers.end.setMap(null);
+            this.markers.end = null;
+          }
+          
+          // 좌표 초기화
+          this.coords.start = null;
+          this.coords.end = null;
+          
+          // 경로 제거
+          if (this.routePolyline) {
+            this.routePolyline.setMap(null);
+            this.routePolyline = null;
+          }
+          
+          // 거리, 시간, 칼로리 초기화
+          this.totalDistance = 0;
+          this.walkTime = '0분';
+          this.caloriesBurned = '0 kcal';
+          this.routeCalculated = false;
+          
+          // 주소 입력 초기화
+          this.startAddress = '';
+          this.endAddress = '';
+          
+          // 에러 메시지 초기화
+          this.error = null;
+          
+          // 지도 중심 초기화
+          if (this.map) {
+            this.map.setCenter(new Tmapv2.LatLng(37.566, 126.978));
+            this.map.setZoom(14);
+          }
+          
+          console.log("경로 선택 초기화 완료");
+        },
+        
+        // 주소로 검색하는 기능 - 출발지
+        searchStartAddress() {
+          if (!this.startAddress || this.isSearching) return;
+          
+          this.isSearching = true;
+          this.error = null;
+          
+          const apiUrl = "https://apis.openapi.sk.com/tmap/pois?version=1&format=json&callback=result";
+          
+          fetch(`${apiUrl}&appKey=mqrjE2sC0W8sX1UeeDEpO4k9dLeON1p01iT6Ianw&searchKeyword=${encodeURIComponent(this.startAddress)}`)
+            .then(response => response.json())
+            .then(data => {
+              this.isSearching = false;
+              
+              if (data.searchPoiInfo && data.searchPoiInfo.pois && data.searchPoiInfo.pois.poi && data.searchPoiInfo.pois.poi.length > 0) {
+                // 첫 번째 검색 결과 사용
+                const poi = data.searchPoiInfo.pois.poi[0];
+                const position = new Tmapv2.LatLng(poi.frontLat, poi.frontLon);
+                
+                // 출발지 설정
+                this.setStartPosition(position);
+                
+                // 지도 이동
+                this.map.setCenter(position);
+                this.map.setZoom(16);
+                
+                // 다음 단계로 진행
+                if (this.selectionState === 'start') {
+                  this.selectionState = 'end';
+                  console.log("출발지 주소 설정 완료, 도착지 선택 모드로 전환");
+                }
+                
+                // 출발지와 도착지가 모두 설정되면 경로 계산
+                if (this.coords.start && this.coords.end) {
+                  this.calculateRoute();
+                }
+              } else {
+                this.error = "검색 결과가 없습니다. 주소를 다시 확인해주세요.";
+              }
+            })
+            .catch(e => {
+              this.isSearching = false;
+              this.error = "주소 검색 중 오류가 발생했습니다: " + e.message;
+              console.error("주소 검색 오류:", e);
+            });
+        },
+        
+        // 주소로 검색하는 기능 - 도착지
+        searchEndAddress() {
+          if (!this.endAddress || this.isSearching) return;
+          
+          this.isSearching = true;
+          this.error = null;
+          
+          const apiUrl = "https://apis.openapi.sk.com/tmap/pois?version=1&format=json&callback=result";
+          
+          fetch(`${apiUrl}&appKey=mqrjE2sC0W8sX1UeeDEpO4k9dLeON1p01iT6Ianw&searchKeyword=${encodeURIComponent(this.endAddress)}`)
+            .then(response => response.json())
+            .then(data => {
+              this.isSearching = false;
+              
+              if (data.searchPoiInfo && data.searchPoiInfo.pois && data.searchPoiInfo.pois.poi && data.searchPoiInfo.pois.poi.length > 0) {
+                // 첫 번째 검색 결과 사용
+                const poi = data.searchPoiInfo.pois.poi[0];
+                const position = new Tmapv2.LatLng(poi.frontLat, poi.frontLon);
+                
+                // 도착지 설정
+                this.setEndPosition(position);
+                
+                // 지도 이동
+                this.map.setCenter(position);
+                this.map.setZoom(16);
+                
+                // 다음 단계로 진행
+                if (this.selectionState === 'end') {
+                  this.selectionState = 'complete';
+                  console.log("도착지 주소 설정 완료");
+                }
+                
+                // 출발지와 도착지가 모두 설정되면 경로 계산
+                if (this.coords.start && this.coords.end) {
+                  this.calculateRoute();
+                }
+              } else {
+                this.error = "검색 결과가 없습니다. 주소를 다시 확인해주세요.";
+              }
+            })
+            .catch(e => {
+              this.isSearching = false;
+              this.error = "주소 검색 중 오류가 발생했습니다: " + e.message;
+              console.error("주소 검색 오류:", e);
+            });
+        }
+      }
+    });
+  </script>
+   <script>
+    // 페이지 로드 시 헤더 가져오기
+    document.addEventListener('DOMContentLoaded', function() {
+      fetch('./header.html')  // 같은 html 폴더 내의 header.html 참조
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('header.html을 불러오는데 실패했습니다.');
+          }
+          return response.text();
+        })
+        .then(data => {
+          document.getElementById('header-container').innerHTML = data;
+        })
+        .catch(error => {
+          console.error('헤더 로드 오류:', error);
+        });
+    });
+  </script>
+</body>
+
+</html>

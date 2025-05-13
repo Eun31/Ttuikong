@@ -10,6 +10,7 @@ public class Route {
     private String endTime;
     private double distance; // 킬로미터
     private long duration;   // 초 단위
+    private double calories;
     private List<RoutePoint> points; // 전체 경로 포인트
     private String createdAt;
     
@@ -17,7 +18,7 @@ public class Route {
 	}
 
 	public Route(int id, int userId, String name, String startTime, String endTime, double distance, long duration,
-			List<RoutePoint> points, String createdAt) {
+			double calories, List<RoutePoint> points, String createdAt) {
 		super();
 		this.id = id;
 		this.userId = userId;
@@ -26,8 +27,17 @@ public class Route {
 		this.endTime = endTime;
 		this.distance = distance;
 		this.duration = duration;
+		this.calories = calories;
 		this.points = points;
 		this.createdAt = createdAt;
+	}
+
+	public double getCalories() {
+		return calories;
+	}
+
+	public void setCalories(double calories) {
+		this.calories = calories;
 	}
 
 	public int getId() {

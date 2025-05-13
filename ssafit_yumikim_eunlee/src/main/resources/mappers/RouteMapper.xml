@@ -4,83 +4,95 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ttuikong.spring.model.dao.RouteDao">
 
-    <!-- 달리기 루트 등록 -->
-    <insert id="insertRoute" parameterType="Route" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO Route (
-            user_id, 
-            name, 
-            start_time, 
-            end_time, 
-            distance, 
-            duration, 
-            points
-        ) VALUES (
-            #{userId}, 
-            #{name}, 
-            #{startTime}, 
-            #{endTime}, 
-            #{distance}, 
-            #{duration}, 
-            #{points, typeHandler=com.ttuikong.spring.typehandler.RoutePointsTypeHandler}
-        )
-    </insert>
+	<!-- 달리기 루트 등록 -->
+	<insert id="insertRoute" parameterType="Route"
+		useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO Route (
+		user_id,
+		route_name,
+		start_time,
+		end_time,
+		duration,
+		distance,
+		calories,
+		points
+		)
+		VALUES (
+		#{userId},
+		#{name},
+		#{startTime},
+		#{endTime},
+		#{duration},
+		#{distance},
+		#{calories},
+		#{points,
+		typeHandler=com.ttuikong.spring.typehandler.RoutePointsTypeHandler}
+		)
+	</insert>
 
-    <!-- 특정 루트 조회 -->
-    <select id="selectRoute" parameterType="int" resultMap="routeResultMap">
-        SELECT 
-            id,
-            user_id,
-            name,
-            start_time,
-            end_time,
-            distance,
-            duration,
-            points,
-            created_at
-        FROM Route
-        WHERE id = #{id}
-    </select>
+	<!-- 특정 루트 조회 -->
+	<select id="selectRoute" parameterType="int"
+		resultMap="routeResultMap">
+		SELECT
+		id,
+		user_id,
+		route_name,
+		start_time,
+		end_time,
+		distance,
+		duration,
+		points,
+		calories,
+		created_at
+		FROM Route
+		WHERE id = #{id}
+	</select>
 
-    <!-- 사용자의 모든 루트 조회 (최신순) -->
-    <select id="selectUserRoutes" parameterType="int" resultMap="routeResultMap">
-        SELECT 
-            id,
-            user_id,
-            name,
-            start_time,
-            end_time,
-            distance,
-            duration,
-            points,
-            created_at
-        FROM Route
-        WHERE user_id = #{userId}
-        ORDER BY created_at DESC
-    </select>
+	<!-- 사용자의 모든 루트 조회 (최신순) -->
+	<select id="selectUserRoutes" parameterType="int"
+		resultMap="routeResultMap">
+		SELECT
+		id,
+		user_id,
+		route_name,
+		start_time,
+		end_time,
+		distance,
+		duration,
+		calories,
+		points,
+		created_at
+		FROM Route
+		WHERE user_id = #{userId}
+		ORDER BY created_at DESC
+	</select>
 
-    <!-- 루트 삭제 -->
-    <delete id="deleteRoute" parameterType="int">
-        DELETE FROM Route
-        WHERE id = #{id}
-    </delete>
-    
-    <!-- 루트 이름 수정 -->
-    <update id="updateRouteName">
-        UPDATE Route
-        SET name = #{name}
-        WHERE id = #{routeId}
-    </update>
-    
-    <!-- 결과 매핑 -->
-    <resultMap id="routeResultMap" type="Route">
-        <id property="id" column="id" />
-        <result property="userId" column="user_id" />
-        <result property="name" column="name" />
-        <result property="startTime" column="start_time" />
-        <result property="endTime" column="end_time" />
-        <result property="distance" column="distance" />
-        <result property="duration" column="duration" />
-        <result property="points" column="points" typeHandler="com.ttuikong.spring.typehandler.RoutePointsTypeHandler" />
-        <result property="createdAt" column="created_at" />
-    </resultMap>
+	<!-- 루트 삭제 -->
+	<delete id="deleteRoute" parameterType="int">
+		DELETE FROM Route
+		WHERE id
+		= #{id}
+	</delete>
+
+	<!-- 루트 이름 수정 -->
+	<!-- 루트 이름 수정 -->
+	<update id="updateRouteName" parameterType="map">
+		UPDATE Route
+		SET route_name = #{name}
+		WHERE id = #{routeId}
+	</update>
+
+	<!-- 결과 매핑 -->
+	<resultMap id="routeResultMap" type="Route">
+		<id property="id" column="id" />
+		<result property="userId" column="user_id" />
+		<result property="name" column="name" />
+		<result property="startTime" column="start_time" />
+		<result property="endTime" column="end_time" />
+		<result property="distance" column="distance" />
+		<result property="duration" column="duration" />
+		<result property="points" column="points"
+			typeHandler="com.ttuikong.spring.typehandler.RoutePointsTypeHandler" />
+		<result property="createdAt" column="created_at" />
+	</resultMap>
 </mapper>

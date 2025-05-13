@@ -1,0 +1,321 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  }
+  
+  html, body {
+    background-color: #ebfae3; /* 전체 배경색 지정 */
+    color: #333;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* 가로 스크롤 방지 */
+    width: 100%;
+    height: 100%;
+    min-height: 100vh;
+  }
+  
+  .app-container {
+    width: 100%; /* 전체 너비로 확장 */
+    margin: 0 auto;
+    min-height: 100vh;
+    background-color: #ebfae3;
+    position: relative;
+    padding-bottom: 30px;
+  }
+  
+  .header {
+    background-color: #F4FDE9;
+    padding: 0.8rem 1.5rem;
+    display: flex;
+    justify-content: center; /* 중앙 정렬 */
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(69,97,56,0.09);
+    border-bottom: 1.5px solid #e1e9dc;
+    width: 100%; /* 전체 너비 */
+  }
+  
+  /* 헤더 내부 콘텐츠 추가 */
+  .header-content {
+    width: 100%;
+    max-width: 440px; /* 모바일 너비로 제한 */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  /* 메인 콘텐츠 컨테이너 */
+  .content-container {
+    max-width: 440px; /* 모바일 너비로 제한 */
+    margin: 0 auto;
+    width: 100%;
+  }
+  
+  .logo-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .logo {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .app-name {
+    font-size: 14px;
+    color: #4a4a4a;
+  }
+  
+  .my-page-btn {
+    background-color: #3d6c3a;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .title {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 16px 16px 8px 16px;
+    color: #333;
+  }
+  
+  .subtitle {
+    font-size: 14px;
+    color: #666;
+    margin: 0 16px 16px 16px;
+  }
+  
+  .stats-container {
+    display: flex;
+    margin: 0 16px 16px 16px;
+    gap: 10px;
+  }
+  
+  .stat-card {
+    background-color: #516e3f;
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    flex: 1;
+  }
+  
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+  }
+  
+  .stat-info {
+    display: flex;
+    flex-direction: column;
+    color: white;
+  }
+  
+  .stat-label {
+    font-size: 13px;
+    opacity: 0.8;
+  }
+  
+  .stat-value {
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  /* 주소 입력 컨테이너 스타일 */
+  .address-input-container {
+    margin: 0 16px 16px 16px;
+    background-color: white;
+    border-radius: 12px;
+    padding: 0 0 0 30px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    width: calc(100% - 32px);
+  }
+  
+  /* 주소 입력 박스 스타일 */
+  .address-input-box {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    justify-content: flex-start;
+  }
+  
+  .address-input-box:last-child {
+    margin-bottom: 0;
+  }
+  
+  /* 라벨 스타일 */
+  .address-input-box label {
+    width: 45px;
+    font-size: 13px;
+    color: #555;
+    font-weight: 500;
+    margin-left: 20px;
+  }
+  
+  /* 입력 필드와 버튼 정렬 */
+  .input-with-button {
+    display: flex;
+    gap: 6px;
+    width: 80%;
+  }
+  
+  /* 입력 필드 스타일 */
+  .input-with-button input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  
+  /* 버튼 스타일 */
+  .input-with-button button {
+    width: 50px;
+    padding: 5px 0;
+    background-color: #516e3f;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  
+  .input-with-button button:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+  }
+  
+  .map-wrapper {
+    margin: 0 16px;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    background-color: #4b723c;
+    padding: 8px;
+  }
+  
+  #map_div {
+    width: 100%;
+    height: 300px;
+    border-radius: 8px;
+    background-color: #e7e7e7;
+    position: relative;
+  }
+  
+  .distance-box {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background-color: white;
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  }
+  
+  .distance-label {
+    font-size: 12px;
+    color: #888;
+  }
+  
+  .distance-value {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .save-btn {
+    display: block;
+    width: calc(100% - 32px);
+    background-color: #c2f257;
+    color: #333;
+    border: none;
+    border-radius: 30px;
+    padding: 16px;
+    margin: 10px auto;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .save-btn:disabled {
+    background-color: #ddd;
+    color: #999;
+    cursor: not-allowed;
+  }
+  
+  .reset-btn {
+    display: block;
+    width: calc(100% - 32px);
+    background-color: #f0f0f0;
+    color: #333;
+    border: none;
+    border-radius: 30px;
+    padding: 16px;
+    margin: 10px auto;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .map-overlay {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 8px 12px;
+    border-radius: 8px;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  }
+  
+  .map-instruction {
+    font-size: 14px;
+    font-weight: bold;
+    color: #e74c3c;
+  }
+  
+  .orange-marker {
+    width: 24px;
+    height: 24px;
+    background-color: #ff9500;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  .error-message {
+    margin: 10px 16px;
+    padding: 12px;
+    background-color: #ffe3e3;
+    color: #c92a2a;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+  
+  .buttons-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 16px 0;
+  }
