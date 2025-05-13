@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <title>러닝ON</title>
+  <style>
+    @import url('../css/runAll.css');
+  </style>
+</head>
+
+<body>
+  <div id="map"></div>
+
+  <!-- 현재 러닝 시간 -->
+  <div class="timer-card">
+    <h2>현재 러닝 시간</h2>
+    <div class="time" id="duration">00:00</div>
+    <button class="play-button" id="toggleTracking">▶</button>
+  </div>
+
+  <div class="section">
+    <div id="info"></div>
+  </div>
+
+  <!-- 전체 유저 러닝 랭킹 -->
+  <div class="section">
+    <h3>전체</h3>
+    <div class="user-list" id="rankList"></div>
+  </div>
+
+  <!-- 내가 속한 그룹 목록 -->
+  <div class="section">
+    <h3>My 그룹</h3>
+    <div class="group-list" id="myGroupList"></div>
+    <div class="group-search">
+      <input type="text" placeholder="그룹명" />
+      <button>검색</button>
+    </div>
+  </div>
+
+  <!-- SDK 로딩 -->
+  <script
+    src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=69f7aed15b3022432f9111fdd53df00d&autoload=true&libraries=geometry"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <script>
+    let tracking = false;
+    let startTime, endTime, path = [], watchId = null, durationTimer = null;
+    const userId = "loginUser";
+
+    kakao.maps.load(() => {
+      const map = new kakao.maps.Map(document.getElementById('map'), {
+        center: new kakao.maps.LatLng(37.501330, 127.039624),
+        level: 4
+      });
+
+      document.getElementById('toggleTracking').addEventListener('click', () => {
+        if (!tracking) {
+          tracking = true;
+          path = [];
+          startTime = new Date();
+          document.getElementById('toggleTracking').textContent = '⏹';
+
+          // 서버에 러닝 시작 알림을 보냄
+          fetch('/api/runs/running-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, startTime: startTime.toISOString(), status: 'running' })
+          });
+
+          if (navigator.geolocation) {
+            watchId = navigator.geolocation.watchPosition(pos => {
+              const latlng = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+              path.push(latlng);
+              map.setCenter(latlng);
+              new kakao.maps.Marker({ position: latlng, map });
+            });
+          }
+
+          durationTimer = setInterval(() => {
+            const now = new Date();
+            const diff = new Date(now - startTime);
+            const min = String(diff.getMinutes()).padStart(2, '0');
+            const sec = String(diff.getSeconds()).padStart(2, '0');
+            document.getElementById('duration').textContent = ⏱ ${ min }:${ sec };
+          }, 1000);
+
+        } else {
+          tracking = false;
+          endTime = new Date();
+          clearInterval(durationTimer);
+          navigator.geolocation.clearWatch(watchId);
+
+          const polyline = new kakao.maps.Polyline({ path, strokeWeight: 4, strokeColor: '#e7b147', strokeOpacity: 0.8, strokeStyle: 'solid', map });
+          const bounds = new kakao.maps.LatLngBounds();
+          path.forEach(p => bounds.extend(p));
+          map.setBounds(bounds);
+
+          const distanceM = polyline.getLength();
+          const distanceKm = (distanceM / 1000).toFixed(2);
+
+          // 개발 할 때 동작 확인 용도 코드 : 
+          // document.getElementById('info').innerHTML = 
+          //   <b>시작:</b> ${startTime.toLocaleString()}<br>
+          //   <b>종료:</b> ${endTime.toLocaleString()}<br>
+          //   <b>거리:</b> ${distanceKm} km;
+
+          // 러닝이 끝났을 때 서버에 운동 기록 저장
+          fetch('/api/runs/track-location', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId,
+              startTime: startTime.toISOString(),
+              endTime: endTime.toISOString(),
+              distance: distanceKm
+            })
+          });
+
+          setTimeout(() => {
+            html2canvas(document.getElementById('map')).then(canvas => {
+              canvas.toBlob(blob => {
+                const formData = new FormData();
+                formData.append('image', blob, 'map_capture.png');
+                formData.append('userId', userId);
+                formData.append('startTime', startTime.toISOString());
+                formData.append('endTime', endTime.toISOString());
+
+                //  지도 이미지 캡처 후 전송
+                fetch('/api/runs/upload-map-image', {
+                  method: 'POST',
+                  body: formData
+                })
+                  .then(res => res.json())
+                  .then(data => console.log("지도 이미지 업로드 완료:", data))
+                  .catch(err => console.error("지도 이미지 업로드 실패:", err));
+              });
+            });
+          }, 1000);
+
+          document.getElementById('toggleTracking').textContent = '▶';
+        }
+      });
+    });
+
+    // 러닝 시간 표시
+    fetch(/api/runs / user / ${ userId } / time)
+
+      .then(res => res.json())
+      .then(data => {
+        const startTime = new Date(data.startTime);
+        setInterval(() => {
+          const now = new Date();
+          const diff = new Date(now - startTime);
+          const min = String(diff.getMinutes()).padStart(2, '0');
+          const sec = String(diff.getSeconds()).padStart(2, '0');
+          document.getElementById('currentRunningTime').textContent = ${ min }:${ sec };
+        }, 1000);
+      });
+
+    // 전체 유저 러닝 랭킹 조회
+    fetch('/api/runs/rank')
+      .then(res => res.json())
+      .then(users => {
+        const list = document.getElementById('rankList');
+        list.innerHTML = '';
+        users.forEach(user => {
+          const div = document.createElement('div');
+          div.className = 'user-card';
+          div.innerHTML = <strong>${user.nickname}</strong><span>${user.duration}</span>;
+          list.appendChild(div);
+        });
+      });
+
+    fetch('/api/crews/my')
+      .then(res => res.json())
+      .then(crews => {
+        const list = document.getElementById('myGroupList');
+        crews.forEach(crew => {
+          const div = document.createElement('div');
+          div.className = 'group-card';
+          div.innerHTML = <strong>${crew.room_name}</strong>;
+          div.onclick = () => window.location.href = /crew/${ crew.id }; // my group 클릭시 비동기로 이동
+          list.appendChild(div);
+        });
+      });
+  </script>
+</body>
+
+</html>

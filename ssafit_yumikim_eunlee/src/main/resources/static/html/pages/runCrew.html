@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <title>그룹 상세</title>
+  <style>
+    @import url('../css/runCrew.css');
+  </style>
+</head>
+
+<body>
+
+  <!-- 현재 러닝 시간 -->
+  <div class="timer-card">
+    <h2>현재 러닝 시간</h2>
+    <div class="time" id="duration">00:00</div>
+    <button class="play-button" id="toggleTracking">▶</button>
+  </div>
+
+  <!-- 그룹 멤버 러닝 랭킹 -->
+  <h3>서울 8반 러닝 챌린지</h3>
+  <div class="user-list" id="crewMemberList"></div>
+
+  <!-- 콩 성장 바 -->
+  <p>콩이 자라는 중 🌱🌿</p>
+  <div class="progress">
+    <div id="growthBar" style="width: 40%;"></div>
+  </div>
+
+  <!-- Talk 버튼 -->
+  <h3>서울 8반 실시간 메신저</h3>
+  <button class="talk-button" id="goToChat">▶ Talk</button>
+
+  <script>
+    const userId = "loginUser";
+    const crewId = window.location.pathname.split('/').pop();
+
+    // 러닝 시간 표시
+    fetch(/api/runs / user / ${ userId } / time)
+
+      .then(res => res.json())
+      .then(data => {
+        const startTime = new Date(data.startTime);
+        setInterval(() => {
+          const now = new Date();
+          const diff = new Date(now - startTime);
+          const min = String(diff.getMinutes()).padStart(2, '0');
+          const sec = String(diff.getSeconds()).padStart(2, '0');
+          document.getElementById('currentRunningTime').textContent = ${ min }:${ sec };
+        }, 1000);
+      });
+
+    // 해당 크루 멤버 러닝 시간 불러오기
+    fetch(/api/runs / crew / ${ crewId })
+      .then(res => res.json())
+      .then(members => {
+        const list = document.getElementById('crewMemberList');
+        list.innerHTML = '';
+        members.forEach(m => {
+          const div = document.createElement('div');
+          div.className = 'user-card';
+          div.innerHTML = <strong>${m.nickname}</strong><span>${m.duration}</span>;
+          list.appendChild(div);
+        });
+      });
+
+    // 채팅방으로 이동
+    document.getElementById('goToChat').onclick = () => {
+      window.location.href = /chat/crew / ${ crewId };
+    };
+  </script>
+</body>
+
+</html>
