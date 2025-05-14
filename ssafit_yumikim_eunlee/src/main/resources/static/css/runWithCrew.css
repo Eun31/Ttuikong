@@ -1,0 +1,73 @@
+
+body {
+font-family: sans-serif;
+background-color: #f0f9f0;
+margin: 0;
+padding: 20px;
+}
+
+h3, p  {
+font-size: 25px;
+margin: 15px 0 10px 15px;
+font-weight: 600;
+color: #333;
+}
+
+.user-list {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 12px;
+padding: 0 15px;
+}
+
+
+.user-card {
+background: white;
+padding: 15px 10px;
+border-radius: 12px;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+cursor: pointer;
+text-align: center;
+}
+
+.progress {
+width: 97%;
+margin: 10px 15px;
+background: #ccc;
+border-radius: 20px;
+margin-top: 10px;
+}
+
+.progress>div {
+background: #69c14c;
+height: 15px;
+border-radius: 20px;
+}
+
+.talk-button  {
+        margin: 0px 0 10px 15px;
+        font-weight: 600;
+background: #4CAF50;
+color: white;
+padding: 10px 20px;
+border-radius: 20px;
+border: none;
+font-size: 16px;
+cursor: pointer;
+}
+
+#cancelBtn   {
+        margin: 0px 0 10px 15px;
+        font-weight: 600;
+background: #39693c;
+color: white;
+padding: 10px 20px;
+border-radius: 20px;
+border: none;
+font-size: 16px;
+cursor: pointer;
+}
