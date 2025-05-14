@@ -31,7 +31,7 @@ public class BoardLikeServiceImpl implements BoardLikeService{
 	 @Transactional
 	 public void toggleLike(int postId, int id) {
 		 //게시글 존재 여부 확인
-		 if(boardDao.selectOne(postId) == null) {
+		 if(boardDao.selectById(postId) == null) {
 			 throw new RuntimeException("게시글을 찾을 수 없습니다.");
 		 }
 		 
@@ -55,7 +55,7 @@ public class BoardLikeServiceImpl implements BoardLikeService{
 	@Override
 	@Transactional(readOnly = true)
 	public boolean findBoardLikeStatus(int postId, int id) {
-		if(boardDao.selectOne(postId) == null) {
+		if(boardDao.selectById(postId) == null) {
 			throw new RuntimeException("게시글을 찾을 수 없습니다.");
 		}
 		
@@ -69,7 +69,7 @@ public class BoardLikeServiceImpl implements BoardLikeService{
 	@Override
 	@Transactional(readOnly = true)
 	public int countBoardLikes(int postId) {
-		if(boardDao.selectOne(postId) == null) {
+		if(boardDao.selectById(postId) == null) {
 			throw new RuntimeException("게시글을 찾을 수 없습니다.");
 		}
 		return boardLikeDao.countByBoardId(postId);
@@ -78,7 +78,7 @@ public class BoardLikeServiceImpl implements BoardLikeService{
 	@Override
 	@Transactional(readOnly = true)
 	public List<User> findBoardLikeUsers(int postId) {
-		if(boardDao.selectOne(postId) == null) {
+		if(boardDao.selectById(postId) == null) {
 			throw new RuntimeException("게시글을 찾을 수 없습니다.");
 		}
 		

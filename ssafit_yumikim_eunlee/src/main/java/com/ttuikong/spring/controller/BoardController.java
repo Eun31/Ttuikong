@@ -3,15 +3,18 @@ package com.ttuikong.spring.controller;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ttuikong.spring.annotation.LoginRequired;
 import com.ttuikong.spring.annotation.LoginUser;
@@ -31,14 +34,16 @@ public class BoardController {
     }
     
     //게시글 작성
-    @PostMapping("/post")
+    @PostMapping(value = "/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @LoginRequired
-    public ResponseEntity<?> write(@RequestBody Board board, @LoginUser User loginUser) {
+    public ResponseEntity<?> writeBoard(@RequestPart Board board, 
+    									@RequestPart(value = "image", required = false) MultipartFile image,
+    									@LoginUser User loginUser) {
         try {
             // 로그인한 사용자 ID 설정
             board.setUserId(loginUser.getId());
             
-            boardService.writeBoard(board);
+            boardService.saveBoard(board, image);
             return ResponseEntity.status(HttpStatus.CREATED)
                 .body("게시글이 성공적으로 작성되었습니다.");
         } catch (IllegalArgumentException e) {
@@ -66,7 +71,7 @@ public class BoardController {
         }
     }
     
-    //게시글 조회
+    // 특정 게시글 조회
     @GetMapping("/{postId}")
     public ResponseEntity<?> detail(@PathVariable("postId") int postId){
         try {
@@ -84,9 +89,13 @@ public class BoardController {
     }
     
     //게시글 수정
-    @PutMapping("/{postId}")
+    @PutMapping(value = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @LoginRequired
-    public ResponseEntity<?> update(@PathVariable("postId") int postId, @RequestBody Board board, @LoginUser User loginUser){
+    public ResponseEntity<?> updatePost(@PathVariable("postId") int postId, 
+    								@RequestPart Board board, 
+    								@RequestPart(value = "image", required = false) MultipartFile image,
+    								@RequestParam(value = "imageRemoved", required = false, defaultValue = "false") boolean imageRemoved,
+    								@LoginUser User loginUser){
         try {
             Board existingBoard = boardService.readBoard(postId);
             
@@ -100,9 +109,11 @@ public class BoardController {
                         .body("게시글 수정 권한이 없습니다.");
             }
             
-            board.setId(postId);
+            board.setPostId(postId);
             board.setUserId(loginUser.getId());
-            boolean isUpdated = boardService.modifyBoard(board);
+            
+            //게시글 및 이미지 업데이트
+            boolean isUpdated = boardService.modifyBoard(board, image, imageRemoved);
             
             if(isUpdated) {
                 return ResponseEntity.status(HttpStatus.OK)

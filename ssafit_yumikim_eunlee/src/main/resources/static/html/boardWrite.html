@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>게시글 작성 - 커뮤니티</title>
+  <style>
+    /* 기본 리셋 및 공통 스타일 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background-color: #e8f5e9;  /* 옅은 초록색 배경 */
+      color: #333;
+      line-height: 1.6;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    img {
+      max-width: 100%;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+
+    input, textarea {
+      font-family: inherit;
+    }
+
+    /* 컨테이너 */
+    .container {
+      max-width: 100%;
+      margin: 0 auto;
+      background-color: #e8f5e9;  /* 옅은 초록색 배경 */
+      min-height: 100vh;
+      padding: 12px;
+    }
+
+    /* 헤더 스타일 */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .back-btn {
+      font-size: 20px;
+      color: #2e7d32;
+      padding: 4px 8px;
+    }
+
+    .header-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2e7d32;
+    }
+
+    .submit-btn {
+      background-color: #4caf50;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .submit-btn:disabled {
+      background-color: #bdbdbd;
+      cursor: not-allowed;
+    }
+
+    /* 작성 폼 카드 */
+    .write-card {
+      background-color: white;
+      border-radius: 20px;  /* 둥근 모서리 */
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      margin-bottom: 16px;
+    }
+
+    .form-group {
+      padding: 16px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .form-group:last-child {
+      border-bottom: none;
+    }
+
+    .form-label {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #2e7d32;
+    }
+
+    .form-input {
+      width: 100%;
+      border: none;
+      padding: 8px 0;
+      font-size: 16px;
+    }
+
+    .form-input:focus {
+      outline: none;
+    }
+
+    .form-textarea {
+      width: 100%;
+      border: none;
+      padding: 8px 0;
+      font-size: 15px;
+      min-height: 150px;
+      resize: none;
+    }
+
+    .form-textarea:focus {
+      outline: none;
+    }
+
+    /* 이미지 업로드 영역 */
+    .image-upload {
+      margin-top: 12px;
+    }
+
+    .image-placeholder {
+      width: 100%;
+      height: 120px;
+      border: 2px dashed #e0e0e0;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #757575;
+      cursor: pointer;
+    }
+
+    .image-placeholder-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .image-preview {
+      position: relative;
+      margin-top: 12px;
+    }
+
+    .image-preview img {
+      width: 100%;
+      border-radius: 12px;
+      display: block;
+    }
+
+    .image-remove {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* 카테고리 선택 */
+    .category-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .category-option {
+      padding: 8px 12px;
+      background-color: #f5f5f5;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .category-option.active {
+      background-color: #4caf50;
+      color: white;
+    }
+
+    /* 위치 선택 */
+    .location-input {
+      display: flex;
+      align-items: center;
+      margin-top: 12px;
+      padding: 8px 12px;
+      background-color: #f5f5f5;
+      border-radius: 20px;
+      color: #757575;
+      cursor: pointer;
+    }
+
+    .location-icon {
+      margin-right: 8px;
+    }
+
+    /* 태그 입력 */
+    .tag-input-container {
+      display: flex;
+      margin-top: 12px;
+    }
+
+    .tag-input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 20px 0 0 20px;
+      font-size: 14px;
+    }
+
+    .tag-input:focus {
+      outline: none;
+      border-color: #4caf50;
+    }
+
+    .tag-add-btn {
+      background-color: #4caf50;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 0 20px 20px 0;
+      font-size: 14px;
+    }
+
+    .tag-add-btn:disabled {
+      background-color: #bdbdbd;
+      cursor: not-allowed;
+    }
+
+    .tags-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .tag {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      padding: 4px 24px 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      position: relative;
+    }
+
+    .tag-remove {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 10px;
+    }
+
+    /* 위치 검색 결과 */
+    .location-results {
+      margin-top: 8px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      display: none;
+    }
+
+    .location-results.show {
+      display: block;
+    }
+
+    .location-item {
+      padding: 12px;
+      border-bottom: 1px solid #f0f0f0;
+      background-color: white;
+      cursor: pointer;
+    }
+
+    .location-item:last-child {
+      border-bottom: none;
+    }
+
+    .location-item:hover {
+      background-color: #f5f5f5;
+    }
+
+    /* 아이콘 스타일 */
+    .icon-back::before { content: '←'; }
+    .icon-camera::before { content: '📷'; }
+    .icon-location::before { content: '📍'; }
+    .icon-trash::before { content: '🗑️'; }
+    .icon-close::before { content: '×'; }
+
+    /* 반응형 스타일 */
+    @media (min-width: 600px) {
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 헤더 -->
+    <header class="header">
+      <button class="back-btn" onclick="goBack()">
+        <span class="icon-back"></span>
+      </button>
+      <h1 class="header-title">게시글 작성</h1>
+      <button class="submit-btn" id="submitBtn" onclick="submitPost()">완료</button>
+    </header>
+
+    <!-- 작성 폼 카드 -->
+    <div class="write-card">
+      <!-- 제목 입력 -->
+      <div class="form-group">
+        <input type="text" id="titleInput" class="form-input" placeholder="제목을 입력하세요" maxlength="100">
+      </div>
+      
+      <!-- 내용 입력 -->
+      <div class="form-group">
+        <textarea id="contentInput" class="form-textarea" placeholder="내용을 입력하세요..."></textarea>
+        
+        <!-- 이미지 업로드 -->
+        <div class="image-upload">
+          <div class="image-placeholder" id="imagePlaceholder" onclick="triggerImageUpload()">
+            <span class="image-placeholder-icon icon-camera"></span>
+            <span>사진 추가</span>
+          </div>
+          <div class="image-preview" id="imagePreview" style="display: none;">
+            <img id="previewImg" src="" alt="미리보기">
+            <button class="image-remove" onclick="removeImage()">
+              <span class="icon-trash"></span>
+            </button>
+          </div>
+          <input type="file" id="imageInput" accept="image/*" style="display: none;">
+        </div>
+      </div>
+      
+      <!-- 카테고리 선택 -->
+      <div class="form-group">
+        <div class="form-label">카테고리</div>
+        <div class="category-options">
+          <div class="category-option active" data-value="DAILY" onclick="selectCategory(this)">일상</div>
+          <div class="category-option" data-value="TRAVEL" onclick="selectCategory(this)">여행</div>
+          <div class="category-option" data-value="FOOD" onclick="selectCategory(this)">맛집</div>
+          <div class="category-option" data-value="QUESTION" onclick="selectCategory(this)">질문</div>
+          <div class="category-option" data-value="INFO" onclick="selectCategory(this)">정보</div>
+        </div>
+      </div>
+      
+      <!-- 위치 선택 -->
+      <div class="form-group">
+        <div class="form-label">위치</div>
+        <div class="location-input" onclick="toggleLocationSearch()">
+          <span class="location-icon icon-location"></span>
+          <span id="selectedLocation">위치 추가</span>
+        </div>
+        
+        <div class="location-results" id="locationResults">
+          <input type="text" class="form-input" id="locationSearchInput" placeholder="위치 검색..." oninput="searchLocation()">
+          <div class="location-item" onclick="selectLocation('한강공원 여의도')">한강공원 여의도</div>
+          <div class="location-item" onclick="selectLocation('강남구 역삼동')">강남구 역삼동</div>
+          <div class="location-item" onclick="selectLocation('서울 마포구 홍대입구')">서울 마포구 홍대입구</div>
+          <div class="location-item" onclick="selectLocation('서울특별시 성북구 안암동')">서울특별시 성북구 안암동</div>
+        </div>
+      </div>
+      
+      <!-- 태그 입력 -->
+      <div class="form-group">
+        <div class="form-label">태그</div>
+        <div class="tag-input-container">
+          <input type="text" id="tagInput" class="tag-input" placeholder="태그를 입력하세요 (최대 5개)">
+          <button class="tag-add-btn" id="tagAddBtn" onclick="addTag()">추가</button>
+        </div>
+        
+        <div class="tags-list" id="tagsList">
+          <!-- 태그가 여기에 추가됩니다 -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DOM 요소
+    let titleInput, contentInput, imageInput, imagePlaceholder, imagePreview, previewImg;
+    let selectedLocation, locationResults, locationSearchInput, tagInput, tagAddBtn, tagsList, submitBtn;
+    let selectedCategory = 'DAILY';
+    let tags = [];
+    
+    // 페이지 로드 시 초기화
+    document.addEventListener('DOMContentLoaded', function() {
+      // DOM 요소 가져오기
+      titleInput = document.getElementById('titleInput');
+      contentInput = document.getElementById('contentInput');
+      imageInput = document.getElementById('imageInput');
+      imagePlaceholder = document.getElementById('imagePlaceholder');
+      imagePreview = document.getElementById('imagePreview');
+      previewImg = document.getElementById('previewImg');
+      selectedLocation = document.getElementById('selectedLocation');
+      locationResults = document.getElementById('locationResults');
+      locationSearchInput = document.getElementById('locationSearchInput');
+      tagInput = document.getElementById('tagInput');
+      tagAddBtn = document.getElementById('tagAddBtn');
+      tagsList = document.getElementById('tagsList');
+      submitBtn = document.getElementById('submitBtn');
+      
+      // 이미지 업로드 이벤트
+      imageInput.addEventListener('change', handleImageUpload);
+      
+      // 태그 입력 이벤트
+      tagInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addTag();
+        }
+      });
+      
+      // 태그 버튼 활성화/비활성화
+      tagInput.addEventListener('input', function() {
+        tagAddBtn.disabled = !this.value.trim() || tags.length >= 5;
+      });
+      
+      // 폼 유효성 체크
+      titleInput.addEventListener('input', validateForm);
+      contentInput.addEventListener('input', validateForm);
+      
+      // 초기 유효성 체크
+      validateForm();
+    });
+    
+    // 폼 유효성 검사
+    function validateForm() {
+      const isValid = titleInput.value.trim() && contentInput.value.trim();
+      submitBtn.disabled = !isValid;
+    }
+    
+    // 이미지 업로드 트리거
+    function triggerImageUpload() {
+      imageInput.click();
+    }
+    
+    // 이미지 업로드 처리
+    function handleImageUpload() {
+      const file = imageInput.files[0];
+      if (file) {
+        // 이미지 타입 확인
+        if (!file.type.match('image.*')) {
+          alert('이미지 파일만 업로드할 수 있습니다.');
+          return;
+        }
+        
+        // 이미지 크기 확인 (5MB 제한)
+        if (file.size > 5 * 1024 * 1024) {
+          alert('이미지 크기는 5MB 이하여야 합니다.');
+          return;
+        }
+        
+        // 이미지 미리보기
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          previewImg.src = e.target.result;
+          imagePlaceholder.style.display = 'none';
+          imagePreview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+    
+    // 이미지 제거
+    function removeImage() {
+      imageInput.value = '';
+      previewImg.src = '';
+      imagePlaceholder.style.display = 'flex';
+      imagePreview.style.display = 'none';
+    }
+    
+    // 카테고리 선택
+    function selectCategory(el) {
+      // 기존 선택 해제
+      document.querySelectorAll('.category-option').forEach(option => {
+        option.classList.remove('active');
+      });
+      
+      // 새로운 카테고리 선택
+      el.classList.add('active');
+      selectedCategory = el.dataset.value;
+    }
+    
+    // 위치 검색 토글
+    function toggleLocationSearch() {
+      locationResults.classList.toggle('show');
+      if (locationResults.classList.contains('show')) {
+        locationSearchInput.focus();
+      }
+    }
+    
+    // 위치 검색
+    function searchLocation() {
+      // 실제 구현에서는 API 검색 기능 추가
+      console.log('위치 검색:', locationSearchInput.value);
+    }
+    
+    // 위치 선택
+    function selectLocation(location) {
+      selectedLocation.textContent = location;
+      locationResults.classList.remove('show');
+    }
+    
+    // 태그 추가
+    function addTag() {
+      const tagText = tagInput.value.trim();
+      
+      if (!tagText) return;
+      
+      // 최대 5개 태그 제한
+      if (tags.length >= 5) {
+        alert('태그는 최대 5개까지만 추가할 수 있습니다.');
+        return;
+      }
+      
+      // 중복 태그 확인
+      if (tags.includes(tagText)) {
+        alert('이미 추가된 태그입니다.');
+        return;
+      }
+      
+      // 태그 추가
+      tags.push(tagText);
+      
+      // 태그 엘리먼트 생성
+      const tagEl = document.createElement('div');
+      tagEl.className = 'tag';
+      tagEl.innerHTML = `
+        ${tagText}
+        <span class="tag-remove icon-close" onclick="removeTag('${tagText}')"></span>
+      `;
+      
+      // 태그 목록에 추가
+      tagsList.appendChild(tagEl);
+      
+      // 입력 필드 초기화
+      tagInput.value = '';
+      tagAddBtn.disabled = true;
+      
+      // 태그 입력 필드에 포커스
+      tagInput.focus();
+    }
+    
+    // 태그 제거
+    function removeTag(tagText) {
+      // 배열에서 제거
+      tags = tags.filter(tag => tag !== tagText);
+      
+      // DOM에서 제거
+      renderTags();
+    }
+    
+    // 태그 렌더링
+    function renderTags() {
+      // 태그 목록 초기화
+      tagsList.innerHTML = '';
+      
+      // 태그 렌더링
+      tags.forEach(tag => {
+        const tagEl = document.createElement('div');
+        tagEl.className = 'tag';
+        tagEl.innerHTML = `
+          ${tag}
+          <span class="tag-remove icon-close" onclick="removeTag('${tag}')"></span>
+        `;
+        tagsList.appendChild(tagEl);
+      });
+    }
+    
+    // 게시글 제출
+    function submitPost() {
+      // 필수 필드 확인
+      if (!titleInput.value.trim()) {
+        alert('제목을 입력해주세요.');
+        titleInput.focus();
+        return;
+      }
+      
+      if (!contentInput.value.trim()) {
+        alert('내용을 입력해주세요.');
+        contentInput.focus();
+        return;
+      }
+      
+      // 게시글 데이터 수집
+      const postData = {
+        title: titleInput.value.trim(),
+        content: contentInput.value.trim(),
+        category: selectedCategory,
+        location: selectedLocation.textContent !== '위치 추가' ? selectedLocation.textContent : null,
+        tags: tags
+      };
+      
+      // 이미지 처리 (실제 구현에서는 FormData 사용)
+      if (imageInput.files.length > 0) {
+        // 이미지 파일 추가 로직
+      }
+      
+      // 서버에 데이터 전송 (실제 구현)
+      console.log('전송할 데이터:', postData);
+      alert('게시글이 작성되었습니다.');
+      
+      // 목록 페이지로 이동
+      goBack();
+    }
+    
+    // 뒤로 가기
+    function goBack() {
+      if (titleInput.value.trim() || contentInput.value.trim() || tags.length > 0 || imageInput.files.length > 0) {
+        if (confirm('작성 중인 내용이 있습니다. 정말 나가시겠습니까?')) {
+          window.location.href = 'index.html';
+        }
+      } else {
+        window.location.href = 'index.html';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>게시글 상세 - 커뮤니티</title>
+  <style>
+    /* 기본 리셋 및 공통 스타일 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background-color: #e8f5e9;  /* 옅은 초록색 배경 */
+      color: #333;
+      line-height: 1.6;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    img {
+      max-width: 100%;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+
+    /* 컨테이너 */
+    .container {
+      max-width: 100%;
+      margin: 0 auto;
+      background-color: #e8f5e9;  /* 옅은 초록색 배경 */
+      min-height: 100vh;
+      padding: 12px;
+    }
+
+    /* 헤더 스타일 */
+    .header {
+      background-color: #e8f5e9;  /* 옅은 초록색 배경 */
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .back-btn {
+      font-size: 20px;
+      color: #2e7d32;
+      padding: 4px 8px;
+    }
+
+    .header-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #2e7d32;
+    }
+
+    .menu-btn {
+      font-size: 20px;
+      color: #2e7d32;
+      padding: 4px 8px;
+    }
+
+    /* 게시글 카드 */
+    .post-card {
+      background-color: white;
+      border-radius: 20px;  /* 둥근 모서리 */
+      margin-bottom: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    /* 작성자 정보 */
+    .user-profile {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid #f0f0f0;
+      position: relative;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 12px;
+      object-fit: cover;
+    }
+
+    .user-details {
+      flex: 1;
+    }
+
+    .user-name {
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+    }
+
+    .badge {
+      color: #4caf50;
+      margin-left: 4px;
+    }
+
+    .post-time {
+      font-size: 12px;
+      color: #757575;
+    }
+
+    .post-options {
+      position: relative;
+    }
+
+    .options-btn {
+      font-size: 20px;
+      padding: 4px 8px;
+    }
+
+    .options-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      width: 120px;
+      background-color: white;
+      border-radius: 12px;  /* 둥근 모서리 */
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      display: none;
+      z-index: 50;
+      overflow: hidden;
+    }
+
+    .options-menu.show {
+      display: block;
+    }
+
+    .option-item {
+      padding: 10px 15px;
+      font-size: 14px;
+    }
+
+    .option-item:hover {
+      background-color: #f5f5f5;
+    }
+
+    /* 게시글 내용 */
+    .post-content {
+      padding: 16px;
+    }
+
+    .post-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+
+    .post-body {
+      font-size: 15px;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+
+    .post-image {
+      margin-bottom: 16px;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .post-image img {
+      width: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .post-location {
+      display: flex;
+      align-items: center;
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 12px;
+    }
+
+    .location-icon {
+      margin-right: 6px;
+    }
+
+    .post-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .tag {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      padding: 4px 10px;
+      border-radius: 12px;  /* 둥근 모서리 */
+      font-size: 12px;
+    }
+
+    .post-actions {
+      display: flex;
+      border-top: 1px solid #f0f0f0;
+      padding-top: 12px;
+    }
+
+    .action-btn {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 0;
+      transition: background-color 0.2s;
+      border-radius: 12px;  /* 둥근 모서리 */
+    }
+
+    .action-btn:active {
+      background-color: #f5f5f5;
+    }
+
+    .action-icon {
+      font-size: 18px;
+    }
+
+    .action-count {
+      font-size: 14px;
+    }
+
+    .like-btn.active .action-icon,
+    .like-btn.active .action-count {
+      color: #e91e63;
+    }
+
+    /* 댓글 섹션 */
+    .comments-card {
+      background-color: white;
+      border-radius: 20px;  /* 둥근 모서리 */
+      margin-bottom: 70px; /* 댓글 입력 영역을 위한 여백 */
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .comments-header {
+      font-size: 16px;
+      font-weight: 600;
+      padding: 16px;
+      color: #2e7d32;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .comment {
+      padding: 16px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .comment:last-child {
+      border-bottom: none;
+    }
+
+    .comment-author {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .comment-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-right: 10px;
+      object-fit: cover;
+    }
+
+    .author-info {
+      flex: 1;
+    }
+
+    .comment-name {
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+    }
+
+    .comment-badge {
+      color: #4caf50;
+      margin-left: 4px;
+      font-size: 12px;
+    }
+
+    .comment-time {
+      font-size: 11px;
+      color: #757575;
+    }
+
+    .comment-body {
+      margin-left: 42px;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .comment-actions {
+      margin-left: 42px;
+      display: flex;
+      gap: 16px;
+    }
+
+    .comment-action {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: #757575;
+    }
+
+    .comment-like.active {
+      color: #e91e63;
+    }
+
+    /* 댓글 입력 영역 */
+    .comment-input-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: white;
+      padding: 12px 16px;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      align-items: center;
+      z-index: 90;
+    }
+
+    .my-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-right: 12px;
+      object-fit: cover;
+    }
+
+    .comment-input {
+      flex: 1;
+      border: 1px solid #e0e0e0;
+      border-radius: 20px;  /* 둥근 모서리 */
+      padding: 8px 12px;
+      font-size: 14px;
+      font-family: inherit;
+      background-color: #f5f5f5;
+    }
+
+    .comment-input:focus {
+      outline: none;
+      border-color: #4caf50;
+      background-color: white;
+    }
+
+    .send-btn {
+      margin-left: 8px;
+      color: #4caf50;
+      font-size: 20px;
+      padding: 4px;
+    }
+
+    .send-btn:disabled {
+      color: #bdbdbd;
+    }
+
+    /* 아이콘 스타일 */
+    .icon-back::before { content: '←'; }
+    .icon-menu::before { content: '⋮'; }
+    .icon-heart::before { content: '❤️'; }
+    .icon-heart-o::before { content: '♡'; }
+    .icon-comment::before { content: '💬'; }
+    .icon-share::before { content: '↗️'; }
+    .icon-location::before { content: '📍'; }
+    .icon-reply::before { content: '↩️'; }
+    .icon-send::before { content: '📨'; }
+    .icon-verified::before { content: '✓'; }
+    .icon-more::before { content: '···'; }
+
+    /* 반응형 스타일 */
+    @media (min-width: 600px) {
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .comment-input-container {
+        max-width: 600px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .options-menu {
+        right: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 헤더 -->
+    <header class="header">
+      <button class="back-btn" onclick="goBack()">
+        <span class="icon-back"></span>
+      </button>
+      <h1 class="header-title">게시글</h1>
+      <button class="menu-btn">
+        <span class="icon-menu"></span>
+      </button>
+    </header>
+
+    <!-- 게시글 카드 -->
+    <div class="post-card">
+      <!-- 작성자 정보 -->
+      <div class="user-profile">
+        <img src="https://via.placeholder.com/72/e8f5e9/2e7d32?text=T" alt="프로필" class="user-avatar">
+        <div class="user-details">
+          <div class="user-name">
+            TTUIKONG
+            <span class="badge">
+              <span class="icon-verified"></span>
+            </span>
+          </div>
+          <div class="post-time">오늘 오후 3:24</div>
+        </div>
+        <div class="post-options">
+          <button class="options-btn" onclick="toggleOptions()">
+            <span class="icon-more"></span>
+          </button>
+          <div class="options-menu" id="optionsMenu">
+            <div class="option-item" onclick="editPost()">수정하기</div>
+            <div class="option-item" onclick="deletePost()">삭제하기</div>
+            <div class="option-item" onclick="reportPost()">신고하기</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 게시글 내용 -->
+      <div class="post-content">
+        <h2 class="post-title">오늘 한강에서 찍은 풍경</h2>
+        <div class="post-body">오늘 한강에서 산책하다가 너무 예쁜 풍경을 봐서 사진을 찍고, 한강가 벤치에서 책도 읽고, 행복한 하루였습니다. 다들 좋은 저녁 되세요!</div>
+        
+        <div class="post-image">
+          <img src="https://via.placeholder.com/600x300/e8f5e9/2e7d32?text=한강" alt="게시글 이미지">
+        </div>
+        
+        <div class="post-location">
+          <span class="location-icon icon-location"></span>
+          <span>한강공원 여의도</span>
+        </div>
+
+        <div class="post-tags">
+          <span class="tag">자연</span>
+          <span class="tag">여행</span>
+          <span class="tag">일상</span>
+          <span class="tag">한강</span>
+          <span class="tag">산책</span>
+        </div>
+
+        <div class="post-actions">
+          <button class="action-btn like-btn" id="likeButton" onclick="toggleLike()">
+            <span class="action-icon icon-heart-o"></span>
+            <span class="action-count" id="likeCount">24</span>
+          </button>
+          <button class="action-btn">
+            <span class="action-icon icon-comment"></span>
+            <span class="action-count">3</span>
+          </button>
+          <button class="action-btn" onclick="sharePost()">
+            <span class="action-icon icon-share"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 댓글 카드 -->
+    <div class="comments-card">
+      <div class="comments-header">댓글 3개</div>
+      
+      <!-- 댓글 1 -->
+      <div class="comment">
+        <div class="comment-author">
+          <img src="https://via.placeholder.com/64/f5f5f5/555555?text=R" alt="댓글 작성자" class="comment-avatar">
+          <div class="author-info">
+            <div class="comment-name">
+              라면이
+            </div>
+            <div class="comment-time">30분 전</div>
+          </div>
+        </div>
+        <div class="comment-body">정말 좋은 곳이네요! 다음에 저도 가보고 싶어요.</div>
+        <div class="comment-actions">
+          <button class="comment-action comment-like" onclick="likeComment(1)">
+            <span class="icon-heart-o"></span>
+            <span>2</span>
+          </button>
+          <button class="comment-action" onclick="replyToComment('라면이')">
+            <span class="icon-reply"></span>
+            <span>답글</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 댓글 2 -->
+      <div class="comment">
+        <div class="comment-author">
+          <img src="https://via.placeholder.com/64/f5f5f5/555555?text=D" alt="댓글 작성자" class="comment-avatar">
+          <div class="author-info">
+            <div class="comment-name">
+              달리는 토끼
+              <span class="comment-badge">
+                <span class="icon-verified"></span>
+              </span>
+            </div>
+            <div class="comment-time">2시간 전</div>
+          </div>
+        </div>
+        <div class="comment-body">사진 너무 예쁘게 찍으셨네요~ 무슨 카메라 쓰시나요?</div>
+        <div class="comment-actions">
+          <button class="comment-action comment-like active" onclick="likeComment(2)">
+            <span class="icon-heart"></span>
+            <span>1</span>
+          </button>
+          <button class="comment-action" onclick="replyToComment('달리는 토끼')">
+            <span class="icon-reply"></span>
+            <span>답글</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 댓글 3 -->
+      <div class="comment">
+        <div class="comment-author">
+          <img src="https://via.placeholder.com/64/f5f5f5/555555?text=T" alt="댓글 작성자" class="comment-avatar">
+          <div class="author-info">
+            <div class="comment-name">
+              테디
+            </div>
+            <div class="comment-time">3시간 전</div>
+          </div>
+        </div>
+        <div class="comment-body">저도 오늘 한강 갔었는데 정말 날씨 좋았어요!</div>
+        <div class="comment-actions">
+          <button class="comment-action comment-like" onclick="likeComment(3)">
+            <span class="icon-heart-o"></span>
+            <span>0</span>
+          </button>
+          <button class="comment-action" onclick="replyToComment('테디')">
+            <span class="icon-reply"></span>
+            <span>답글</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 댓글 입력 영역 -->
+    <div class="comment-input-container">
+      <img src="https://via.placeholder.com/64/e8f5e9/2e7d32?text=Me" alt="내 프로필" class="my-avatar">
+      <input 
+        type="text" 
+        id="commentInput"
+        class="comment-input" 
+        placeholder="댓글을 남겨보세요..."
+      >
+      <button class="send-btn" id="sendButton" onclick="addComment()">
+        <span class="icon-send"></span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // 옵션 메뉴 토글
+    function toggleOptions() {
+      const optionsMenu = document.getElementById('optionsMenu');
+      optionsMenu.classList.toggle('show');
+    }
+
+    // 좋아요 버튼 토글
+    function toggleLike() {
+      const likeButton = document.getElementById('likeButton');
+      const likeCount = document.getElementById('likeCount');
+      const isLiked = likeButton.querySelector('.action-icon').classList.contains('icon-heart');
+      
+      if (isLiked) {
+        likeButton.querySelector('.action-icon').classList.remove('icon-heart');
+        likeButton.querySelector('.action-icon').classList.add('icon-heart-o');
+        likeButton.classList.remove('active');
+        likeCount.textContent = parseInt(likeCount.textContent) - 1;
+      } else {
+        likeButton.querySelector('.action-icon').classList.remove('icon-heart-o');
+        likeButton.querySelector('.action-icon').classList.add('icon-heart');
+        likeButton.classList.add('active');
+        likeCount.textContent = parseInt(likeCount.textContent) + 1;
+      }
+    }
+
+    // 댓글 좋아요
+    function likeComment(commentId) {
+      const commentLike = event.currentTarget;
+      const icon = commentLike.querySelector('span:first-child');
+      const count = commentLike.querySelector('span:last-child');
+      
+      if (commentLike.classList.contains('active')) {
+        commentLike.classList.remove('active');
+        icon.className = 'icon-heart-o';
+        count.textContent = parseInt(count.textContent) - 1;
+      } else {
+        commentLike.classList.add('active');
+        icon.className = 'icon-heart';
+        count.textContent = parseInt(count.textContent) + 1;
+      }
+    }
+
+    // 댓글 답글
+    function replyToComment(username) {
+      const commentInput = document.getElementById('commentInput');
+      commentInput.value = `@${username} `;
+      commentInput.focus();
+    }
+
+    // 댓글 추가
+    function addComment() {
+      const commentInput = document.getElementById('commentInput');
+      const commentText = commentInput.value.trim();
+      
+      if (commentText) {
+        // 실제 구현에서는 서버에 댓글 추가 요청을 보냄
+        alert('댓글이 추가되었습니다.');
+        commentInput.value = '';
+      }
+    }
+
+    // 뒤로 가기
+    function goBack() {
+      window.history.back();
+    }
+
+    // 게시글 수정
+    function editPost() {
+      // 수정 페이지로 이동
+      alert('게시글 수정 페이지로 이동합니다.');
+      toggleOptions();
+    }
+
+    // 게시글 삭제
+    function deletePost() {
+      if (confirm('정말 이 게시글을 삭제하시겠습니까?')) {
+        // 실제 구현에서는 서버에 삭제 요청을 보냄
+        alert('게시글이 삭제되었습니다.');
+        goBack();
+      }
+      toggleOptions();
+    }
+
+    // 게시글 신고
+    function reportPost() {
+      alert('게시글이 신고되었습니다.');
+      toggleOptions();
+    }
+
+    // 게시글 공유
+    function sharePost() {
+      alert('공유 기능은 준비 중입니다.');
+    }
+
+    // 댓글 입력 이벤트
+    document.addEventListener('DOMContentLoaded', function() {
+      const commentInput = document.getElementById('commentInput');
+      const sendButton = document.getElementById('sendButton');
+      
+      commentInput.addEventListener('input', function() {
+        if (this.value.trim()) {
+          sendButton.style.color = '#4caf50';
+        } else {
+          sendButton.style.color = '#bdbdbd';
+        }
+      });
+      
+      commentInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && this.value.trim()) {
+          addComment();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

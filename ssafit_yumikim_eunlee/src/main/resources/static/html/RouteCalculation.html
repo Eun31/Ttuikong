@@ -18,7 +18,7 @@
   <div id="app" class="app-container">
     <div id="header-container"></div>
     <h1 class="title">My 루트 찾기</h1>
-    <p class="subtitle">출발지와 도착지를 선택해 걷기 경로를 확인하세요!</p>
+    <p class="subtitle">선택한 루트의 예상 시간, 거리, 소모 칼로리를 알려줄게!</p>
 
     <div class="stats-container">
       <div class="stat-card">
@@ -47,7 +47,7 @@
           </svg>
         </div>
         <div class="stat-info">
-          <span class="stat-label">Burn</span>
+          <span class="stat-label">Calories Burned</span>
           <span class="stat-value">{{ caloriesBurned }}</span>
         </div>
       </div>
@@ -192,7 +192,7 @@
           });
         },
 
-        // 좌표로부터 주소 검색 (역지오코딩)
+        // 좌표로부터 주소 검색
         getAddressFromCoords(position, callback) {
           const apiUrl = "https://apis.openapi.sk.com/tmap/geo/reversegeocoding?version=1&format=json";
           
@@ -234,15 +234,15 @@
 
           // 기본 아이콘 마커 생성
           this.markers.start = new Tmapv2.Marker({
-            position: position,
-            icon: {
-              url: 'data:image/png;base64,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',
-              size: new Tmapv2.Size(48, 48),
-              anchor: new Tmapv2.Point(24, 48)
-            },
-            map: this.map,
-            title: '출발지'
-          });
+          position: position,
+          icon: {
+          url: '/assets/location.png', // Base64 대신 상대 경로로 변경
+          size: new Tmapv2.Size(48, 48),
+          anchor: new Tmapv2.Point(24, 48)
+         },  
+          map: this.map,
+          title: '출발지'
+        });
 
           // 좌표 저장
           this.coords.start = position;

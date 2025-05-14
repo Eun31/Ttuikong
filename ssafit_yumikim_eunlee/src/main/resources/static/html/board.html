@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>커뮤니티 게시판</title>
+  <style>
+    /* 기본 리셋 및 공통 스타일 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background-color: #e8f5e9;  /* 옅은 초록색 배경 */
+      color: #333;
+      line-height: 1.6;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    img {
+      max-width: 100%;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+
+    /* 컨테이너 */
+    .container {
+      max-width: 100%;
+      margin: 0 auto;
+      background-color: #e8f5e9;  /* 옅은 초록색 배경 */
+      min-height: 100vh;
+      padding: 12px;
+    }
+
+    /* 헤더 스타일 */
+    .header {
+      background-color: #e8f5e9;  /* 옅은 초록색 배경 */
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      margin-bottom: 12px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .header-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2e7d32;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 15px;
+    }
+
+    .icon-btn {
+      font-size: 18px;
+      color: #2e7d32;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 게시글 카드 */
+    .post-card {
+      background-color: white;
+      border-radius: 20px;  /* 둥근 모서리 */
+      margin-bottom: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    /* 사용자 정보 */
+    .user-profile {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      margin-right: 12px;
+      object-fit: cover;
+    }
+
+    .user-details {
+      flex: 1;
+    }
+
+    .user-name {
+      display: flex;
+      align-items: center;
+      font-weight: 600;
+    }
+
+    .badge {
+      color: #4caf50;
+      margin-left: 5px;
+    }
+
+    .user-level {
+      font-size: 12px;
+      color: #757575;
+    }
+
+    /* 게시글 내용 */
+    .post-content {
+      padding: 16px;
+    }
+
+    .post-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    .post-desc {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 12px;
+    }
+
+    .post-image {
+      margin-bottom: 12px;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .post-image img {
+      width: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .post-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .tag {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+
+    .post-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 10px;
+      border-top: 1px solid #f0f0f0;
+      font-size: 12px;
+      color: #757575;
+    }
+
+    .post-location {
+      display: flex;
+      align-items: center;
+    }
+
+    .post-location-icon {
+      margin-right: 4px;
+    }
+
+    .post-stats {
+      display: flex;
+      gap: 12px;
+    }
+
+    .stat {
+      display: flex;
+      align-items: center;
+    }
+
+    .stat-icon {
+      margin-right: 4px;
+    }
+
+    /* 플로팅 버튼 */
+    .floating-btn {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background-color: #4caf50;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      z-index: 90;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+
+    .floating-btn:active {
+      transform: scale(0.95);
+      background-color: #3b9a3f;
+    }
+
+    /* 아이콘 스타일 */
+    .icon-heart::before { content: '❤️'; }
+    .icon-heart-o::before { content: '♡'; }
+    .icon-comment::before { content: '💬'; }
+    .icon-search::before { content: '🔍'; }
+    .icon-location::before { content: '📍'; }
+    .icon-pencil::before { content: '✏️'; }
+    .icon-menu::before { content: '⋮'; }
+    .icon-verified::before { content: '✓'; }
+
+    /* 반응형 스타일 */
+    @media (min-width: 600px) {
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .post-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .post-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .header-title {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 헤더 -->
+    <header class="header">
+      <div class="header-left">
+        <img src="https://via.placeholder.com/64/e8f5e9/2e7d32?text=C" alt="커뮤니티" class="logo">
+        <h1 class="header-title">커뮤니티</h1>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn">
+          <span class="icon-search"></span>
+        </button>
+        <button class="icon-btn">
+          <span class="icon-menu"></span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 게시글 1 -->
+    <div class="post-card">
+      <!-- 작성자 정보 -->
+      <div class="user-profile">
+        <img src="https://via.placeholder.com/72/e8f5e9/2e7d32?text=T" alt="프로필" class="user-avatar">
+        <div class="user-details">
+          <div class="user-name">
+            TTUIKONG
+            <span class="badge">
+              <span class="icon-verified"></span>
+            </span>
+          </div>
+          <div class="user-level">커뮤니티</div>
+        </div>
+      </div>
+
+      <!-- 게시글 내용 -->
+      <div class="post-content">
+        <h2 class="post-title">오늘 한강에서 찍은 풍경</h2>
+        <p class="post-desc">오늘 한강에서 산책하다가 너무 예쁜 풍경을 봐서 사진을 찍고, 한강가 벤치에서 책도 읽고, 행복한 하루였습니다. 다들 좋은 저녁 되세요!</p>
+        
+        <div class="post-image">
+          <img src="https://via.placeholder.com/600x300/e8f5e9/2e7d32?text=한강" alt="게시글 이미지">
+        </div>
+        
+        <div class="post-tags">
+          <span class="tag">자연</span>
+          <span class="tag">여행</span>
+          <span class="tag">일상</span>
+        </div>
+        
+        <div class="post-footer">
+          <div class="post-location">
+            <span class="post-location-icon icon-location"></span>
+            <span>한강공원 여의도</span>
+          </div>
+          <div class="post-stats">
+            <div class="stat">
+              <span class="stat-icon icon-heart"></span>
+              <span>24</span>
+            </div>
+            <div class="stat">
+              <span class="stat-icon icon-comment"></span>
+              <span>3</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 게시글 2 -->
+    <div class="post-card">
+      <!-- 작성자 정보 -->
+      <div class="user-profile">
+        <img src="https://via.placeholder.com/72/e8f5e9/2e7d32?text=T" alt="프로필" class="user-avatar">
+        <div class="user-details">
+          <div class="user-name">
+            TTUIKONG
+            <span class="badge">
+              <span class="icon-verified"></span>
+            </span>
+          </div>
+          <div class="user-level">커뮤니티</div>
+        </div>
+      </div>
+
+      <!-- 게시글 내용 -->
+      <div class="post-content">
+        <h2 class="post-title">자전거 타기 좋은 코스 추천</h2>
+        <p class="post-desc">주말에 자전거 타기 좋은 코스를 찾고 있는데 추천해주실 분 있나요? 한강 이외에 서울 근교 코스로 추천 부탁드립니다.</p>
+        
+        <div class="post-footer">
+          <div class="post-location">
+            <span class="post-location-icon icon-location"></span>
+            <span>서울특별시</span>
+          </div>
+          <div class="post-stats">
+            <div class="stat">
+              <span class="stat-icon icon-heart-o"></span>
+              <span>8</span>
+            </div>
+            <div class="stat">
+              <span class="stat-icon icon-comment"></span>
+              <span>12</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 게시글 3 -->
+    <div class="post-card">
+      <!-- 작성자 정보 -->
+      <div class="user-profile">
+        <img src="https://via.placeholder.com/72/f5f5f5/555555?text=P" alt="프로필" class="user-avatar">
+        <div class="user-details">
+          <div class="user-name">
+            맛집탐험가
+          </div>
+          <div class="user-level">커뮤니티</div>
+        </div>
+      </div>
+
+      <!-- 게시글 내용 -->
+      <div class="post-content">
+        <h2 class="post-title">맛집 공유합니다!</h2>
+        <p class="post-desc">어제 발견한 숨은 맛집인데 정말 맛있어서 공유합니다. 여기 돈까스가 진짜 엄청 두껍고 바삭바삭해요. 가격도 합리적이고 사장님도 친절하셔서 추천해요!</p>
+        
+        <div class="post-image">
+          <img src="https://via.placeholder.com/600x300/f5f6ce/555555?text=맛집" alt="게시글 이미지">
+        </div>
+        
+        <div class="post-tags">
+          <span class="tag">맛집</span>
+          <span class="tag">돈까스</span>
+          <span class="tag">추천</span>
+        </div>
+        
+        <div class="post-footer">
+          <div class="post-location">
+            <span class="post-location-icon icon-location"></span>
+            <span>강남구 역삼동</span>
+          </div>
+          <div class="post-stats">
+            <div class="stat">
+              <span class="stat-icon icon-heart"></span>
+              <span>42</span>
+            </div>
+            <div class="stat">
+              <span class="stat-icon icon-comment"></span>
+              <span>7</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 게시글 4 (개발 관련) -->
+    <div class="post-card">
+      <!-- 작성자 정보 -->
+      <div class="user-profile">
+        <img src="https://via.placeholder.com/72/f5f5f5/555555?text=D" alt="프로필" class="user-avatar">
+        <div class="user-details">
+          <div class="user-name">
+            달리는 토끼
+            <span class="badge">
+              <span class="icon-verified"></span>
+            </span>
+          </div>
+          <div class="user-level">커뮤니티</div>
+        </div>
+      </div>
+
+      <!-- 게시글 내용 -->
+      <div class="post-content">
+        <h2 class="post-title">타이투를 하고싶은 좋은 웹사이트는?</h2>
+        <p class="post-desc">자바와 리액트로 타이투 게임을 만들고 싶은데 좋은 웹사이트를 공유해줄 수 있을까요? RPM이나 웹애니메이션도 함께 있으면 더 좋을 것 같습니다!</p>
+        
+        <div class="post-tags">
+          <span class="tag">개발</span>
+          <span class="tag">웹사이트</span>
+          <span class="tag">추천요청</span>
+        </div>
+        
+        <div class="post-footer">
+          <div class="post-location">
+            <span class="post-location-icon icon-location"></span>
+            <span>강남구 삼성동</span>
+          </div>
+          <div class="post-stats">
+            <div class="stat">
+              <span class="stat-icon icon-heart-o"></span>
+              <span>15</span>
+            </div>
+            <div class="stat">
+              <span class="stat-icon icon-comment"></span>
+              <span>23</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 게시글 5 (음악 공유) -->
+    <div class="post-card">
+      <!-- 작성자 정보 -->
+      <div class="user-profile">
+        <img src="https://via.placeholder.com/72/f5f5f5/555555?text=R" alt="프로필" class="user-avatar">
+        <div class="user-details">
+          <div class="user-name">
+            밤의 소리
+          </div>
+          <div class="user-level">커뮤니티</div>
+        </div>
+      </div>
+
+      <!-- 게시글 내용 -->
+      <div class="post-content">
+        <h2 class="post-title">밤에 들으면 좋은 음악 추천</h2>
+        <p class="post-desc">차분한 밤에 들으면 좋은 음악을 공유합니다. 잠들기 전 감성에 젖고 싶을 때 추천해요.</p>
+        
+        <div style="margin-bottom: 12px; padding: 10px; background-color: #f5f5f5; border-radius: 12px;">
+          <div style="display: flex; align-items: center;">
+            <div style="width: 40px; height: 40px; background-color: #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px;">▶</div>
+            <div style="margin-left: 12px;">
+              <div style="font-weight: 600; font-size: 14px;">Everything Will Be Alright</div>
+              <div style="font-size: 12px; color: #666;">Robokid • The Nightrunners</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="post-tags">
+          <span class="tag">음악</span>
+          <span class="tag">추천</span>
+          <span class="tag">밤</span>
+        </div>
+        
+        <div class="post-footer">
+          <div class="post-location">
+            <span class="post-location-icon icon-location"></span>
+            <span>Sound Cloud</span>
+          </div>
+          <div class="post-stats">
+            <div class="stat">
+              <span class="stat-icon icon-heart-o"></span>
+              <span>12</span>
+            </div>
+            <div class="stat">
+              <span class="stat-icon icon-comment"></span>
+              <span>3</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 플로팅 버튼 -->
+    <a href="write-post.html" class="floating-btn">
+      <span class="icon-pencil"></span>
+    </a>
+  </div>
+
+  <script>
+    // 간단한 인터랙션 예시
+    document.addEventListener('DOMContentLoaded', function() {
+      // 포스트 카드 클릭 효과
+      const postCards = document.querySelectorAll('.post-card');
+      postCards.forEach(card => {
+        card.addEventListener('click', function(e) {
+          // 실제 구현에서는 페이지 이동 처리
+          console.log('포스트 클릭됨:', this.querySelector('.post-title').textContent);
+        });
+      });
+
+      // 검색 버튼 클릭
+      const searchBtn = document.querySelector('.icon-search').parentElement;
+      searchBtn.addEventListener('click', function() {
+        alert('검색 기능은 준비 중입니다.');
+      });
+
+      // 메뉴 버튼 클릭
+      const menuBtn = document.querySelector('.icon-menu').parentElement;
+      menuBtn.addEventListener('click', function() {
+        alert('메뉴가 클릭되었습니다.');
+      });
+    });
+  </script>
+</body>
+</html>

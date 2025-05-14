@@ -1,6 +1,8 @@
 package com.ttuikong.spring.model.dto;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Board {
     private int postId;
@@ -10,6 +12,7 @@ public class Board {
     private String category;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String imageUrl;
     
     public Board() {
         this.category = "자유";
@@ -19,7 +22,7 @@ public class Board {
         this.userId = userId;
         this.title = title;
         this.content = content;
-        this.category = "자유"; 
+        this.category = "자유";
     }
     
     public Board(int postId, Integer userId, String title, String content, 
@@ -33,11 +36,24 @@ public class Board {
         this.updatedAt = updatedAt;
     }
     
-    public Integer getId() {
+    public Board(int postId, Integer userId, String title, String content, 
+                    String category, LocalDateTime createdAt, LocalDateTime updatedAt,
+                    String imageUrl) {
+        this.postId = postId;
+        this.userId = userId;
+        this.title = title;
+        this.content = content;
+        this.category = category;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.imageUrl = imageUrl;
+    }
+    
+    public Integer getPostId() {
         return postId;
     }
     
-    public void setId(int postId) {
+    public void setPostId(int postId) {
         this.postId = postId;
     }
     
@@ -89,6 +105,15 @@ public class Board {
         this.updatedAt = updatedAt;
     }
     
+    public String getImageUrl() {
+        return imageUrl;
+    }
+    
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+    
+    
     @Override
     public String toString() {
         return "BoardDto{" +
@@ -99,6 +124,7 @@ public class Board {
                 ", category='" + category + '\'' +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
+                ", imageUrl=" + imageUrl +
                 '}';
     }
 }
