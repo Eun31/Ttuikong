@@ -24,12 +24,14 @@ CREATE TABLE Route (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     route_name VARCHAR(100) NOT NULL,
-    start_time VARCHAR(30) NOT NULL,
-    end_time VARCHAR(30) NOT NULL,
+    start_time DATETIME NOT NULL,
+    end_time DATETIME NOT NULL,
     duration BIGINT NOT NULL,
     distance DOUBLE NOT NULL,
 	calories DOUBLE,
     points TEXT NOT NULL,  -- JSON 형식의 경로 포인트 데이터
+    status ENUM('running', 'ended') DEFAULT NULL,
+    image_url VARCHAR(255) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES User(id)
 );
