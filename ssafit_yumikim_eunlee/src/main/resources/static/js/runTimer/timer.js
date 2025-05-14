@@ -1,15 +1,7 @@
 function initPageTimer() {
-  console.log("🧪 initPageTimer 호출됨");
-console.log("map:", document.getElementById('map'));
-console.log("button:", document.getElementById('toggleTracking'));
-
-
   let tracking = false;
   let startTime, endTime, path = [], watchId = null, durationTimer = null;
   const userId = "loginUser";
-
-  console.log("✅ map, button DOM 준비 완료");
-
 
   kakao.maps.load(() => {
     const map = new kakao.maps.Map(document.getElementById('map'), {
@@ -73,7 +65,7 @@ console.log("button:", document.getElementById('toggleTracking'));
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            userId,
+            // userId,
             startTime: startTime.toISOString(),
             endTime: endTime.toISOString(),
             distance: distanceKm
@@ -85,7 +77,7 @@ console.log("button:", document.getElementById('toggleTracking'));
             canvas.toBlob(blob => {
               const formData = new FormData();
               formData.append('image', blob, 'map_capture.png');
-              formData.append('userId', userId);
+              // formData.append('userId', userId);
               formData.append('startTime', startTime.toISOString());
               formData.append('endTime', endTime.toISOString());
 
@@ -103,19 +95,5 @@ console.log("button:", document.getElementById('toggleTracking'));
         document.getElementById('toggleTracking').textContent = '▶';
       }
     });
-
-    // 러닝 시간 표시
-    fetch(`/api/runs/user/${userId}/time`)
-      .then(res => res.json())
-      .then(data => {
-        const startTime = new Date(data.startTime);
-        setInterval(() => {
-          const now = new Date();
-          const diff = new Date(now - startTime);
-          const min = String(diff.getMinutes()).padStart(2, '0');
-          const sec = String(diff.getSeconds()).padStart(2, '0');
-          document.getElementById('currentRunningTime').textContent = `${min}:${sec}`;
-        }, 1000);
-      });
   });
 }

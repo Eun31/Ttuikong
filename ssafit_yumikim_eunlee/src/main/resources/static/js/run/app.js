@@ -1,5 +1,4 @@
 function loadTimerSection() {
-  // replace setTimeout(..., 300) with requestAnimationFrame
 fetch("../html/runTimer.html")
   .then(res => res.text())
   .then(html => {
@@ -7,16 +6,15 @@ fetch("../html/runTimer.html")
 
     requestAnimationFrame(() => {
       const checkKakaoReady = () => {
-        const testMap = document.getElementById("map");
 
         if (window.kakao && window.kakao.maps && typeof kakao.maps.Map === "function") {
           console.log("✅ kakao.maps.Map 로딩 완료");
 
           if (typeof initPageTimer === "function") {
-            console.log("🧪 initPageTimer 실행!");
+            console.log("initPageTimer 실행!");
             initPageTimer();
           } else {
-            console.error("❌ initPageTimer 없음");
+            console.error("initPageTimer 없음");
           }
         } else {
           console.log("⌛ Kakao SDK 로딩 대기 중...");
@@ -24,7 +22,7 @@ fetch("../html/runTimer.html")
         }
       };
 
-      checkKakaoReady(); // 이 시점엔 DOM 완전히 붙어 있음
+      checkKakaoReady();
     });
   });
 
