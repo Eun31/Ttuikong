@@ -1,0 +1,148 @@
+<template>
+  <div class="container">
+    <img :src="logo" class="logo" alt="logo" />
+    <div>
+      <p>이메일</p>
+      <input type="email" v-model="email" />
+    </div>
+    <div>
+      <p>비밀번호</p>
+      <input type="password" v-model="password" />
+    </div>
+    <input type="button" value="로그인" @click="login" />
+    <router-link to="/signup">
+      <p>회원가입</p>
+    </router-link>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'Login',
+  data() {
+    return {
+      logo: new URL('../assets/logo_1.png', import.meta.url).href,
+      email: '',
+      password: ''
+    }
+  },
+  methods: {
+    login() {
+      // 로그인 로직 구현
+      console.log('로그인 시도:', this.email);
+      
+      // 이메일과 비밀번호가 비어있지 않은지 확인
+      if (this.email && this.password) {
+        // 임시 인증 토큰 저장
+        localStorage.setItem('token', 'example-token-12345');
+        // 홈 화면으로 리다이렉트
+        this.$router.push('/');
+      } else {
+        alert('이메일과 비밀번호를 입력해주세요.');
+      }
+    }
+  }
+}
+</script>
+
+<style scoped>
+body {
+  background: #f3fbe9;
+  font-family: 'Noto Sans KR', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  gap: 1.2rem;
+  background: #f3fbe9;
+}
+
+.logo {
+  height: 90px;
+  margin-bottom: 1.2rem;
+  filter: drop-shadow(0 2px 6px rgba(69, 97, 56, 0.1));
+}
+
+.container p {
+  margin: 0.3rem 0 0.4rem;
+  font-size: 0.9rem;
+  color: #2f3e2f;
+}
+
+.container input[type="email"],
+.container input[type="password"] {
+  width: 260px;
+  max-width: 80vw;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid #cdd8c9;
+  border-radius: 8px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.container input[type="button"] {
+  width: 260px;
+  max-width: 80vw;
+  margin-top: 0.6rem;
+  background-color: #456138;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.container input[type="button"]:hover {
+  background-color: #3a5030;
+}
+
+.container a p {
+  font-size: 0.85rem;
+  margin-top: 0.6rem;
+  text-align: center;
+  color: #456138;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@media screen and (max-width: 400px) {
+  .container input[type="email"],
+  .container input[type="password"],
+  .container input[type="button"] {
+    width: 90vw;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .container input[type="email"],
+  .container input[type="password"] {
+    width: 380px;
+    font-size: 1.1rem;
+    padding: 0.8rem 1.2rem;
+  }
+
+  .container input[type="button"] {
+    width: 380px;
+    font-size: 1.1rem;
+    padding: 0.8rem 1.2rem;
+  }
+
+  .container p {
+    font-size: 1rem;
+  }
+
+  .container a p {
+    font-size: 1rem;
+  }
+}
+</style>

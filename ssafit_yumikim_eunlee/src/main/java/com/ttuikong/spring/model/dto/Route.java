@@ -30,19 +30,10 @@ public class Route {
 		this.endTime = endTime;
 		this.distance = distance;
 		this.duration = duration;
-		this.calories = calories;
 		this.points = points;
 		this.createdAt = createdAt;
 		this.status = status;
 		this.imageUrl = imageUrl;
-	}
-
-	public double getCalories() {
-		return calories;
-	}
-
-	public void setCalories(double calories) {
-		this.calories = calories;
 	}
 
 	public int getId() {
