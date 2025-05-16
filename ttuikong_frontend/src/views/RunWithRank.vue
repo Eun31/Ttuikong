@@ -1,7 +1,7 @@
 // views/RunWithRank.vue
 <template>
   <div>
-    <h3>러닝 랭킹</h3>
+    <h3>🔥 러닝 랭킹</h3>
 
     <div class="rank-container">
       <div v-for="(user, index) in rankings" :key="user.id" class="rank-item">
@@ -27,12 +27,13 @@
       </div>
     </div>
 
-    <button class="back-button" @click="goBack">돌아가기</button>
+    <!-- <button class="back-button" @click="goBack">돌아가기</button> -->
+     <br>
+     <br>
     
     <!-- 추가된 네비게이션 메뉴 -->
     <div class="run-nav">
       <button class="nav-btn" @click="navigateToTimer">개인 러닝</button>
-      <button class="nav-btn" @click="navigateToCrew">크루 러닝</button>
       <button class="nav-btn active">랭킹</button>
     </div>
   </div>
@@ -72,7 +73,7 @@ export default {
     },
     // 추가된 네비게이션 메소드
     navigateToTimer() {
-      this.$root.$emit('navigate', 'RunTimer');
+      this.$emit('navigate', 'RunTimer');
     },
     navigateToCrew() {
       this.$root.$emit('navigate', 'RunWithCrew');
@@ -106,11 +107,12 @@ h4 {
   align-items: center;
   margin-bottom: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid #ffe3d6;
 }
 
 .rank-item.highlight {
   background: linear-gradient(to right, #E8F5E9, white);
-  border-left: 4px solid #7DC383;
+  border-left: 4px solid #FF7E47;
 }
 
 .rank {
@@ -166,13 +168,13 @@ h4 {
 
 .user-rank h4 {
   margin: 0 0 10px 0;
-  color: #3A7D4B;
+  color: #FF7E47;
 }
 
 .back-button {
   margin: 15px;
   font-weight: 600;
-  background: #4CAF50;
+  background: #FF7E47;
   color: white;
   padding: 10px 20px;
   border-radius: 20px;
@@ -208,7 +210,7 @@ h4 {
 }
 
 .nav-btn.active {
-  background: #4CAF50;
+  background: #FF7E47;
   color: white;
 }
 
@@ -217,6 +219,6 @@ h4 {
 }
 
 .nav-btn.active:hover {
-  background: #43A047;
+  background: #FF7E47;
 }
 </style>

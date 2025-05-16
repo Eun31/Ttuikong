@@ -102,9 +102,9 @@ export default {
 /* 전체 페이지 배경 */
 :root {
   --main-bg-color: #e8f5e2;
-  --header-bg-color: #66bb6a;
-  --send-button-color: #4caf50;
-  --send-button-hover: #3d8b40;
+  --header-bg-color: #FF7043;
+  --send-button-color: #FF7043;
+  --send-button-hover: #FF7043;
   --my-bubble-color: #bbdefb;
   --other-bubble-color: #e1f5fe;
   --chat-box-bg: #f5fff7;
@@ -153,7 +153,7 @@ body {
 
 .chat-header {
   background-color: white;
-  color: #4caf50;
+  color: rgba(255, 139, 44, 0.884);
   padding: 1rem;
   text-align: center;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -231,7 +231,7 @@ body {
   font-size: 1.5rem;
   background: none;
   border: none;
-  color: #4caf50;
+  color: #FF7043;
   cursor: pointer;
   z-index: 10;
   padding: 0;
@@ -370,7 +370,7 @@ body {
 
 #chatInput:focus {
   border-color: var(--header-bg-color);
-  box-shadow: 0 0 0 3px rgba(102, 187, 106, 0.2);
+  box-shadow: 0 0 0 3px rgba(255, 139, 44, 0.884);
   background-color: #fff;
 }
 
@@ -384,7 +384,7 @@ body {
 }
 
 #sendBtn {
-  background-color: #4caf50;
+  background-color: #FF7043;
   color: white;
   border: none;
   border-radius: 24px;
@@ -393,7 +393,7 @@ body {
   font-weight: bold;
   font-size: 0.95rem;
   transition: all 0.3s;
-  box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
+  box-shadow: 0 2px 6px rgba(255, 139, 44, 0.884);
   position: relative;
   overflow: hidden;
 }
@@ -417,7 +417,7 @@ body {
 #sendBtn:hover {
   background-color: var(--send-button-hover);
   transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
+  box-shadow: 0 4px 10px rgba(255, 139, 44, 0.884);
 }
 
 #sendBtn:hover:before {
@@ -426,7 +426,7 @@ body {
 
 #sendBtn:active {
   transform: translateY(1px);
-  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.4);
+  box-shadow: 0 2px 4px rgba(255, 139, 44, 0.884);
 }
 
 /* 미디어 쿼리 - 모바일 화면 대응 */
@@ -473,12 +473,12 @@ body {
 }
 
 .chat-box::-webkit-scrollbar-thumb {
-  background-color: rgba(76, 175, 80, 0.2);
+  background-color: rgba(255, 139, 44, 0.884);
   border-radius: 4px;
   transition: background-color 0.3s;
 }
 
 .chat-box::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(76, 175, 80, 0.4);
+  background-color: rgba(255, 139, 44, 0.884);
 }
 </style>

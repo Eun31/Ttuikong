@@ -1,4 +1,4 @@
-// views/RunHome.vue
+
 <template>
   <div class="run-container">
     <RunTimer v-if="currentView === 'RunTimer'" @navigate="navigateTo" />
