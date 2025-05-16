@@ -42,16 +42,11 @@
     <main class="main-content" :class="{ 'auth-page': isAuthPage }">
       <router-view />
     </main>
-
-    <a v-if="!isAuthPage && isLoggedIn" @click.prevent="handleFloatingAction" class="floating-btn">
-      <i :class="floatingBtnIcon"></i>
-    </a>
   </div>
 </template>
 
 <script>
 import logo from './assets/logo_orange.png'; // 이미지 임포트
-import '@/assets/css/auth.css'; // auth.css 파일 가져오기
 
 export default {
   name: 'App',
@@ -70,14 +65,6 @@ export default {
     isAuthPage() {
       const authPages = ['/login', '/signup', '/signup2', '/signup3'];
       return authPages.includes(this.$route.path);
-    },
-    // 현재 라우트에 따라 플로팅 버튼 아이콘 변경
-    floatingBtnIcon() {
-      const path = this.$route.path;
-      if (path.startsWith('/board')) return 'ri-pencil-line';  // 게시판 - 글쓰기
-      if (path.startsWith('/chat')) return 'ri-message-2-line';  // 채팅 - 새 메시지
-      if (path.startsWith('/profile')) return 'ri-edit-line';  // 프로필 - 편집
-      return 'ri-add-line';  // 기본값
     }
   },
   methods: {
@@ -86,24 +73,6 @@ export default {
     },
     closeMenu() {
       this.menuActive = false;
-    },
-    handleFloatingAction() {
-      const path = this.$route.path;
-      
-      // 현재 라우트에 따라 다른 액션 수행
-      if (path.startsWith('/board')) {
-        this.$router.push('/board/write');  // 게시글 작성 페이지로 이동
-      } 
-      else if (path.startsWith('/chat')) {
-        this.$router.push('/chat/new');  // 새 채팅 시작
-      }
-      else if (path.startsWith('/profile')) {
-        this.$router.push('/profile/edit');  // 프로필 편집
-      }
-      else {
-        // 기본 액션
-        console.log('기본 액션 실행');
-      }
     },
     // 로그아웃 기능
     logout() {
@@ -297,64 +266,6 @@ button {
   margin: 0 auto;
 }
 
-/* 인증 페이지 스타일 */
-.main-content.auth-page {
-  padding: 0;
-  max-width: none;
-  background-color: #FFCDB2;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-/* 플로팅 버튼 */
-.floating-btn {
-  position: fixed;
-  right: 20px;
-  bottom: 20px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background-color: #FF7E47;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  box-shadow: 0 4px 10px rgba(255, 126, 71, 0.4);
-  z-index: 90;
-  transition: transform 0.2s ease, background-color 0.2s ease;
-  cursor: pointer;
-}
-
-.floating-btn:active {
-  transform: scale(0.95);
-  background-color: #F26B31;
-}
-
-/* 회원가입 및 로그인 페이지 스타일 */
-.signup-container,
-.login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 2rem 1rem;
-  background-color: #FF7E47;
-}
-
-.signup-card,
-.login-card {
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 400px;
-  padding: 2rem;
-}
-
 /* 버튼 스타일 */
 .btn-primary {
   background-color: #FF7E47;
@@ -535,20 +446,7 @@ button {
   .main-content {
     padding: 15px 10px; /* 모바일에서 컨텐츠 영역 패딩 조정 */
   }
-  
-  .floating-btn {
-    width: 50px; /* 플로팅 버튼 크기 조정 */
-    height: 50px;
-    right: 15px;
-    bottom: 15px;
-    font-size: 20px;
-  }
-  
-  .signup-card,
-  .login-card {
-    padding: 1.5rem; /* 카드 패딩 조정 */
-  }
-  
+
   /* 모바일 메뉴 크기 조정 */
   .mobile-menu {
     width: 250px;
@@ -615,20 +513,6 @@ button {
   .nav-btn i {
     font-size: 16px; /* 아이콘 크기 유지 */
     margin: 0; /* 마진 제거 */
-  }
-  
-  .floating-btn {
-    width: 45px; /* 플로팅 버튼 더 축소 */
-    height: 45px;
-    right: 10px;
-    bottom: 10px;
-    font-size: 18px;
-  }
-  
-  .signup-card,
-  .login-card {
-    padding: 1.2rem; /* 카드 패딩 추가 조정 */
-    border-radius: 16px;
   }
   
   /* 작은 모바일 메뉴 조정 */

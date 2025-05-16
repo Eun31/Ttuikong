@@ -3,32 +3,37 @@
     <!-- 헤더 -->
     <header class="header">
       <button class="back-btn" @click="confirmGoBack">
-        <i class="ri-arrow-left-line"></i>
+        <i class="icon-arrow-left"></i>
       </button>
       <h1 class="header-title">게시글 작성</h1>
-      <button class="submit-btn" :disabled="!isFormValid" @click="submitPost">완료</button>
     </header>
 
     <!-- 작성 폼 카드 -->
-    <div class="write-card">
+    <div class="write-form">
       <!-- 제목 입력 -->
       <div class="form-group">
-        <input 
-          type="text" 
-          v-model="title" 
-          class="form-input" 
-          placeholder="제목을 입력하세요" 
-          maxlength="100"
-        >
+        <label for="title" class="form-label">제목</label>
+        <div class="input-wrapper">
+          <input 
+            type="text" 
+            id="title"
+            v-model="title" 
+            placeholder="제목을 입력하세요" 
+            maxlength="100"
+          >
+        </div>
       </div>
       
       <!-- 내용 입력 -->
       <div class="form-group">
-        <textarea 
-          v-model="content" 
-          class="form-textarea" 
-          placeholder="내용을 입력하세요..."
-        ></textarea>
+        <label for="content" class="form-label">내용</label>
+        <div class="textarea-wrapper">
+          <textarea 
+            id="content"
+            v-model="content" 
+            placeholder="내용을 입력하세요..."
+          ></textarea>
+        </div>
         
         <!-- 이미지 업로드 -->
         <div class="image-upload">
@@ -37,7 +42,7 @@
             class="image-placeholder" 
             @click="triggerImageUpload"
           >
-            <i class="ri-camera-line image-placeholder-icon"></i>
+            <i class="ri-camera-line"></i>
             <span>사진 추가</span>
           </div>
           <div 
@@ -79,18 +84,19 @@
       <div class="form-group">
         <div class="form-label">위치</div>
         <div class="location-input" @click="toggleLocationSearch">
-          <i class="ri-map-pin-line location-icon"></i>
+          <i class="ri-map-pin-line"></i>
           <span>{{ locationDisplay }}</span>
         </div>
         
         <div class="location-results" :class="{ show: showLocationSearch }">
-          <input 
-            type="text" 
-            class="form-input" 
-            v-model="locationKeyword" 
-            placeholder="위치 검색..." 
-            @input="searchLocation"
-          >
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              v-model="locationKeyword" 
+              placeholder="위치 검색..." 
+              @input="searchLocation"
+            >
+          </div>
           <div 
             v-for="(location, index) in locationResults" 
             :key="index"
@@ -106,15 +112,17 @@
       <div class="form-group">
         <div class="form-label">태그</div>
         <div class="tag-input-container">
-          <input 
-            type="text" 
-            v-model="tagInput" 
-            class="tag-input" 
-            placeholder="태그를 입력하세요 (최대 5개)"
-            @keypress.enter.prevent="addTag"
-          >
+          <div class="input-wrapper tag-input-wrapper">
+            <input 
+              type="text" 
+              v-model="tagInput" 
+              class="tag-input" 
+              placeholder="태그를 입력하세요 (최대 5개)"
+              @keypress.enter.prevent="addTag"
+            >
+          </div>
           <button 
-            class="tag-add-btn" 
+            class="btn btn-primary tag-add-btn" 
             :disabled="!canAddTag" 
             @click="addTag"
           >
@@ -134,6 +142,13 @@
             </span>
           </div>
         </div>
+      </div>
+      
+      <!-- 완료 버튼 (하단에 위치) -->
+      <div class="form-actions">
+        <button class="btn btn-primary submit-btn" :disabled="!isFormValid" @click="submitPost">
+          게시글 등록
+        </button>
       </div>
     </div>
   </div>
@@ -178,6 +193,13 @@ export default {
     },
     locationDisplay() {
       return this.location || '위치 추가';
+    },
+    hasUnsavedChanges() {
+      return this.title.trim() || 
+             this.content.trim() || 
+             this.tags.length > 0 || 
+             this.imageFile !== null ||
+             this.location !== '';
     }
   },
   methods: {
@@ -329,55 +351,29 @@ export default {
         formData.append('image', this.imageFile);
       }
       
-      // 실제 서버 통신 코드 (주석 처리됨)
-      /*
-      axios.post('/api/posts', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      }).then(response => {
-        // 성공 시 게시글 목록 페이지로 이동
-        this.$router.push('/board');
-      }).catch(error => {
-        console.error('게시글 등록 오류:', error);
-        alert('게시글 등록 중 오류가 발생했습니다.');
-      });
-      */
-      
       // 개발 중이므로 콘솔에 출력하고 게시글 목록으로 이동
       console.log('전송할 데이터:', postData);
       alert('게시글이 작성되었습니다.');
       
       this.$router.push('/board');
     }
-  },
-  computed: {
-    hasUnsavedChanges() {
-      return this.title.trim() || 
-             this.content.trim() || 
-             this.tags.length > 0 || 
-             this.imageFile !== null ||
-             this.location !== '';
-    }
   }
 };
 </script>
 
 <style scoped>
-/* 기본 리셋 및 공통 스타일은 App.vue에서 이미 적용되어 있으므로 여기서는 생략 */
-
 /* 컨테이너 */
 .container {
   max-width: 100%;
   margin: 0 auto;
-  background-color: #f8f8f8;  /* 연한 회색 배경 */
+  background-color: var(--background-color);
   min-height: 100vh;
-  padding: 12px;
+  padding: 16px;
 }
 
-@media (min-width: 600px) {
+@media (min-width: 768px) {
   .container {
-    max-width: 600px;
+    max-width: 700px;
     margin: 0 auto;
   }
 }
@@ -387,126 +383,156 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .back-btn {
-  font-size: 20px;
-  color: #2e7d32;
-  padding: 4px 8px;
+  font-size: 24px;
+  color: var(--primary-color);
+  padding: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 
 .header-title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
-  color: #2e7d32;
-}
-
-.submit-btn {
-  background-color: #4caf50;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.submit-btn:disabled {
-  background-color: #bdbdbd;
-  cursor: not-allowed;
+  color: var(--dark-text);
+  margin: 0 auto; /* 중앙 정렬 */
 }
 
 /* 작성 폼 카드 */
-.write-card {
-  background-color: white; /* 카드는 순수한 흰색으로 */
-  border-radius: 20px;  /* 둥근 모서리 */
+.write-form {
+  background-color: var(--card-color);
+  border-radius: var(--border-radius);
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* 미세한 그림자 추가 */
-  margin-bottom: 16px;
-  border: 1px solid #e0e0e0; /* 연한 테두리 추가 */
+  box-shadow: var(--shadow-md);
+  margin-bottom: 20px;
+  padding: 16px;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .form-group {
-  padding: 16px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.form-group:last-child {
-  border-bottom: none;
+  margin-bottom: 24px;
 }
 
 .form-label {
-  font-weight: 600;
+  display: block;
+  font-weight: 500;
   margin-bottom: 8px;
-  color: #2e7d32;
+  color: var(--dark-text);
 }
 
 /* 폼 입력 필드 */
-.form-input {
-  width: 100%;
-  border: none;
-  border-bottom: 1px solid #e0e0e0;
-  padding: 8px 0;
-  font-size: 16px;
-  background-color: transparent;
-  transition: border-color 0.3s;
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border-color);
+  border-radius: var(--input-radius);
+  background-color: white;
+  transition: var(--transition);
 }
 
-.form-input:focus {
+.input-wrapper:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.1);
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+  color: var(--dark-text);
+  font-family: inherit;
+}
+
+.input-wrapper input:focus {
   outline: none;
-  border-bottom-color: #4caf50;
 }
 
-.form-textarea {
+.textarea-wrapper {
+  position: relative;
+  border: 1px solid var(--border-color);
+  border-radius: var(--input-radius);
+  background-color: white;
+  transition: var(--transition);
+  margin-bottom: 16px;
+}
+
+.textarea-wrapper:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.1);
+}
+
+.textarea-wrapper textarea {
   width: 100%;
+  padding: 12px 16px;
   border: none;
-  border-bottom: 1px solid #e0e0e0;
-  padding: 8px 0;
-  font-size: 15px;
+  font-size: 1rem;
+  color: var(--dark-text);
+  font-family: inherit;
   min-height: 150px;
-  resize: none;
-  background-color: transparent;
-  transition: border-color 0.3s;
+  resize: vertical;
+  background: transparent;
 }
 
-.form-textarea:focus {
+.textarea-wrapper textarea:focus {
   outline: none;
-  border-bottom-color: #4caf50;
 }
 
 /* 이미지 업로드 영역 */
 .image-upload {
-  margin-top: 12px;
+  margin-top: 16px;
 }
 
 .image-placeholder {
   width: 100%;
   height: 120px;
-  border: 2px dashed #c5e1c5;
-  background-color: #f9fff9;
-  border-radius: 12px;
+  border: 2px dashed var(--primary-light);
+  background-color: rgba(255, 87, 34, 0.05);
+  border-radius: var(--border-radius);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  color: #4caf50;
+  color: var(--primary-color);
   cursor: pointer;
+  transition: var(--transition);
 }
 
-.image-placeholder-icon {
-  font-size: 24px;
+.image-placeholder:hover {
+  background-color: rgba(255, 87, 34, 0.1);
+  border-color: var(--primary-color);
+}
+
+.image-placeholder i {
+  font-size: 28px;
   margin-bottom: 8px;
-  color: #4caf50;
 }
 
 .image-preview {
   position: relative;
-  margin-top: 12px;
+  margin-top: 16px;
 }
 
 .image-preview img {
   width: 100%;
-  border-radius: 12px;
+  border-radius: var(--border-radius);
   display: block;
 }
 
@@ -514,43 +540,51 @@ export default {
   position: absolute;
   top: 10px;
   right: 10px;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.6);
   color: white;
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.image-remove:hover {
+  background-color: var(--danger-color);
+  transform: scale(1.1);
 }
 
 /* 카테고리 선택 */
 .category-options {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
   margin-top: 12px;
 }
 
 .category-option {
-  padding: 8px 12px;
+  padding: 8px 16px;
   background-color: #f5f5f5;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-color);
   border-radius: 20px;
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition);
 }
 
 .category-option:hover {
-  background-color: #e8f5e9;
-  border-color: #c5e1c5;
+  background-color: rgba(255, 87, 34, 0.1);
+  border-color: var(--primary-light);
 }
 
 .category-option.active {
-  background-color: #4caf50;
+  background-color: var(--primary-color);
   color: white;
-  border-color: #4caf50;
+  border-color: var(--primary-color);
   font-weight: 500;
 }
 
@@ -559,66 +593,92 @@ export default {
   display: flex;
   align-items: center;
   margin-top: 12px;
-  padding: 8px 12px;
+  padding: 10px 16px;
   background-color: #f5f5f5;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-color);
   border-radius: 20px;
-  color: #757575;
+  color: var(--medium-text);
   cursor: pointer;
+  transition: var(--transition);
 }
 
-.location-icon {
-  margin-right: 8px;
-  color: #2e7d32;
+.location-input:hover {
+  background-color: rgba(255, 87, 34, 0.05);
+  border-color: var(--primary-light);
+}
+
+.location-input i {
+  margin-right: 10px;
+  color: var(--primary-color);
+  font-size: 18px;
+}
+
+/* 위치 검색 결과 */
+.location-results {
+  margin-top: 12px;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  display: none;
+  background-color: white;
+}
+
+.location-results.show {
+  display: block;
+}
+
+.location-results .input-wrapper {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+
+.location-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.location-item:last-child {
+  border-bottom: none;
+}
+
+.location-item:hover {
+  background-color: rgba(255, 87, 34, 0.05);
 }
 
 /* 태그 입력 */
 .tag-input-container {
   display: flex;
   margin-top: 12px;
+  gap: 10px;
 }
 
-.tag-input {
+.tag-input-wrapper {
   flex: 1;
-  padding: 8px 12px;
-  border: 1px solid #c5e1c5;
-  border-radius: 20px 0 0 20px;
-  font-size: 14px;
-  background-color: #f9fff9;
-}
-
-.tag-input:focus {
-  outline: none;
-  border-color: #4caf50;
-  background-color: white;
+  border-radius: var(--input-radius);
 }
 
 .tag-add-btn {
-  background-color: #4caf50;
-  color: white;
   padding: 8px 16px;
-  border-radius: 0 20px 20px 0;
-  font-size: 14px;
-}
-
-.tag-add-btn:disabled {
-  background-color: #bdbdbd;
-  cursor: not-allowed;
+  border-radius: var(--input-radius);
 }
 
 .tags-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
+  gap: 10px;
+  margin-top: 16px;
 }
 
 .tag {
-  background-color: #e8f5e9;
-  color: #2e7d32;
-  padding: 4px 24px 4px 10px;
-  border-radius: 20px;
-  font-size: 12px;
+  background-color: rgba(255, 87, 34, 0.1);
+  color: var(--primary-color);
+  padding: 6px 28px 6px 12px;
+  border-radius: 16px;
+  font-size: 14px;
   position: relative;
 }
 
@@ -627,35 +687,55 @@ export default {
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 10px;
   cursor: pointer;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 87, 34, 0.2);
+  border-radius: 50%;
+  transition: var(--transition);
 }
 
-/* 위치 검색 결과 */
-.location-results {
-  margin-top: 8px;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  display: none;
+.tag-remove:hover {
+  background-color: var(--primary-color);
+  color: white;
 }
 
-.location-results.show {
-  display: block;
+/* 완료 버튼 스타일 */
+.form-actions {
+  margin-top: 30px;
 }
 
-.location-item {
-  padding: 12px;
-  border-bottom: 1px solid #f0f0f0;
-  background-color: white;
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: var(--input-radius);
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
   cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 4px 10px rgba(255, 87, 34, 0.2);
 }
 
-.location-item:last-child {
-  border-bottom: none;
+.submit-btn:hover:not(:disabled) {
+  background-color: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(255, 87, 34, 0.3);
 }
 
-.location-item:hover {
-  background-color: #f5f5f5;
+.submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(255, 87, 34, 0.2);
+}
+
+.submit-btn:disabled {
+  background-color: var(--light-text);
+  cursor: not-allowed;
+  box-shadow: none;
 }
 </style>

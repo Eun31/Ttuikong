@@ -1,48 +1,49 @@
 <template>
-  <div class="login-container">
-    <div class="login-card">
-      <div class="login-header">
-        <img :src="logo" class="logo" alt="logo" />
-      </div>
-      
-      <div class="login-form">
-        <div class="form-group">
-          <label for="email">이메일</label>
-          <div class="input-wrapper">
-            <i class="ri-mail-line input-icon"></i>
-            <input 
-              type="email" 
-              id="email" 
-              v-model="email" 
-              placeholder="이메일을 입력해주세요" 
-            />
-          </div>
+  <div class="signup-container">
+    <div class="signup-content">
+      <div class="signup-form-wrapper">
+        <div class="signup-header">
+          <img :src="logo" class="logo animated" alt="logo" />
         </div>
         
-        <div class="form-group">
-          <label for="password">비밀번호</label>
-          <div class="input-wrapper">
-            <i class="ri-lock-line input-icon"></i>
-            <input 
-              type="password" 
-              id="password" 
-              v-model="password" 
-              placeholder="비밀번호를 입력해주세요" 
-            />
+        <div class="signup-form">
+          <div class="form-group">
+            <label for="email">이메일</label>
+            <div class="input-wrapper">
+              <i class="icon-email"></i>
+              <input 
+                type="email" 
+                id="email" 
+                v-model="email" 
+                placeholder="이메일을 입력해주세요" 
+              />
+            </div>
           </div>
-        </div>
-        
-        <button class="btn-login" @click="login">
-          로그인 <i class="ri-arrow-right-line"></i>
-        </button>
-        
-        <div class="auth-links">
-          <router-link to="/forgot-password" class="forgot-link">
-            <i class="ri-question-line"></i> 비밀번호를 잊으셨나요?
-          </router-link>
-          <router-link to="/signup" class="signup-link">
-            <i class="ri-user-add-line"></i> 회원가입
-          </router-link>
+          
+          <div class="form-group">
+            <label for="password">비밀번호</label>
+            <div class="input-wrapper">
+              <i class="icon-lock"></i>
+              <input 
+                type="password" 
+                id="password" 
+                v-model="password" 
+                placeholder="비밀번호를 입력해주세요" 
+              />
+            </div>
+          </div>
+          
+          <button class="btn btn-primary" @click="login">
+            로그인 <i class="icon-arrow-right"></i>
+          </button>
+          
+          <div class="login-links">
+            <div class="login-divider"></div>
+            
+            <span class="signup-text">아직 회원이 아니신가요?
+            <router-link to="/signup" class="signup-link">회원가입</router-link>
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -54,7 +55,6 @@ export default {
   name: 'Login',
   data() {
     return {
-
       logo: new URL('../assets/logo_orange.png', import.meta.url).href,
       email: '',
       password: ''
@@ -80,25 +80,42 @@ export default {
 </script>
 
 <style scoped>
-.login-container {
+/* 중앙 정렬을 위한 컨테이너 스타일 */
+.signup-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  padding: 2rem 1rem;
-  background-color: #FFCDB2;
-  position: relative;
+  background-color: var(--background-color);
+  padding: 1rem;
 }
 
-.login-card {
-  background: white;
-  border-radius: 28px;
-  box-shadow: 0 10px 30px rgba(255, 126, 71, 0.15);
+.signup-content {
   width: 100%;
-  max-width: 400px;
-  padding: 2.5rem 2rem;
-  position: relative;
-  z-index: 10;
+  max-width: 450px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.signup-form-wrapper {
+  width: 100%;
+}
+
+/* 헤더 스타일 */
+.signup-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.logo {
+  height: 70px;
+  margin-bottom: 1rem;
+}
+
+/* 로고 애니메이션 */
+.logo.animated {
   animation: float 6s ease-in-out infinite;
 }
 
@@ -108,200 +125,153 @@ export default {
   100% { transform: translateY(0px); }
 }
 
-.login-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 2.5rem;
-}
-
-.logo {
-  height: 90px;
-  margin-bottom: 1rem;
-  filter: drop-shadow(0 4px 6px rgba(255, 126, 71, 0.2));
-  transition: transform 0.3s ease;
-}
-
-.logo:hover {
-  transform: scale(1.05) rotate(-3deg);
-}
-
-.welcome-text {
-  font-size: 1.6rem;
-  color: #FF7E47;
-  font-weight: 700;
-  margin: 0.8rem 0 0;
-  position: relative;
-  display: inline-block;
-}
-
-.welcome-text::after {
-  content: '';
-  position: absolute;
-  bottom: -8px;
-  left: 0;
+/* 폼 스타일 */
+.signup-form {
+  background-color: var(--card-color);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  box-shadow: var(--shadow-md);
   width: 100%;
-  height: 3px;
-  background-color: #FFCDB2;
-  border-radius: 2px;
+  animation: fadeIn 0.4s ease-out;
 }
 
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.4rem;
-}
-
+/* 폼 요소 스타일 */
 .form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .form-group label {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #666;
-  padding-left: 0.5rem;
-  display: flex;
-  align-items: center;
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: var(--dark-text);
 }
 
 .input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
+  border: 1px solid var(--border-color);
+  border-radius: var(--input-radius);
+  background-color: white;
+  transition: var(--transition);
 }
 
-.input-icon {
-  position: absolute;
-  left: 15px;
-  font-size: 1.2rem;
-  color: #FF9D6C;
-  z-index: 1;
-  transition: color 0.3s ease;
+.input-wrapper:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.1);
 }
 
-.form-group input {
-  padding: 0.9rem 1rem 0.9rem 3rem;
-  border: 2px solid #FFE6D9;
-  border-radius: 20px;
-  font-size: 1rem;
+.input-wrapper i {
+  color: var(--light-text);
+  margin-left: 12px;
+  font-size: 1.25rem;
+}
+
+input {
   width: 100%;
-  transition: all 0.3s ease;
-  box-sizing: border-box;
-  background-color: #FFFAF8;
-}
-
-.form-group input:focus {
-  outline: none;
-  border-color: #FFAB84;
-  box-shadow: 0 0 0 4px rgba(255, 171, 132, 0.15);
-  background-color: #fff;
-}
-
-.form-group input:focus + .input-icon,
-.input-wrapper:hover .input-icon {
-  color: #FF7E47;
-}
-
-.btn-login {
-  padding: 1rem 1.5rem;
-  background: linear-gradient(45deg, #FF7E47, #FF9D6C);
-  color: white;
+  padding: 12px 16px;
   border: none;
-  border-radius: 24px;
-  font-size: 1.1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 0.5rem;
+  background: transparent;
+  font-size: 1rem;
+  color: var(--dark-text);
+  font-family: inherit;
+}
+
+input:focus {
+  outline: none;
+}
+
+input::placeholder {
+  color: var(--lightest-text);
+}
+
+/* 로그인 버튼 스타일 - 색상 조정 */
+.btn-primary {
+  background-color: #FF8A65; /* 더 부드러운 색상으로 변경 */
+  color: white;
+  font-weight: 500; /* 두께 줄임 */
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 8px 15px rgba(255, 126, 71, 0.25);
+  width: 100%;
+  padding: 0.8rem 1.5rem;
+  border-radius: var(--input-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
 }
 
-.btn-login:hover {
-  background: linear-gradient(45deg, #F26B31, #FF8E56);
-  transform: translateY(-3px);
-  box-shadow: 0 12px 20px rgba(255, 126, 71, 0.3);
-}
-
-.btn-login:active {
-  transform: translateY(1px);
-  box-shadow: 0 5px 10px rgba(255, 126, 71, 0.2);
-}
-
-.auth-links {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 1.8rem;
-  font-size: 0.95rem;
-}
-
-.auth-links a {
-  color: #FF7E47;
-  text-decoration: none;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.auth-links a:hover {
-  color: #F26B31;
+.btn-primary:hover {
+  background-color: #FF7043; /* 호버 시 약간 더 진한 색상 */
   transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
-.auth-links a i {
-  font-size: 1.1rem;
+/* 세로 정렬된 링크 스타일 */
+.login-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 0.5rem;
+}
+
+.link-text {
+  color: var(--medium-text);
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: var(--transition);
+}
+
+.link-text:hover {
+  color: var(--primary-color);
+}
+
+.login-divider {
+  width: 40px;
+  height: 1px;
+  background-color: var(--border-color);
+}
+
+.signup-text {
+  font-size: 0.95rem;
+  color: var(--medium-text);
+}
+
+.signup-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: var(--transition);
+  font-size: 1rem;
+}
+
+.signup-link:hover {
+  text-decoration: underline;
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* 반응형 스타일 */
-@media screen and (max-width: 440px) {
-  .login-card {
-    padding: 2rem 1.5rem;
-    border-radius: 24px;
-  }
-  
-  .logo {
-    height: 80px;
-  }
-  
-  .welcome-text {
-    font-size: 1.4rem;
-  }
-  
-  .form-group input,
-  .btn-login {
-    width: 100%;
-  }
-  
-  .auth-links {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: center;
+@media (max-width: 480px) {
+  .signup-form {
+    padding: 1.5rem;
   }
 }
-
-@media screen and (min-width: 768px) {
-  .form-group input {
-    font-size: 1.1rem;
-  }
-
-  .btn-login {
-    font-size: 1.2rem;
-  }
-
-  .form-group label {
-    font-size: 1rem;
-  }
-
-  .auth-links {
-    font-size: 1rem;
-  }
-}
-
 </style>

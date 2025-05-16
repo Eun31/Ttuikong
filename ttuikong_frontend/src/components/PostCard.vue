@@ -8,7 +8,7 @@
         <div class="user-name">
           {{ post.user.name }}
           <span class="badge" v-if="post.user.verified">
-            <span class="icon-verified"></span>
+            <i class="ri-check-line"></i>
           </span>
         </div>
         <div class="user-level">{{ post.user.level }}</div>
@@ -26,13 +26,12 @@
       </div>
       
       <!-- 미디어 컨텐츠 (있는 경우만) -->
-      <div class="media-content" v-if="post.mediaContent" 
-           style="margin-bottom: 12px; padding: 10px; background-color: #f5f5f5; border-radius: 12px;">
-        <div style="display: flex; align-items: center;">
-          <div style="width: 40px; height: 40px; background-color: #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px;">▶</div>
-          <div style="margin-left: 12px;">
-            <div style="font-weight: 600; font-size: 14px;">{{ post.mediaContent.title }}</div>
-            <div style="font-size: 12px; color: #666;">{{ post.mediaContent.artist }} • {{ post.mediaContent.album }}</div>
+      <div class="media-content" v-if="post.mediaContent">
+        <div class="media-container">
+          <div class="media-icon">▶</div>
+          <div class="media-info">
+            <div class="media-title">{{ post.mediaContent.title }}</div>
+            <div class="media-subtitle">{{ post.mediaContent.artist }} • {{ post.mediaContent.album }}</div>
           </div>
         </div>
       </div>
@@ -44,21 +43,22 @@
       
       <div class="post-footer">
         <div class="post-location" v-if="post.location">
-          <span class="post-location-icon icon-location"></span>
+          <i class="ri-map-pin-line location-icon"></i>
           <span>{{ post.location }}</span>
         </div>
         <div class="post-stats">
-          <div class="stat">
-            <span class="stat-icon" :class="post.liked ? 'icon-heart' : 'icon-heart-o'" @click.stop="toggleLike"></span>
+            <!-- 아이콘 대체 (텍스트 이모지 사용) -->
+            <span class="heart-icon" :class="{ 'liked': post.liked }">
+              {{ post.liked ? '❤️' : '♡' }}
+            </span>
             <span>{{ post.likes }}</span>
           </div>
           <div class="stat">
-            <span class="stat-icon icon-comment"></span>
+            <span class="comment-icon">💬</span>
             <span>{{ post.comments }}</span>
           </div>
         </div>
       </div>
-    </div>
   </div>
 </template>
 
@@ -84,12 +84,30 @@ export default {
 <style scoped>
 /* 게시글 카드 */
 .post-card {
-  background-color: white;
-  border-radius: 20px;  /* 둥근 모서리 */
+  background-color: var(--card-color, white);
+  border-radius: var(--border-radius, 16px);
   margin-bottom: 16px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-md, 0 2px 8px rgba(0, 0, 0, 0.08));
   cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.post-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg, 0 4px 12px rgba(0, 0, 0, 0.1));
 }
 
 /* 사용자 정보 */
@@ -97,7 +115,7 @@ export default {
   display: flex;
   align-items: center;
   padding: 12px 16px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border-color, #f0f0f0);
 }
 
 .user-avatar {
@@ -116,16 +134,18 @@ export default {
   display: flex;
   align-items: center;
   font-weight: 600;
+  color: var(--dark-text, #333);
 }
 
 .badge {
-  color: #4caf50;
+  color: var(--primary-color, #FF5722);
   margin-left: 5px;
+  font-size: 14px;
 }
 
 .user-level {
   font-size: 12px;
-  color: #757575;
+  color: var(--medium-text, #757575);
 }
 
 /* 게시글 내용 */
@@ -138,17 +158,18 @@ export default {
   font-weight: 600;
   margin-bottom: 8px;
   line-height: 1.4;
+  color: var(--dark-text, #333);
 }
 
 .post-desc {
   font-size: 14px;
-  color: #555;
+  color: var(--medium-text, #555);
   margin-bottom: 12px;
 }
 
 .post-image {
   margin-bottom: 12px;
-  border-radius: 12px;
+  border-radius: var(--border-radius, 12px);
   overflow: hidden;
 }
 
@@ -156,6 +177,46 @@ export default {
   width: 100%;
   object-fit: cover;
   display: block;
+}
+
+/* 미디어 컨텐츠 스타일 */
+.media-content {
+  margin-bottom: 12px;
+  padding: 10px;
+  background-color: rgba(255, 87, 34, 0.05);
+  border-radius: var(--border-radius, 12px);
+}
+
+.media-container {
+  display: flex;
+  align-items: center;
+}
+
+.media-icon {
+  width: 40px;
+  height: 40px;
+  background-color: var(--primary-color, #FF5722);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+}
+
+.media-info {
+  margin-left: 12px;
+}
+
+.media-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--dark-text, #333);
+}
+
+.media-subtitle {
+  font-size: 12px;
+  color: var(--medium-text, #666);
 }
 
 .post-tags {
@@ -166,8 +227,8 @@ export default {
 }
 
 .tag {
-  background-color: #e8f5e9;
-  color: #2e7d32;
+  background-color: rgba(255, 87, 34, 0.1);
+  color: var(--primary-color, #FF5722);
   padding: 4px 10px;
   border-radius: 12px;
   font-size: 12px;
@@ -178,9 +239,9 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding-top: 10px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--border-color, #f0f0f0);
   font-size: 12px;
-  color: #757575;
+  color: var(--medium-text, #757575);
 }
 
 .post-location {
@@ -188,8 +249,9 @@ export default {
   align-items: center;
 }
 
-.post-location-icon {
+.location-icon {
   margin-right: 4px;
+  color: var(--primary-color, #FF5722);
 }
 
 .post-stats {
@@ -200,21 +262,40 @@ export default {
 .stat {
   display: flex;
   align-items: center;
+  gap: 4px;
 }
 
-.stat-icon {
-  margin-right: 4px;
+/* 좋아요 아이콘 스타일 */
+.like-stat {
   cursor: pointer;
 }
 
-@media (min-width: 600px) {
-  .post-card {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
+.heart-icon {
+  font-size: 14px;
+  transition: transform 0.2s ease;
+}
 
-  .post-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.heart-icon:hover {
+  transform: scale(1.2);
+}
+
+.heart-icon.liked {
+  color: #e91e63;
+}
+
+/* 댓글 아이콘 스타일 */
+.comment-icon {
+  font-size: 14px;
+}
+
+@media (max-width: 600px) {
+  .post-card {
+    border-radius: var(--border-radius, 12px);
+    margin-bottom: 12px;
+  }
+  
+  .post-content {
+    padding: 12px;
   }
 }
 </style>

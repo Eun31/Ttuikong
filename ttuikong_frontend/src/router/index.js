@@ -10,13 +10,8 @@ import SignUp from '../views/SignUp.vue'
 import SignUp2 from '../views/SignUp2.vue'
 import SignUp3 from '../views/SignUp3.vue'
 import Run from '../views/RunHome.vue'
-import PostWrite from '../views/PostWrite.vue' // 추가된 게시글 작성 컴포넌트
-
-// 임시 컴포넌트 정의 (아직 파일이 없는 경우)
-const PostDetail = {
-  template: '<div class="temp-page"><h2>게시글 상세 페이지</h2><p>이 페이지는 준비 중입니다.</p></div>',
-  name: 'PostDetail'
-}
+import PostWrite from '../views/PostWrite.vue' // 게시글 작성 컴포넌트
+import PostDetail from '../views/PostDetail.vue' // 게시글 상세 컴포넌트 추가
 
 const NewChat = {
   template: '<div class="temp-page"><h2>새 채팅 페이지</h2><p>이 페이지는 준비 중입니다.</p></div>',
@@ -67,7 +62,7 @@ const routes = [
   {
     path: '/board/write',  // 구체적인 경로를 먼저 배치
     name: 'post-write',
-    component: PostWrite  // 실제 컴포넌트 사용
+    component: PostWrite
   },
   {
     path: '/board/:id',    // 동적 경로를 나중에 배치
@@ -142,4 +137,5 @@ router.beforeEach((to, from, next) => {
     next()
   }
 })
+
 export default router

@@ -64,6 +64,7 @@
 
 <script>
 import PostCard from '../components/PostCard.vue';
+import profileImg from '../assets/profile.png';
 
 export default {
   name: 'Board',
@@ -82,7 +83,7 @@ export default {
           category: 'daily',
           user: {
             name: 'TTUIKONG',
-            avatar: 'https://via.placeholder.com/72/e8f5e9/2e7d32?text=T',
+            avatar: profileImg,
             level: '커뮤니티',
             verified: true
           },
@@ -101,7 +102,7 @@ export default {
           category: 'travel',
           user: {
             name: 'TTUIKONG',
-            avatar: 'https://via.placeholder.com/72/e8f5e9/2e7d32?text=T',
+            avatar: profileImg,
             level: '커뮤니티',
             verified: true
           },
@@ -118,7 +119,7 @@ export default {
           category: 'food',
           user: {
             name: '맛집탐험가',
-            avatar: 'https://via.placeholder.com/72/f5f5f5/555555?text=P',
+            avatar: profileImg,
             level: '커뮤니티',
             verified: false
           },
@@ -137,7 +138,7 @@ export default {
           category: 'tech',
           user: {
             name: '달리는 토끼',
-            avatar: 'https://via.placeholder.com/72/f5f5f5/555555?text=D',
+            avatar: profileImg,
             level: '커뮤니티',
             verified: true
           },
@@ -155,7 +156,7 @@ export default {
           category: 'music',
           user: {
             name: '밤의 소리',
-            avatar: 'https://via.placeholder.com/72/f5f5f5/555555?text=R',
+            avatar: profileImg,
             level: '커뮤니티',
             verified: false
           },

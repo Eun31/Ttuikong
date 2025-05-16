@@ -1,24 +1,74 @@
+<!-- SignUp3.vue -->
 <template>
-  <div class="auth-container">
-    <div class="auth-card">
-      <div class="auth-header">
-        <img :src="logo" class="logo" alt="logo">
-        <h2>회원가입</h2>
-      </div>
-      <div class="auth-form">
-        <div class="form-question">
-          <h3>네가 되고 싶은 모습은 어떤 거야?</h3>
-          <select v-model="desiredStyle" class="style-select">
-            <option>🐨 느긋한 코알라</option>
-            <option>🐢 산책하는 거북이</option>
-            <option>🐶 신나는 강아지</option>
-            <option>🐎 힘찬 질주 말</option>
-            <option>🐆 전광석화 치타</option>
-          </select>
+  <div class="signup-container">
+    <div class="signup-content">
+      <div class="signup-header">
+        <img :src="logo" alt="RunBuddy Logo" class="logo">
+        <div class="progress-bar">
+          <div class="progress-step completed"></div>
+          <div class="progress-line completed"></div>
+          <div class="progress-step completed"></div>
+          <div class="progress-line active"></div>
+          <div class="progress-step active"></div>
         </div>
-        <div class="form-buttons">
-          <button class="btn btn-secondary" @click="goToPrevStep">이전</button>
-          <button class="btn btn-primary" @click="submitForm">제출</button>
+        <p class="step-title">목표 설정 (3/3)</p>
+      </div>
+
+      <div class="signup-form goal-setting">
+        <h2 class="form-question">당신은 어떤 러너가 되고 싶나요?</h2>
+        <p class="form-subtext">앞으로의 러닝 목표를 선택해주세요</p>
+        
+        <div class="style-selection">
+          <div class="style-option" 
+               v-for="(style, index) in goalStyles" 
+               :key="index"
+               :class="{ 'selected': desiredStyle === style.value }"
+               @click="selectStyle(style.value)">
+            <div class="style-icon">
+              <span class="emoji">{{ style.emoji }}</span>
+            </div>
+            <div class="style-info">
+              <h3>{{ style.title }}</h3>
+              <p>{{ style.description }}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="extra-settings">
+          <h3>추가 선택 사항</h3>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" v-model="formData.notifications">
+              <span class="checkmark"></span>
+              <span>러닝 알림을 받을래요</span>
+            </label>
+            
+            <label class="checkbox-label">
+              <input type="checkbox" v-model="formData.groupActivities">
+              <span class="checkmark"></span>
+              <span>그룹 활동에 참여하고 싶어요</span>
+            </label>
+            
+            <label class="checkbox-label">
+              <input type="checkbox" v-model="formData.acceptTerms" required>
+              <span class="checkmark"></span>
+              <span>
+                <a href="#" @click.prevent="showTerms">이용약관</a>과 
+                <a href="#" @click.prevent="showPrivacy">개인정보 처리방침</a>에 동의합니다
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-outline" @click="goToPrevStep">
+            <i class="icon-arrow-left"></i>
+            이전 단계
+          </button>
+          <button class="btn btn-success" @click="submitForm" :disabled="!formData.acceptTerms">
+            가입 완료
+            <i class="icon-check"></i>
+          </button>
         </div>
       </div>
     </div>
@@ -26,7 +76,7 @@
 </template>
 
 <script>
-import logoSrc from '@/assets/logo_1.png'
+import logoSrc from '../assets/logo_orange.png'
 
 export default {
   name: 'SignUp3',
@@ -34,48 +84,115 @@ export default {
     return {
       logo: logoSrc,
       desiredStyle: '🐨 느긋한 코알라',
-      formData: {}
+      formData: {
+        notifications: true,
+        groupActivities: false,
+        acceptTerms: false
+      },
+      goalStyles: [
+        {
+          emoji: '🐨',
+          value: '🐨 느긋한 코알라',
+          title: '편안한 생활 러너',
+          description: '즐겁게 달리며 일상에 활력을 더하고 싶어요.'
+        },
+        {
+          emoji: '🐢',
+          value: '🐢 산책하는 거북이',
+          title: '건강한 습관 러너',
+          description: '꾸준한 러닝으로 건강한 습관을 만들고 싶어요.'
+        },
+        {
+          emoji: '🐶',
+          value: '🐶 신나는 강아지',
+          title: '활력 넘치는 러너',
+          description: '러닝으로 스트레스를 해소하고 에너지를 충전하고 싶어요.'
+        },
+        {
+          emoji: '🐎',
+          value: '🐎 힘찬 질주 말',
+          title: '도전하는 러너',
+          description: '5K, 10K, 하프 마라톤 등 나만의 목표를 달성하고 싶어요.'
+        },
+        {
+          emoji: '🐆',
+          value: '🐆 전광석화 치타',
+          title: '퍼포먼스 러너',
+          description: '내 기록을 경신하고 마라톤 완주를 목표로 해요.'
+        }
+      ]
     }
   },
   methods: {
+    selectStyle(style) {
+      this.desiredStyle = style;
+    },
     goToPrevStep() {
-      this.$router.push('/signup2')
+      this.$router.push('/signup2');
+    },
+    showTerms() {
+      alert('이용약관 내용이 표시됩니다.');
+    },
+    showPrivacy() {
+      alert('개인정보 처리방침 내용이 표시됩니다.');
     },
     submitForm() {
+      if (!this.formData.acceptTerms) {
+        alert('이용약관과 개인정보 처리방침에 동의해주세요.');
+        return;
+      }
+      
       // 기존 데이터 불러오기
-      this.formData = JSON.parse(localStorage.getItem('signupData') || '{}')
+      const savedData = JSON.parse(localStorage.getItem('signupData') || '{}');
       
-      // 현재 선택 추가
-      this.formData.desiredStyle = this.desiredStyle
+      // 현재 선택과 추가 데이터 병합
+      const completeData = { 
+        ...savedData, 
+        desiredStyle: this.desiredStyle,
+        notifications: this.formData.notifications,
+        groupActivities: this.formData.groupActivities
+      };
       
-      // 회원가입 API 호출 (예시)
-      console.log('회원가입 완료:', this.formData)
+      // API 호출 (실제 구현에서는 여기에 회원가입 API 호출 코드가 들어갑니다)
+      console.log('회원가입 완료:', completeData);
       
-      // 실제 API 연동 후 아래 코드로 대체
-      localStorage.setItem('isLoggedIn', 'true')
-      localStorage.setItem('userEmail', this.formData.email)
+      // 성공 메시지 표시 (수정: 로그인 페이지로 리다이렉트)
+      // this.$router.push('/signup-success');
       
-      // 회원가입 데이터 삭제 (이미 서버로 전송됨)
-      localStorage.removeItem('signupData')
+      // 가입 완료 후 로그인 페이지로 리다이렉트
+      this.$router.push('/login');
       
-      // 로그인 페이지로 이동
-      this.$router.push('/login')
+      // 임시 저장 데이터 삭제
+      localStorage.removeItem('signupData');
     }
   },
   created() {
     // 기존 데이터 불러오기
-    const savedData = localStorage.getItem('signupData')
+    const savedData = localStorage.getItem('signupData');
     if (savedData) {
-      this.formData = JSON.parse(savedData)
+      const parsedData = JSON.parse(savedData);
       
       // 이전에 선택한 스타일이 있으면 불러오기
-      if (this.formData.desiredStyle) {
-        this.desiredStyle = this.formData.desiredStyle
+      if (parsedData.desiredStyle) {
+        this.desiredStyle = parsedData.desiredStyle;
+      }
+      
+      // 현재 단계의 폼 데이터와 합치기
+      if (parsedData.notifications !== undefined) {
+        this.formData.notifications = parsedData.notifications;
+      }
+      if (parsedData.groupActivities !== undefined) {
+        this.formData.groupActivities = parsedData.groupActivities;
+      }
+      if (parsedData.acceptTerms !== undefined) {
+        this.formData.acceptTerms = parsedData.acceptTerms;
       }
     } else {
       // 이전 단계 데이터가 없으면 회원가입 첫 페이지로 돌아가기
-      this.$router.push('/signup')
+      this.$router.push('/signup');
     }
   }
 }
 </script>
+
+<style src="../assets/css/auth.css"></style>
