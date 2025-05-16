@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ttuikong.spring.model.dao.RunDao">
+
+  <update id="updateImageUrl">
+    UPDATE route
+    SET image_url = #{imageUrl}
+    WHERE user_id = #{userId}
+      AND start_time = #{startTime}
+  </update>
+
+  <insert id="insertRunningStatus">
+    INSERT INTO route (user_id, start_time, status)
+    VALUES (#{userId}, #{startTime}, #{status})
+  </insert>
+
+  <update id="updateRunRecord">
+    UPDATE route
+    SET end_time = #{endTime},
+        distance = #{distance},
+        duration = #{duration},
+        status = 'ended'
+    WHERE user_id = #{userId} AND start_time = #{startTime}
+  </update>
+
+    <!-- 1. 하루동안 duration을 누적한 값 업데이트 -->
+    <update id="updateDailyDuration">
+        UPDATE daily_record
+        SET duration = (
+            SELECT IFNULL(SUM(duration), 0)
+            FROM route
+            WHERE user_id = #{userId}
+              AND DATE(created_at) = CURRENT_DATE
+        )
+        WHERE user_id = #{userId}
+          AND date = CURRENT_DATE;
+    </update>
+
+    <!-- 2. duration이 긴 top 10 사용자의 nickname, duration -->
+    <select id="selectTop10UsersByDuration" resultType="map">
+        SELECT u.nickname, SUM(dr.duration) AS duration
+        FROM daily_record dr
+        JOIN user u ON dr.user_id = u.id
+        GROUP BY u.id
+        ORDER BY duration DESC
+        LIMIT 10
+    </select>
+
+    <!-- 3. 크루 멤버들의 nickname, duration -->
+    <select id="selectCrewMemberRecords" resultType="map">
+        SELECT u.nickname, SUM(dr.duration) AS duration
+        FROM crew_member cm
+        JOIN user u ON cm.user_id = u.id
+        LEFT JOIN daily_record dr ON dr.user_id = u.id
+        WHERE cm.crew_id = #{crewId}
+        GROUP BY u.id
+    </select>
+
+    <!-- 4. 크루 목표 기준 통계 (평균, 총합) -->
+    <select id="selectCrewGoalStats" resultType="map">
+        SELECT
+            c.goal_type,
+            AVG(dr.duration) AS averageDuration,
+            SUM(dr.duration) AS totalDuration
+        FROM crew c
+        JOIN crew_member cm ON c.id = cm.crew_id
+        JOIN daily_record dr ON cm.user_id = dr.user_id
+        WHERE c.id = #{crewId}
+    </select>
+
+</mapper>
