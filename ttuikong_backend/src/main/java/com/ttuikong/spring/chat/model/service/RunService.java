@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+
 public interface RunService {
     public void updateImageUrl(int userId, String startTime, String imageUrl);
 
@@ -19,4 +20,5 @@ public interface RunService {
     public List<Map<String, Object>> getCrewMemberRecords(int crewId);
 
     public Map<String, Object> getCrewGoalStats(int crewId);
+
 }

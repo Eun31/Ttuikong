@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +15,8 @@
 
     body {
       font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background-color: #e8f5e9;  /* 옅은 초록색 배경 */
+      background-color: #e8f5e9;
+      /* 옅은 초록색 배경 */
       color: #333;
       line-height: 1.6;
     }
@@ -34,7 +36,8 @@
       background: none;
     }
 
-    input, textarea {
+    input,
+    textarea {
       font-family: inherit;
     }
 
@@ -42,7 +45,8 @@
     .container {
       max-width: 100%;
       margin: 0 auto;
-      background-color: #e8f5e9;  /* 옅은 초록색 배경 */
+      background-color: #e8f5e9;
+      /* 옅은 초록색 배경 */
       min-height: 100vh;
       padding: 12px;
     }
@@ -84,7 +88,8 @@
     /* 작성 폼 카드 */
     .write-card {
       background-color: white;
-      border-radius: 20px;  /* 둥근 모서리 */
+      border-radius: 20px;
+      /* 둥근 모서리 */
       overflow: hidden;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       margin-bottom: 16px;
@@ -299,11 +304,25 @@
     }
 
     /* 아이콘 스타일 */
-    .icon-back::before { content: '←'; }
-    .icon-camera::before { content: '📷'; }
-    .icon-location::before { content: '📍'; }
-    .icon-trash::before { content: '🗑️'; }
-    .icon-close::before { content: '×'; }
+    .icon-back::before {
+      content: '←';
+    }
+
+    .icon-camera::before {
+      content: '📷';
+    }
+
+    .icon-location::before {
+      content: '📍';
+    }
+
+    .icon-trash::before {
+      content: '🗑️';
+    }
+
+    .icon-close::before {
+      content: '×';
+    }
 
     /* 반응형 스타일 */
     @media (min-width: 600px) {
@@ -314,6 +333,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <!-- 헤더 -->
@@ -331,11 +351,11 @@
       <div class="form-group">
         <input type="text" id="titleInput" class="form-input" placeholder="제목을 입력하세요" maxlength="100">
       </div>
-      
+
       <!-- 내용 입력 -->
       <div class="form-group">
         <textarea id="contentInput" class="form-textarea" placeholder="내용을 입력하세요..."></textarea>
-        
+
         <!-- 이미지 업로드 -->
         <div class="image-upload">
           <div class="image-placeholder" id="imagePlaceholder" onclick="triggerImageUpload()">
@@ -351,7 +371,7 @@
           <input type="file" id="imageInput" accept="image/*" style="display: none;">
         </div>
       </div>
-      
+
       <!-- 카테고리 선택 -->
       <div class="form-group">
         <div class="form-label">카테고리</div>
@@ -363,7 +383,7 @@
           <div class="category-option" data-value="INFO" onclick="selectCategory(this)">정보</div>
         </div>
       </div>
-      
+
       <!-- 위치 선택 -->
       <div class="form-group">
         <div class="form-label">위치</div>
@@ -371,16 +391,17 @@
           <span class="location-icon icon-location"></span>
           <span id="selectedLocation">위치 추가</span>
         </div>
-        
+
         <div class="location-results" id="locationResults">
-          <input type="text" class="form-input" id="locationSearchInput" placeholder="위치 검색..." oninput="searchLocation()">
+          <input type="text" class="form-input" id="locationSearchInput" placeholder="위치 검색..."
+            oninput="searchLocation()">
           <div class="location-item" onclick="selectLocation('한강공원 여의도')">한강공원 여의도</div>
           <div class="location-item" onclick="selectLocation('강남구 역삼동')">강남구 역삼동</div>
           <div class="location-item" onclick="selectLocation('서울 마포구 홍대입구')">서울 마포구 홍대입구</div>
           <div class="location-item" onclick="selectLocation('서울특별시 성북구 안암동')">서울특별시 성북구 안암동</div>
         </div>
       </div>
-      
+
       <!-- 태그 입력 -->
       <div class="form-group">
         <div class="form-label">태그</div>
@@ -388,7 +409,7 @@
           <input type="text" id="tagInput" class="tag-input" placeholder="태그를 입력하세요 (최대 5개)">
           <button class="tag-add-btn" id="tagAddBtn" onclick="addTag()">추가</button>
         </div>
-        
+
         <div class="tags-list" id="tagsList">
           <!-- 태그가 여기에 추가됩니다 -->
         </div>
@@ -402,9 +423,9 @@
     let selectedLocation, locationResults, locationSearchInput, tagInput, tagAddBtn, tagsList, submitBtn;
     let selectedCategory = 'DAILY';
     let tags = [];
-    
+
     // 페이지 로드 시 초기화
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       // DOM 요소 가져오기
       titleInput = document.getElementById('titleInput');
       contentInput = document.getElementById('contentInput');
@@ -419,42 +440,42 @@
       tagAddBtn = document.getElementById('tagAddBtn');
       tagsList = document.getElementById('tagsList');
       submitBtn = document.getElementById('submitBtn');
-      
+
       // 이미지 업로드 이벤트
       imageInput.addEventListener('change', handleImageUpload);
-      
+
       // 태그 입력 이벤트
-      tagInput.addEventListener('keypress', function(e) {
+      tagInput.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
           e.preventDefault();
           addTag();
         }
       });
-      
+
       // 태그 버튼 활성화/비활성화
-      tagInput.addEventListener('input', function() {
+      tagInput.addEventListener('input', function () {
         tagAddBtn.disabled = !this.value.trim() || tags.length >= 5;
       });
-      
+
       // 폼 유효성 체크
       titleInput.addEventListener('input', validateForm);
       contentInput.addEventListener('input', validateForm);
-      
+
       // 초기 유효성 체크
       validateForm();
     });
-    
+
     // 폼 유효성 검사
     function validateForm() {
       const isValid = titleInput.value.trim() && contentInput.value.trim();
       submitBtn.disabled = !isValid;
     }
-    
+
     // 이미지 업로드 트리거
     function triggerImageUpload() {
       imageInput.click();
     }
-    
+
     // 이미지 업로드 처리
     function handleImageUpload() {
       const file = imageInput.files[0];
@@ -464,16 +485,16 @@
           alert('이미지 파일만 업로드할 수 있습니다.');
           return;
         }
-        
+
         // 이미지 크기 확인 (5MB 제한)
         if (file.size > 5 * 1024 * 1024) {
           alert('이미지 크기는 5MB 이하여야 합니다.');
           return;
         }
-        
+
         // 이미지 미리보기
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
           previewImg.src = e.target.result;
           imagePlaceholder.style.display = 'none';
           imagePreview.style.display = 'block';
@@ -481,7 +502,7 @@
         reader.readAsDataURL(file);
       }
     }
-    
+
     // 이미지 제거
     function removeImage() {
       imageInput.value = '';
@@ -489,19 +510,19 @@
       imagePlaceholder.style.display = 'flex';
       imagePreview.style.display = 'none';
     }
-    
+
     // 카테고리 선택
     function selectCategory(el) {
       // 기존 선택 해제
       document.querySelectorAll('.category-option').forEach(option => {
         option.classList.remove('active');
       });
-      
+
       // 새로운 카테고리 선택
       el.classList.add('active');
       selectedCategory = el.dataset.value;
     }
-    
+
     // 위치 검색 토글
     function toggleLocationSearch() {
       locationResults.classList.toggle('show');
@@ -509,40 +530,40 @@
         locationSearchInput.focus();
       }
     }
-    
+
     // 위치 검색
     function searchLocation() {
       // 실제 구현에서는 API 검색 기능 추가
       console.log('위치 검색:', locationSearchInput.value);
     }
-    
+
     // 위치 선택
     function selectLocation(location) {
       selectedLocation.textContent = location;
       locationResults.classList.remove('show');
     }
-    
+
     // 태그 추가
     function addTag() {
       const tagText = tagInput.value.trim();
-      
+
       if (!tagText) return;
-      
+
       // 최대 5개 태그 제한
       if (tags.length >= 5) {
         alert('태그는 최대 5개까지만 추가할 수 있습니다.');
         return;
       }
-      
+
       // 중복 태그 확인
       if (tags.includes(tagText)) {
         alert('이미 추가된 태그입니다.');
         return;
       }
-      
+
       // 태그 추가
       tags.push(tagText);
-      
+
       // 태그 엘리먼트 생성
       const tagEl = document.createElement('div');
       tagEl.className = 'tag';
@@ -550,32 +571,32 @@
         ${tagText}
         <span class="tag-remove icon-close" onclick="removeTag('${tagText}')"></span>
       `;
-      
+
       // 태그 목록에 추가
       tagsList.appendChild(tagEl);
-      
+
       // 입력 필드 초기화
       tagInput.value = '';
       tagAddBtn.disabled = true;
-      
+
       // 태그 입력 필드에 포커스
       tagInput.focus();
     }
-    
+
     // 태그 제거
     function removeTag(tagText) {
       // 배열에서 제거
       tags = tags.filter(tag => tag !== tagText);
-      
+
       // DOM에서 제거
       renderTags();
     }
-    
+
     // 태그 렌더링
     function renderTags() {
       // 태그 목록 초기화
       tagsList.innerHTML = '';
-      
+
       // 태그 렌더링
       tags.forEach(tag => {
         const tagEl = document.createElement('div');
@@ -587,7 +608,7 @@
         tagsList.appendChild(tagEl);
       });
     }
-    
+
     // 게시글 제출
     function submitPost() {
       // 필수 필드 확인
@@ -596,13 +617,13 @@
         titleInput.focus();
         return;
       }
-      
+
       if (!contentInput.value.trim()) {
         alert('내용을 입력해주세요.');
         contentInput.focus();
         return;
       }
-      
+
       // 게시글 데이터 수집
       const postData = {
         title: titleInput.value.trim(),
@@ -611,20 +632,20 @@
         location: selectedLocation.textContent !== '위치 추가' ? selectedLocation.textContent : null,
         tags: tags
       };
-      
+
       // 이미지 처리 (실제 구현에서는 FormData 사용)
       if (imageInput.files.length > 0) {
         // 이미지 파일 추가 로직
       }
-      
+
       // 서버에 데이터 전송 (실제 구현)
       console.log('전송할 데이터:', postData);
       alert('게시글이 작성되었습니다.');
-      
+
       // 목록 페이지로 이동
       goBack();
     }
-    
+
     // 뒤로 가기
     function goBack() {
       if (titleInput.value.trim() || contentInput.value.trim() || tags.length > 0 || imageInput.files.length > 0) {
@@ -637,4 +658,5 @@
     }
   </script>
 </body>
+
 </html>

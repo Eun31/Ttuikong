@@ -69,5 +69,4 @@
         JOIN daily_record dr ON cm.user_id = dr.user_id
         WHERE c.id = #{crewId}
     </select>
-
 </mapper>

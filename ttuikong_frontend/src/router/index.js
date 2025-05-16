@@ -1,4 +1,3 @@
-// router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
 
 // 페이지 컴포넌트 가져오기
@@ -8,17 +7,15 @@ import Board from '../views/Board.vue'
 import Chat from '../views/Chat.vue'
 import Profile from '../views/Profile.vue'
 import SignUp from '../views/SignUp.vue'
+import SignUp2 from '../views/SignUp2.vue'
+import SignUp3 from '../views/SignUp3.vue'
 import Run from '../views/RunHome.vue'
+import PostWrite from '../views/PostWrite.vue' // 추가된 게시글 작성 컴포넌트
 
 // 임시 컴포넌트 정의 (아직 파일이 없는 경우)
 const PostDetail = {
   template: '<div class="temp-page"><h2>게시글 상세 페이지</h2><p>이 페이지는 준비 중입니다.</p></div>',
   name: 'PostDetail'
-}
-
-const PostWrite = {
-  template: '<div class="temp-page"><h2>게시글 작성 페이지</h2><p>이 페이지는 준비 중입니다.</p></div>',
-  name: 'PostWrite'
 }
 
 const NewChat = {
@@ -51,6 +48,18 @@ const routes = [
     meta: { allowAnonymous: true }
   },
   {
+    path: '/signup2',  
+    name: 'signup2',
+    component: SignUp2,
+    meta: { allowAnonymous: true }
+  },
+  {
+    path: '/signup3',  
+    name: 'signup3',
+    component: SignUp3,
+    meta: { allowAnonymous: true }
+  },
+  {
     path: '/board',
     name: 'board',
     component: Board
@@ -58,7 +67,7 @@ const routes = [
   {
     path: '/board/write',  // 구체적인 경로를 먼저 배치
     name: 'post-write',
-    component: PostWrite
+    component: PostWrite  // 실제 컴포넌트 사용
   },
   {
     path: '/board/:id',    // 동적 경로를 나중에 배치
