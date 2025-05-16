@@ -1,83 +1,71 @@
+
 <template>
   <div class="home-container">
-    <!-- 오늘의 추천 러닝 정보 박스 -->
-    <div class="welcome-card">
-      <div class="welcome-info">
-        <h1>안녕하세요, <span class="username">{{ userName }}</span>님!</h1>
-        <p>오늘의 추천 러닝 거리는 <span class="highlight">{{ recommendation }}km</span>예요</p>
-        <button class="start-run-btn" @click="startRunning">
-          <i class="ri-run-line"></i> 지금 달리기
-        </button>
+
+        <!-- 상단 헤더 영역 -->
+    <div class="welcome-header">
+      <h1 class="greeting">안녕하세요,</h1>
+      <h1 class="username">{{ userName }}님!</h1>
+    </div>
+
+    <!-- 오늘의 추천 러닝 카드 -->
+    <div class="today-card">
+      <div class="card-icon">
+        <i class="ri-run-line"></i>
       </div>
-      <div class="welcome-stats">
-        <div class="stat-card">
-          <span class="stat-label">총 거리</span>
-          <span class="stat-value">{{ monthlyDistance }}</span>
-        </div>
-        <div class="stat-card highlight">
-          <span class="stat-label">총 횟수</span>
-          <span class="stat-value">{{ monthlyCount }}</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">챌린지</span>
-          <span class="stat-value">{{ challengeCount }}</span>
-        </div>
+      <div class="card-content">
+        <h3 class="card-title">오늘의 추천 러닝</h3>
+        <p class="recommend-text">{{ recommendation }}km 달려보세요!</p>
+      </div>
+      <button class="start-run-btn" @click="startRunning">GO!</button>
+    </div>
+
+    <!-- 러닝 통계 -->
+    <div class="stats-section">
+      <div class="stat-card" v-for="stat in stats" :key="stat.label">
+        <div class="icon">{{ stat.icon }}</div>
+        <div class="value">{{ stat.value }}</div>
+        <div class="label">{{ stat.label }}</div>
       </div>
     </div>
 
-    <!-- 콩 성장 박스 -->
-    <div class="bean-growth-box">
-      <h3>콩이 자라는 중이에요~</h3>
-      <div class="progress-container">
-        <div class="progress-bar" :style="{ width: growthRate + '%' }">
-          <span class="bean-icon"><i class="ri-seed-line"></i></span>
-        </div>
-        <span class="progress-text">{{ growthRate }}%</span>
+    <!-- 콩 성장률 -->
+    <div class="bean-section">
+      <h3>🌱 콩이 자라고 있어요!</h3>
+      <p>오늘의 미션: <strong>{{ recommendation }}km 달리기</strong></p>
+      <div class="progress-bar">
+        <div class="progress-fill" :style="{ width: growthRate + '%' }"></div>
       </div>
+      <p class="progress-percent">{{ growthRate }}%</p>
     </div>
 
     <!-- 메인 메뉴 -->
     <div class="main-menu">
-      <router-link to="/challenge" class="menu-card">
-        <i class="ri-trophy-line"></i>
-        <span>챌린지</span>
-      </router-link>
-      <router-link to="/calendar" class="menu-card">
-        <i class="ri-calendar-line"></i>
-        <span>캘린더</span>
-      </router-link>
-      <router-link to="/routes" class="menu-card">
-        <i class="ri-route-line"></i>
-        <span>루트 찾기</span>
-      </router-link>
-      <router-link to="/board" class="menu-card">
-        <i class="ri-discuss-line"></i>
-        <span>게시판</span>
+      <router-link v-for="menu in menus" :key="menu.label" :to="menu.path" class="menu-item">
+        <div class="menu-icon">{{ menu.icon }}</div>
+        <div class="menu-label">{{ menu.label }}</div>
       </router-link>
     </div>
 
-    <!-- 인기 게시글 / 팔로우 게시글 -->
+    <!-- 인기 게시글 -->
     <div class="section">
       <div class="section-header">
-        <h2>인기 게시글</h2>
-        <button class="toggle-feed" @click="toggleFeedType">
+        <h3>🔥 게시판</h3>
+        <button class="toggle-btn" @click="toggleFeedType">
           {{ isPopularFeed ? '팔로우 게시글 보기' : '인기 게시글 보기' }}
         </button>
       </div>
-      
-      <div class="post-container">
-        <div v-for="post in currentFeed" :key="post.id" class="post-item">
-          <div class="post-user">
+      <div class="post-list">
+        <div class="post-card" v-for="post in currentFeed" :key="post.id">
+          <div class="post-header">
             <img :src="post.authorAvatar" class="avatar" />
-            <span class="username">{{ post.author }}</span>
+            <span class="author">{{ post.author }}</span>
           </div>
-          <div class="post-content">
-            <h3>{{ post.title }}</h3>
-            <p>{{ post.content }}</p>
-          </div>
+          <h4 class="title">{{ post.title }}</h4>
+          <p class="content">{{ post.content }}</p>
           <div class="post-meta">
-            <span><i class="ri-heart-line"></i> {{ post.likes }}</span>
-            <span><i class="ri-chat-1-line"></i> {{ post.comments }}</span>
+            <span>❤️ {{ post.likes }}</span>
+            <span>💬 {{ post.comments }}</span>
           </div>
         </div>
       </div>
@@ -91,11 +79,19 @@ export default {
   data() {
     return {
       userName: '김러너',
-      recommendation: 5.2,
-      monthlyDistance: 45.8,
-      monthlyCount: 12,
-      challengeCount: 3,
+      recommendation: 5,
       growthRate: 65,
+      stats: [
+        { label: '총 거리', value: '45.8km', icon: '🏁' },
+        { label: '총 횟수', value: '12', icon: '👟' },
+        { label: '챌린지 보상', value: '3', icon: '🎁' }
+      ],
+      menus: [
+        { label: '챌린지', icon: '👟', path: '/challenge' },
+        { label: '캘린더', icon: '📝', path: '/calendar' },
+        { label: '루트 찾기', icon: '👥', path: '/routes' },
+        { label: '게시판', icon: '🖐️', path: '/board' }
+      ],
       isPopularFeed: true,
       popularPosts: [
         {
@@ -103,20 +99,18 @@ export default {
           author: '러닝마스터',
           authorAvatar: 'https://via.placeholder.com/36',
           title: '초보 러너를 위한 효과적인 훈련법',
-          content: '처음 러닝을 시작하시는 분들을 위한 팁을 공유합니다. 첫째, 천천히 시작하세요...',
+          content: '처음 러닝을 시작하시는 분들을 위한 팁을 공유합니다...',
           likes: 42,
-          comments: 12,
-          date: '2시간 전'
+          comments: 12
         },
         {
           id: 2,
           author: '마라톤조아',
           authorAvatar: 'https://via.placeholder.com/36',
           title: '서울 근교 러닝 코스 추천',
-          content: '주말에 러닝하기 좋은 서울 근교 코스를 소개합니다. 한강공원은 물론...',
+          content: '주말에 러닝하기 좋은 서울 근교 코스를 소개합니다...',
           likes: 35,
-          comments: 8,
-          date: '3시간 전'
+          comments: 8
         }
       ],
       followPosts: [
@@ -141,7 +135,7 @@ export default {
           date: '3시간 전'
         }
       ]
-    }
+    };
   },
   computed: {
     currentFeed() {
@@ -153,344 +147,323 @@ export default {
       this.isPopularFeed = !this.isPopularFeed;
     },
     startRunning() {
-      // 달리기 페이지로 이동
       this.$router.push('/run');
     }
   }
-}
+};
 </script>
 
 <style scoped>
 .home-container {
-  padding: 20px 16px;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-/* 사용자 환영 카드 */
-.welcome-card {
-  background: linear-gradient(135deg, #7DC383, #549F69);
-  border-radius: 16px;
   padding: 24px;
-  color: white;
+  background-color: #FFF8F2;
+  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+}
+
+/* 상단 환영 헤더 */
+.welcome-header {
   margin-bottom: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
 }
 
-.welcome-info h1 {
-  font-size: 24px;
-  margin-bottom: 8px;
-  font-weight: 700;
-}
-
-.welcome-info p {
-  font-size: 16px;
-  margin-bottom: 16px;
-  opacity: 0.9;
+.greeting {
+  font-size: 20px;
+  font-weight: 400;
+  color: #666;
+  margin: 0;
 }
 
 .username {
+  font-size: 28px;
   font-weight: 700;
+  color: #333;
+  margin: 4px 0 0;
 }
 
-.highlight {
-  font-weight: 700;
-  color: #ffffff;
+.logo {
+  height: 48px;
+  margin-bottom: 16px;
 }
 
-.start-run-btn {
-  background-color: white;
-  color: #3A7D4B;
+.intro-section {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.intro-section h2 {
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+
+.cta-button {
+  background-color: #FF7043;
+  color: white;
   border: none;
-  border-radius: 50px;
-  padding: 10px 20px;
+  border-radius: 999px;
+  padding: 12px 24px;
   font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
-  transition: all 0.3s ease;
 }
 
-.start-run-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  background-color: #f0f0f0;
-}
-
-.welcome-stats {
+.stats-section {
   display: flex;
-  margin-top: 20px;
+  justify-content: space-between;
+  margin: 24px 0;
   gap: 12px;
 }
 
 .stat-card {
-  background-color: rgba(255, 255, 255, 0.2);
+  background: #FFF3ED;
   border-radius: 12px;
-  padding: 12px;
-  text-align: center;
   flex: 1;
+  text-align: center;
+  padding: 12px;
 }
 
-.stat-card.highlight {
-  background-color: rgba(255, 255, 255, 0.3);
-}
-
-.stat-value {
+.stat-card .icon {
   font-size: 24px;
-  font-weight: 700;
-  display: block;
 }
 
-.stat-unit {
-  font-size: 14px;
-  opacity: 0.9;
-}
-
-.stat-label {
-  font-size: 12px;
-  opacity: 0.8;
-  display: block;
-  margin-top: 4px;
-}
-
-/* 콩 성장 박스 */
-.bean-growth-box {
-  background-color: white;
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  border-left: 4px solid #7DC383;
-}
-
-.bean-growth-box h3 {
+.stat-card .value {
+  font-weight: bold;
   font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 16px;
-  color: #3A7D4B;
+  margin: 6px 0;
 }
 
-.progress-container {
-  position: relative;
-  height: 24px;
-  background-color: #E8F5E9;
+.stat-card .label {
+  font-size: 14px;
+  color: #555;
+}
+
+.bean-section {
+  background: #FFF3ED;
+  padding: 16px;
   border-radius: 12px;
-  overflow: hidden;
+  text-align: center;
+  margin-bottom: 24px;
 }
 
 .progress-bar {
+  background: #FFE5D5;
+  height: 16px;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #7DC383, #549F69);
-  border-radius: 12px;
-  position: relative;
-  transition: width 0.5s ease;
+  background: #FF7043;
+  transition: width 0.3s ease;
 }
 
-.bean-icon {
-  position: absolute;
-  right: 5px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: white;
-  font-size: 16px;
-}
-
-.progress-text {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
+.progress-percent {
+  font-size: 13px;
   color: #333;
-  font-weight: 600;
-  font-size: 14px;
+  margin-top: 6px;
 }
 
-/* 메인 메뉴 */
 .main-menu {
   display: flex;
-  gap: 16px;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 12px;
   margin-bottom: 24px;
-  overflow-x: auto;
-  padding-bottom: 8px;
 }
 
-.menu-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: white;
-  min-width: 80px;
-  padding: 16px 12px;
-  border-radius: 12px;
+.menu-item {
+  width: 72px;
+  height: 88px;
+  background: white;
+  border-radius: 16px;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-  border-bottom: 3px solid transparent;
-}
-
-.menu-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-bottom: 3px solid #7DC383;
-}
-
-.menu-card i {
-  font-size: 24px;
-  margin-bottom: 8px;
-  color: #7DC383;
-}
-
-.menu-card span {
-  font-size: 14px;
   font-weight: 500;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+  padding: 10px 4px;
+  font-size: 14px;
   color: #333;
 }
 
-/* 인기 게시글 섹션 */
+.menu-icon {
+  font-size: 22px;
+  margin-bottom: 4px;
+}
+
 .section {
-  background-color: white;
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  border-bottom: 1px solid #E8F5E9;
-  padding-bottom: 10px;
+  margin-bottom: 12px;
 }
 
-.section-header h2 {
-  font-size: 18px;
+.section-header h3 {
+  font-size: 16px;
   font-weight: 600;
-  color: #3A7D4B;
 }
 
-.toggle-feed {
-  font-size: 14px;
-  color: #7DC383;
-  font-weight: 500;
-  background: none;
+.toggle-btn {
   border: none;
+  background: none;
+  color: #FF7043;
+  font-size: 13px;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.toggle-feed:hover {
-  color: #3A7D4B;
-  text-decoration: underline;
-}
-
-.post-container {
+.post-list {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.post-item {
-  padding-bottom: 16px;
-  border-bottom: 1px solid #E8F5E9;
+.post-card {
+  padding: 12px;
+  background: #FFF8F2;
+  border-radius: 10px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
 }
 
-.post-item:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.post-user {
+.post-header {
   display: flex;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
 .avatar {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  margin-right: 12px;
-  object-fit: cover;
-  border: 2px solid #E8F5E9;
+  margin-right: 8px;
 }
 
-.post-user .username {
+.author {
   font-weight: 500;
-  color: #3A7D4B;
-}
-
-.post-content h3 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 4px;
   color: #333;
 }
 
-.post-content p {
+.title {
+  font-size: 15px;
+  font-weight: bold;
+  margin: 4px 0;
+}
+
+.content {
   font-size: 14px;
-  color: #555;
-  margin-bottom: 12px;
-  line-height: 1.5;
+  color: #666;
+  margin-bottom: 6px;
 }
 
 .post-meta {
+  font-size: 13px;
+  color: #888;
   display: flex;
-  gap: 16px;
-  font-size: 14px;
-  color: #777;
+  gap: 12px;
 }
 
-.post-meta i {
-  margin-right: 4px;
-  color: #7DC383;
+.today-card {
+  background-color: #FF7E47;
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(255, 126, 71, 0.3);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-icon {
+  width: 48px;
+  height: 48px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  font-size: 24px;
+}
+
+.card-content {
+  flex-grow: 1;
+}
+
+.card-title {
+  font-size: 18px;
+  margin: 0 0 4px;
+  font-weight: 500;
+}
+
+.recommend-text {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.start-run-btn {
+  background-color: white;
+  color: #FF7E47;
+  border: none;
+  border-radius: 50px;
+  padding: 10px 20px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.start-run-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* 반응형 스타일 */
-@media (min-width: 768px) {
-  .welcome-card {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .welcome-info {
-    flex: 1;
-  }
-  
-  .welcome-stats {
-    margin-top: 0;
-    min-width: 300px;
-  }
-  
+@media (max-width: 600px) {
   .main-menu {
-    justify-content: space-between;
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    gap: 12px;
   }
   
-  .menu-card {
-    flex: 1;
+  .menu-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
   }
   
-  .post-container {
-    flex-direction: row;
+  .stat-bubble {
+    padding: 12px 8px;
   }
   
-  .post-item {
-    flex: 1;
-    border-bottom: none;
-    border-right: 1px solid #E8F5E9;
-    padding-right: 16px;
-    padding-bottom: 0;
+  .stat-value {
+    font-size: 18px;
   }
   
-  .post-item:last-child {
-    border-right: none;
-    padding-right: 0;
+  .recommend-text {
+    font-size: 20px;
   }
+}
+
+
+/* 애니메이션 효과 */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.today-card {
+  animation: pulse 2s infinite;
 }
 </style>

@@ -1,19 +1,63 @@
 // views/Board.vue (게시판 페이지)
 <template>
   <div class="board-container">
-    <h2 class="page-title">게시판</h2>
+    <div class="board-header">
+      <h2 class="page-title">커뮤니티 게시판</h2>
+      <div class="board-actions">
+        <div class="search-box">
+          <input type="text" placeholder="게시글 검색..." v-model="searchQuery" />
+          <button class="search-btn"><i class="fas fa-search"></i></button>
+        </div>
+        <button class="write-btn" @click="goToWritePage">글쓰기</button>
+      </div>
+    </div>
+    
+    <!-- 카테고리 필터 -->
+    <div class="category-filter">
+      <button class="category-btn active" @click="filterByCategory('all')">전체</button>
+      <button class="category-btn" @click="filterByCategory('daily')">일상</button>
+      <button class="category-btn" @click="filterByCategory('food')">맛집</button>
+      <button class="category-btn" @click="filterByCategory('travel')">여행</button>
+      <button class="category-btn" @click="filterByCategory('tech')">기술</button>
+      <button class="category-btn" @click="filterByCategory('music')">음악</button>
+    </div>
     
     <!-- 게시글 목록 -->
-    <post-card 
-      v-for="post in posts" 
-      :key="post.id" 
-      :post="post"
-      @click="viewPostDetail(post.id)"
-    />
+    <div class="posts-grid">
+      <post-card 
+        v-for="post in filteredPosts" 
+        :key="post.id" 
+        :post="post"
+        @click="viewPostDetail(post.id)"
+      />
+    </div>
 
     <!-- 게시글이 없을 경우 -->
-    <div class="empty-state" v-if="posts.length === 0">
+    <div class="empty-state" v-if="filteredPosts.length === 0">
+      <img src="../assets/images/empty-box.svg" alt="게시글 없음" class="empty-icon">
       <p>게시글이 없습니다.</p>
+      <p class="empty-subtitle">첫 번째 게시글을 작성해보세요!</p>
+      <button class="write-btn-empty" @click="goToWritePage">글쓰기</button>
+    </div>
+    
+    <!-- 페이지네이션 -->
+    <div class="pagination">
+      <button class="page-btn" :disabled="currentPage === 1" @click="changePage(currentPage - 1)">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <div class="page-numbers">
+        <button 
+          v-for="page in totalPages" 
+          :key="page" 
+          :class="['page-number', { active: page === currentPage }]"
+          @click="changePage(page)"
+        >
+          {{ page }}
+        </button>
+      </div>
+      <button class="page-btn" :disabled="currentPage === totalPages" @click="changePage(currentPage + 1)">
+        <i class="fas fa-chevron-right"></i>
+      </button>
     </div>
   </div>
 </template>
@@ -28,9 +72,14 @@ export default {
   },
   data() {
     return {
+      searchQuery: '',
+      currentCategory: 'all',
+      currentPage: 1,
+      postsPerPage: 6,
       posts: [
         {
           id: 1,
+          category: 'daily',
           user: {
             name: 'TTUIKONG',
             avatar: 'https://via.placeholder.com/72/e8f5e9/2e7d32?text=T',
@@ -44,10 +93,12 @@ export default {
           location: '한강공원 여의도',
           likes: 24,
           comments: 3,
-          liked: true
+          liked: true,
+          createdAt: new Date('2025-05-15T14:32:00')
         },
         {
           id: 2,
+          category: 'travel',
           user: {
             name: 'TTUIKONG',
             avatar: 'https://via.placeholder.com/72/e8f5e9/2e7d32?text=T',
@@ -59,10 +110,12 @@ export default {
           location: '서울특별시',
           likes: 8,
           comments: 12,
-          liked: false
+          liked: false,
+          createdAt: new Date('2025-05-14T09:15:00')
         },
         {
           id: 3,
+          category: 'food',
           user: {
             name: '맛집탐험가',
             avatar: 'https://via.placeholder.com/72/f5f5f5/555555?text=P',
@@ -76,10 +129,12 @@ export default {
           location: '강남구 역삼동',
           likes: 42,
           comments: 7,
-          liked: true
+          liked: true,
+          createdAt: new Date('2025-05-13T18:45:00')
         },
         {
           id: 4,
+          category: 'tech',
           user: {
             name: '달리는 토끼',
             avatar: 'https://via.placeholder.com/72/f5f5f5/555555?text=D',
@@ -92,10 +147,12 @@ export default {
           location: '강남구 삼성동',
           likes: 15,
           comments: 23,
-          liked: false
+          liked: false,
+          createdAt: new Date('2025-05-12T10:20:00')
         },
         {
           id: 5,
+          category: 'music',
           user: {
             name: '밤의 소리',
             avatar: 'https://via.placeholder.com/72/f5f5f5/555555?text=R',
@@ -114,36 +171,72 @@ export default {
           location: 'Sound Cloud',
           likes: 12,
           comments: 3,
-          liked: false
+          liked: false,
+          createdAt: new Date('2025-05-11T22:08:00')
         }
       ]
     };
   },
+  computed: {
+    filteredPosts() {
+      let result = this.posts;
+      
+      // 카테고리 필터링
+      if (this.currentCategory !== 'all') {
+        result = result.filter(post => post.category === this.currentCategory);
+      }
+      
+      // 검색 필터링
+      if (this.searchQuery.trim()) {
+        const query = this.searchQuery.toLowerCase().trim();
+        result = result.filter(post => 
+          post.title.toLowerCase().includes(query) || 
+          post.description.toLowerCase().includes(query) ||
+          (post.tags && post.tags.some(tag => tag.toLowerCase().includes(query)))
+        );
+      }
+      
+      // 정렬 (최신순)
+      result = [...result].sort((a, b) => b.createdAt - a.createdAt);
+      
+      return result;
+    },
+    paginatedPosts() {
+      const start = (this.currentPage - 1) * this.postsPerPage;
+      const end = start + this.postsPerPage;
+      return this.filteredPosts.slice(start, end);
+    },
+    totalPages() {
+      return Math.max(1, Math.ceil(this.filteredPosts.length / this.postsPerPage));
+    }
+  },
   methods: {
     viewPostDetail(postId) {
       this.$router.push({ name: 'post-detail', params: { id: postId } });
+    },
+    filterByCategory(category) {
+      this.currentCategory = category;
+      this.currentPage = 1;
+    },
+    changePage(page) {
+      this.currentPage = page;
+      // 페이지 변경 시 상단으로 스크롤
+      window.scrollTo(0, 0);
+    },
+    goToWritePage() {
+      this.$router.push({ name: 'post-write' });
     }
+  },
+  mounted() {
+    // FontAwesome이나 다른 아이콘 라이브러리 로드 (기존에 로드되어 있지 않다면)
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css';
+    document.head.appendChild(link);
   }
 };
 </script>
 
-<style scoped>
-.board-container {
-  padding-bottom: 20px;
-}
-
-.page-title {
-  font-size: 22px;
-  font-weight: 700;
-  margin-bottom: 20px;
-  color: #2e7d32;
-}
-
-.empty-state {
-  background-color: white;
-  border-radius: 12px;
-  padding: 40px 20px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
+<style>
+@import '../assets/css/board.css';
 </style>
