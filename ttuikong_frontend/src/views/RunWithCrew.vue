@@ -123,7 +123,7 @@ p {
 }
 
 .progress > div {
-  background: #69c14c;
+  background: #FF7E47;
   height: 15px;
   border-radius: 20px;
 }
@@ -131,7 +131,7 @@ p {
 .talk-button {
   margin: 0px 0 10px 15px;
   font-weight: 600;
-  background: #4CAF50;
+  background: #FF7E47;
   color: white;
   padding: 10px 20px;
   border-radius: 20px;
@@ -143,7 +143,7 @@ p {
 #cancelBtn {
   margin: 0px 0 10px 15px;
   font-weight: 600;
-  background: #39693c;
+  background: #FF7E47;
   color: white;
   padding: 10px 20px;
   border-radius: 20px;
@@ -179,7 +179,7 @@ p {
 }
 
 .nav-btn.active {
-  background: #4CAF50;
+  background: #FF7E47;
   color: white;
 }
 
@@ -188,6 +188,6 @@ p {
 }
 
 .nav-btn.active:hover {
-  background: #43A047;
+  background: #FF7E47;
 }
 </style>
