@@ -11,7 +11,7 @@
       </div>
     </div>
 
-    <h3>{{ crewName }} 실시간 메신저</h3>
+    <h3>실시간 메신저</h3>
     <button class="talk-button" id="goToChat" @click="goToChat">▶ Talk</button>
 
     <br><br><br>

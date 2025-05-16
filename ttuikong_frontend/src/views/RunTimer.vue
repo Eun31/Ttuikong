@@ -12,6 +12,12 @@
     <div class="section">
       <div id="info">{{ infoText }}</div>
     </div>
+
+    <div>
+      <!-- crew 목록 -->
+       
+
+    </div>
     
     <!-- 추가된 네비게이션 메뉴 -->
     <div class="run-nav">
