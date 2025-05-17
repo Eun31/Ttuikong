@@ -14,15 +14,10 @@ import PostWrite from '../views/PostWrite.vue' // 게시글 작성 컴포넌트
 import PostDetail from '../views/PostDetail.vue' // 게시글 상세 컴포넌트 추가
 import RouteFind from '../views/RouteFind.vue' // 루트 찾기 컴포넌트 추가
 import Calendar from '../views/Calendar.vue'
-
+import ProfileEdit from '../views/ProfileEdit.vue'
 const NewChat = {
   template: '<div class="temp-page"><h2>새 채팅 페이지</h2><p>이 페이지는 준비 중입니다.</p></div>',
   name: 'NewChat'
-}
-
-const ProfileEdit = {
-  template: '<div class="temp-page"><h2>프로필 편집 페이지</h2><p>이 페이지는 준비 중입니다.</p></div>',
-  name: 'ProfileEdit'
 }
 
 // 라우트 설정

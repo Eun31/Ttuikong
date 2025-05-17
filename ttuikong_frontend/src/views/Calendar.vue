@@ -16,16 +16,12 @@
           <p class="profile-level">{{ user.level }}</p>
           <div class="profile-stats">
             <div class="stat">
-              <span class="stat-value">{{ user.totalDistance }}</span>
               <span class="stat-label">총 거리</span>
+              <span class="stat-value">{{ user.totalDistance }}</span>
             </div>
             <div class="stat">
-              <span class="stat-value">{{ user.totalRuns }}</span>
               <span class="stat-label">총 러닝</span>
-            </div>
-            <div class="stat">
-              <span class="stat-value">{{ user.achievements }}</span>
-              <span class="stat-label">뱃지</span>
+              <span class="stat-value">{{ user.totalRuns }}</span>
             </div>
           </div>
         </div>
@@ -685,10 +681,12 @@ export default {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 6px;
+  padding: 4px; /* 간격 유지를 위한 패딩 추가 */
 }
 
 .calendar-day {
-  aspect-ratio: 1/1;
+  width: 45px; /* 원의 크기 설정 (기존보다 작게) */
+  height: 45px; /* 높이도 명시적으로 설정 */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -697,6 +695,7 @@ export default {
   border-radius: 50%;
   cursor: pointer;
   transition: var(--transition, all 0.3s ease);
+  margin: auto; /* 가운데 정렬을 위해 추가 */
 }
 
 .calendar-day:not(.empty):hover {
@@ -705,11 +704,15 @@ export default {
 
 .calendar-day.today {
   border: 2px solid var(--primary-color, #FF5722);
+  width: 45px;
+  height: 45px;
 }
 
 .calendar-day.active {
   background-color: var(--primary-color, #FF5722);
   color: white;
+  width: 45px;
+  height: 45px;
 }
 
 .calendar-day.active .run-indicator {
@@ -726,8 +729,8 @@ export default {
 }
 
 .run-indicator {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   background-color: var(--primary-color, #FF5722);
   border-radius: 50%;
   position: absolute;

@@ -11,7 +11,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 40px; /* 24px에서 40px로 증가 - 헤더와 페이지 제목 사이 공백 추가 */
   padding-bottom: 16px;
   border-bottom: 1px solid #e0e0e0;
 }
@@ -23,6 +23,7 @@
   margin: 0;
   position: relative;
   display: inline-block;
+  margin-top: 16px; /* 페이지 제목 위에 여백 추가 */
 }
 
 .page-title::after {
@@ -32,7 +33,7 @@
   left: 0;
   width: 40px;
   height: 3px;
-  background-color: #FF7E47;
+  background-color: #FFF8F2;
   border-radius: 2px;
 }
 
@@ -111,23 +112,27 @@
 /* 카테고리 필터 */
 .category-filter {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; /* 줄바꿈 방지 */
   gap: 10px;
   margin-bottom: 24px;
   padding-bottom: 16px;
   border-bottom: 1px solid #f0f0f0;
+  overflow-x: auto; /* 항상 가로 스크롤 활성화 */
+  white-space: nowrap; /* 텍스트 줄바꿈 방지 */
 }
 
-.category-btn {
-  padding: 8px 16px;
-  background-color: #f0f0f0;
-  border: none;
-  border-radius: 20px;
-  font-size: 14px;
-  color: #616161;
-  cursor: pointer;
-  transition: all 0.2s;
-}
+  .category-btn {
+    flex-shrink: 0; /* 버튼 크기 축소 방지 */
+    white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+    padding: 8px 16px;
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 20px;
+    font-size: 14px;
+    color: #616161;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
 
 .category-btn:hover {
   background-color: #e0e0e0;
@@ -270,10 +275,19 @@
   .board-actions {
     margin-top: 16px;
     width: 100%;
+    display: flex;
+    justify-content: space-between; /* 요소들 사이에 공간 분배 */
   }
 
   .search-box {
-    width: 100%;
+    flex: 1; /* 가능한 많은 공간 차지 */
+    max-width: calc(100% - 120px); /* 글쓰기 버튼 영역 확보 */
+  }
+
+  .write-btn {
+    /* 모바일에서도 동일한 스타일 유지 */
+    min-width: 100px; /* 최소 너비 설정 */
+    justify-content: center; /* 내용 중앙 정렬 */
   }
 
   .posts-grid {
@@ -285,6 +299,9 @@
     padding-bottom: 10px;
     margin-bottom: 20px;
     flex-wrap: nowrap;
+    white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+    display: flex; /* flex 속성 유지 */
+    scrollbar-width: thin; /* Firefox 스크롤바 */
   }
 
   .category-filter::-webkit-scrollbar {
