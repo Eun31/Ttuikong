@@ -12,6 +12,8 @@ import SignUp3 from '../views/SignUp3.vue'
 import Run from '../views/RunHome.vue'
 import PostWrite from '../views/PostWrite.vue' // 게시글 작성 컴포넌트
 import PostDetail from '../views/PostDetail.vue' // 게시글 상세 컴포넌트 추가
+import RouteFind from '../views/RouteFind.vue' // 루트 찾기 컴포넌트 추가
+import Calendar from '../views/Calendar.vue'
 
 const NewChat = {
   template: '<div class="temp-page"><h2>새 채팅 페이지</h2><p>이 페이지는 준비 중입니다.</p></div>',
@@ -102,6 +104,12 @@ const routes = [
     component: Run,
     props: true
   },
+  // 루트 찾기 페이지 추가
+  {
+    path: '/routes',
+    name: 'routes',
+    component: RouteFind
+  },
   // 홈 컴포넌트에서 사용하는 라우트들을 임시 컴포넌트로 리다이렉트
   {
     path: '/challenge',
@@ -111,12 +119,7 @@ const routes = [
   {
     path: '/calendar',
     name: 'calendar',
-    redirect: '/'
-  },
-  {
-    path: '/routes',
-    name: 'routes',
-    redirect: '/'
+    component: Calendar
   }
 ]
 

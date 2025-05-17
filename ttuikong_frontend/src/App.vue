@@ -129,22 +129,30 @@ button {
   padding: 0 1rem;
 }
 
-/* 헤더 스타일 - 흰색 배경으로 변경 */
 .header {
   background-color: #FFFFFF;
-  padding: 1rem 0;
+  padding: 0; /* 패딩 줄임 */
   position: relative;
-  color: #333; /* 텍스트 색상을 어두운 색으로 변경 */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* 살짝 그림자 추가 */
+  color: #333;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .header-container {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* 로고 위치 유지 */
+.logo {
+  display: inline-block;
 }
 
 .logo img {
+  margin-top: 20px;
   height: 36px;
   width: auto;
   transition: transform 0.2s;
@@ -154,24 +162,28 @@ button {
   transform: scale(1.07);
 }
 
+
 .nav-buttons {
   display: flex;
   gap: 12px;
+  margin-top: 25px; 
 }
 
 .nav-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 5px 14px; /* 패딩 줄임 (상하 패딩 5px로 감소) */
   border-radius: 20px;
   font-weight: 500;
   transition: all 0.3s ease;
   font-size: 14px;
+  height: 28px; /* 높이 직접 지정해서 줄임 */
+  line-height: 1; /* 줄 높이 조정 */
 }
 
 .nav-btn i {
-  font-size: 18px;
+  font-size: 16px; /* 아이콘 크기 줄임 */
 }
 
 .nav-btn.text {
@@ -199,31 +211,6 @@ button {
   color: #FF7E47; /* 주황색으로 변경 */
   padding: 8px;
   border-radius: 4px;
-}
-
-/* 내비게이션 메뉴 */
-.main-nav {
-  background-color: white;
-  border-bottom: 1px solid #eee;
-  padding: 0.5rem 0;
-}
-
-.main-nav .container {
-  display: flex;
-  gap: 24px;
-}
-
-.nav-item {
-  font-weight: 500;
-  color: #555;
-  padding: 8px 16px;
-  border-radius: 20px;
-  transition: all 0.3s ease;
-}
-
-.nav-item:hover, .nav-item.router-link-active {
-  color: #FF7E47;
-  background-color: rgba(255, 126, 71, 0.1);
 }
 
 /* 모바일 메뉴 */
@@ -259,153 +246,10 @@ button {
   padding-top: 10px;
 }
 
-/* 메인 컨텐츠 영역 */
-.main-content {
-  padding: 20px 0;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-/* 버튼 스타일 */
-.btn-primary {
-  background-color: #FF7E47;
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 20px;
-  font-weight: 500;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  display: inline-block;
-  text-align: center;
-  width: 100%;
-}
-
-.btn-primary:hover {
-  background-color: #F26B31;
-}
-
-/* 입력 필드 */
-.form-input {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  margin-bottom: 16px;
-  font-size: 16px;
-  transition: border-color 0.3s;
-}
-
-.form-input:focus {
-  border-color: #FF7E47;
-  outline: none;
-}
-
-/* 카드 항목 스타일 */
-.card {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.card-image {
-  width: 60px;
-  height: 60px;
-  background-color: #f5f5f5;
-  border-radius: 50%;
-  margin: 0 auto 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.card-title {
-  font-weight: 600;
-  font-size: 18px;
-  margin-bottom: 8px;
-  color: #333;
-}
-
-.card-text {
-  color: #666;
-  font-size: 14px;
-}
-
-/* 선택 그리드 */
-.selection-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  margin: 20px 0;
-}
-
-.selection-item {
-  background: white;
-  border-radius: 16px;
-  padding: 20px;
-  text-align: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.selection-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.selection-icon {
-  width: 40px;
-  height: 40px;
-  margin: 0 auto 8px;
-}
-
-.selection-label {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* 원형 선택 메뉴 */
-.circle-selection {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 16px;
-  margin: 20px 0;
-}
-
-.circle-item {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  border: 1px solid #FF7E47;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #FF7E47;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.circle-item:hover, .circle-item.active {
-  background-color: #FF7E47;
-  color: white;
-}
-
 /* 반응형 스타일 - 모바일 우선 */
 @media (max-width: 768px) {
   .main-nav {
     display: none; /* 모바일에서는 네비게이션 숨김 */
-  }
-  
-  .header-container {
-    position: relative;
-    align-items: center; /* 모바일에서도 중앙 정렬 유지 */
   }
   
   .menu-toggle {
@@ -417,11 +261,8 @@ button {
     z-index: 100;
   }
 
-  .logo {
-    margin-top: 3px; /* 모바일에서 상단 마진 조정 */
-  }
-  
   .logo img {
+    margin-top: 20px;
     height: 32px; /* 모바일에서 로고 크기 줄임 */
   }
 
@@ -429,18 +270,27 @@ button {
   .nav-buttons {
     display: flex;
     gap: 6px; /* 버튼 간격 줄임 */
-    align-items: center; /* 모바일에서도 중앙 정렬 유지 */
-    margin-bottom: 3px; /* 모바일에서 하단 마진 조정 */
+    margin-top: 25px; /* 위쪽으로 이동 조정 */
   }
   
   .nav-btn {
-    padding: 6px 10px; /* 패딩 축소 */
+    padding: 4px 8px; /* 패딩 더 줄임 */
     font-size: 12px; /* 글꼴 크기 줄임 */
-    height: 32px; /* 높이 조정 */
+    height: 26px; /* 높이 줄임 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .nav-btn i {
     font-size: 14px; /* 아이콘 크기 줄임 */
+  }
+  
+  /* 텍스트를 숨기지 않도록 수정 */
+  .nav-btn span {
+    display: inline-block; /* 텍스트 표시 */
+    font-size: 11px; /* 텍스트 크기 더 줄임 */
+    margin-left: 3px; /* 아이콘과 텍스트 사이 간격 */
   }
   
   .main-content {
@@ -462,57 +312,39 @@ button {
     margin-top: 15px;
     padding-top: 8px;
   }
-  
-  /* 선택 그리드 조정 */
-  .selection-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-  
-  .selection-item {
-    padding: 16px;
-  }
-  
-  /* 원형 선택 메뉴 조정 */
-  .circle-item {
-    width: 70px;
-    height: 70px;
-    font-size: 13px;
-  }
 }
 
 /* 매우 작은 모바일 기기용 추가 스타일 */
 @media (max-width: 480px) {
   .header {
-    padding: 0.8rem 0;
-  }
-  
-  .logo {
-    margin-top: 2px; /* 더 작은 화면에서 마진 조정 */
+    padding: 0.5rem 0; /* 패딩 더 줄임 */
   }
   
   .logo img {
+    margin-top: 20px;
     height: 28px; /* 더 작은 기기에서 로고 크기 더 줄임 */
   }
   
   .nav-buttons {
-    margin-bottom: 2px; /* 더 작은 화면에서 마진 조정 */
+    margin-top: 25px; /* 작은 화면에서 위쪽 이동 조정 */
+    gap: 4px; /* 버튼 간격 더 줄임 */
   }
   
-  /* 더 작은 기기에서 버튼 텍스트 숨기고 아이콘만 표시 */
+  /* 작은 화면에서도 텍스트 유지하도록 수정 */
   .nav-btn {
-    padding: 6px 8px;
+    padding: 3px 6px; /* 패딩 더 줄임 */
     min-width: 0;
-    height: 30px; /* 높이 추가 조정 */
+    height: 24px; /* 높이 더 줄임 */
   }
   
   .nav-btn span {
-    display: none; /* 텍스트 숨김 */
+    display: inline-block; /* 텍스트 표시 유지 */
+    font-size: 10px; /* 텍스트 크기 더 줄임 */
   }
   
   .nav-btn i {
-    font-size: 16px; /* 아이콘 크기 유지 */
-    margin: 0; /* 마진 제거 */
+    font-size: 14px; /* 아이콘 크기 줄임 */
+    margin-right: 1px; /* 아이콘과 텍스트 간격 줄임 */
   }
   
   /* 작은 모바일 메뉴 조정 */
@@ -543,24 +375,4 @@ button {
     display: none; /* PC에서는 메뉴 토글 버튼 숨김 */
   }
 }
-
-/* 입력 필드, 버튼 등 양식 요소 반응형 스타일 */
-input, select, textarea, button {
-  font-size: 16px; /* 모바일에서 입력 요소가 자동으로 확대되는 것 방지 */
-}
-
-@media (max-width: 768px) {
-  input, select, textarea {
-    padding: 10px; /* 터치 기기에서 더 큰 터치 영역 */
-  }
-  
-  button {
-    padding: 10px 15px; /* 버튼 영역 확대 */
-  }
-}
-
-/* 뷰포트 설정 - head에 추가해야 함 */
-/* 
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
-*/
 </style>

@@ -1,1052 +1,699 @@
 <template>
-  <div class="container">
-    <!-- 헤더 -->
-    <header class="profile-header">
-      <h1 class="page-title">마이페이지</h1>
-    </header>
-
-    <!-- 사용자 정보 카드 -->
-    <div class="profile-card">
-      <div class="profile-info">
-        <div class="profile-avatar">
-          <img :src="profile" alt="프로필 이미지">
+    <div class="profile-container">
+      <!-- 상단 유저 정보 카드 -->
+      <div class="user-profile-card">
+        <div class="profile-header">
+          <div class="profile-avatar">
+            <img :src="defaultAvatar" alt="프로필 이미지" class="avatar-img">
+            <div class="level-badge">Lv.{{ calculateLevel() }}</div>
+          </div>
+          <div class="profile-basic-info">
+            <h2 class="user-nickname">{{ user.nickname }}</h2>
+            <p class="user-desc">{{ getActivityLevel() }}</p>
+            <div class="edit-profile-btn" @click="editProfile">프로필 수정</div>
+          </div>
         </div>
-        <div class="profile-details">
-          <h2 class="profile-name">{{ user.name }}</h2>
-          <p class="profile-level">{{ user.level }}</p>
-          <div class="profile-stats">
-            <div class="stat">
-              <span class="stat-value">{{ user.totalDistance }}</span>
-              <span class="stat-label">총 거리</span>
-            </div>
-            <div class="stat">
-              <span class="stat-value">{{ user.totalRuns }}</span>
-              <span class="stat-label">총 러닝</span>
-            </div>
-            <div class="stat">
-              <span class="stat-value">{{ user.achievements }}</span>
-              <span class="stat-label">뱃지</span>
-            </div>
+        
+        <!-- 팔로우 정보 -->
+        <div class="follow-stats">
+          <div class="follow-stat-item">
+            <span class="follow-count">{{ stats.totalRuns }}</span>
+            <span class="follow-label">러닝</span>
+          </div>
+          <div class="follow-stat-item">
+            <span class="follow-count">{{ followers.length }}</span>
+            <span class="follow-label">팔로워</span>
+          </div>
+          <div class="follow-stat-item">
+            <span class="follow-count">{{ following.length }}</span>
+            <span class="follow-label">팔로잉</span>
+          </div>
+        </div>
+        
+        <!-- 상세 정보 -->
+        <div class="detailed-info">
+          <div class="info-row">
+            <span class="info-label">나이</span>
+            <span class="info-value">{{ user.age }}세</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">성별</span>
+            <span class="info-value">{{ user.gender }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">키 / 몸무게</span>
+            <span class="info-value">{{ user.height }}cm / {{ user.weight }}kg</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">목표 활동성</span>
+            <span class="info-value-goal">{{ getActivityGoal() }}</span>
+          </div>
+          <div class="info-row total-distance">
+            <span class="info-label">총 달린 거리</span>
+            <span class="info-value-highlight">{{ formatDistance(user.total_distance) }}</span>
+          </div>
+          <div class="info-row avg-distance">
+            <span class="info-label">평균 달린 거리</span>
+            <span class="info-value">{{ formatDistance(user.avg_distance) }}</span>
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- 러닝 통계 카드 -->
-    <div class="stats-card">
-      <div class="card-header">
-        <h2 class="card-title">이번 달 러닝 통계</h2>
-        <span class="card-subtitle">{{ currentMonth }}</span>
-      </div>
-      <div class="stats-grid">
-        <div class="stat-item">
-          <span class="stat-icon">🏃</span>
-          <div class="stat-content">
-            <span class="stat-value">{{ monthlyStats.totalRuns }}</span>
-            <span class="stat-label">러닝 횟수</span>
-          </div>
-        </div>
-        <div class="stat-item">
-          <span class="stat-icon">📏</span>
-          <div class="stat-content">
-            <span class="stat-value">{{ monthlyStats.totalDistance }}</span>
-            <span class="stat-label">총 거리</span>
-          </div>
-        </div>
-        <div class="stat-item">
-          <span class="stat-icon">⏱️</span>
-          <div class="stat-content">
-            <span class="stat-value">{{ monthlyStats.totalTime }}</span>
-            <span class="stat-label">총 시간</span>
-          </div>
-        </div>
-        <div class="stat-item">
-          <span class="stat-icon">🔥</span>
-          <div class="stat-content">
-            <span class="stat-value">{{ monthlyStats.totalCalories }}</span>
-            <span class="stat-label">소모 칼로리</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 캘린더 섹션 -->
-    <div class="calendar-section">
-      <div class="card-header">
-        <h2 class="card-title">일별 러닝 기록</h2>
-        <div class="month-selector">
-          <button class="month-btn" @click="changeMonth(-1)">
-            <span class="icon">←</span>
-          </button>
-          <span class="current-month">{{ currentMonthYear }}</span>
-          <button class="month-btn" @click="changeMonth(1)">
-            <span class="icon">→</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- 요일 헤더 -->
-      <div class="calendar-weekdays">
-        <div class="weekday" v-for="day in weekdays" :key="day">{{ day }}</div>
-      </div>
-
-      <!-- 일자 그리드 -->
-      <div class="calendar-days">
-        <div
-          v-for="(day, index) in calendarDays"
-          :key="index"
-          class="calendar-day"
-          :class="{
-            'empty': !day.date,
-            'has-run': day.hasRun,
-            'active': day.isActive,
-            'today': day.isToday
-          }"
-          @click="day.date && selectDay(day)"
+  
+      <!-- 탭 메뉴 -->
+      <div class="tab-container">
+        <div 
+          v-for="(tab, index) in tabs" 
+          :key="index" 
+          :class="['tab-item', { active: activeTab === index }]"
+          @click="activeTab = index"
         >
-          <span v-if="day.date" class="day-number">{{ day.date.getDate() }}</span>
-          <span v-if="day.hasRun" class="run-indicator"></span>
+          {{ tab }}
         </div>
       </div>
-    </div>
-
-    <!-- 선택한 날짜의 러닝 기록 -->
-    <div v-if="selectedDay && selectedDay.hasRun" class="run-details">
-      <div class="run-date">
-        <span class="icon">📅</span>
-        {{ formatDate(selectedDay.date) }}
-      </div>
-
-      <!-- 러닝 정보 카드 -->
-      <div class="run-card" v-for="(run, index) in selectedDayRuns" :key="index">
-        <div class="run-header">
-          <h3 class="run-title">{{ run.routeName }}</h3>
-          <span class="run-time">{{ run.time }}</span>
-        </div>
-        
-        <div class="run-stats">
-          <div class="run-stat">
-            <span class="stat-icon">⏱️</span>
-            <span class="stat-label">시간:</span>
-            <span class="stat-value">{{ run.duration }}</span>
+  
+      <!-- 탭 콘텐츠 영역 -->
+      <div class="tab-content">
+        <!-- 내 게시글 탭 -->
+        <div v-if="activeTab === 0" class="my-posts tab-panel">
+          <div v-if="myPosts.length === 0" class="empty-state">
+            <p>아직 작성한 게시글이 없어요 😊</p>
+            <button class="action-btn" @click="goToNewPost">첫 게시글 작성하기</button>
           </div>
-          <div class="run-stat">
-            <span class="stat-icon">📏</span>
-            <span class="stat-label">거리:</span>
-            <span class="stat-value">{{ run.distance }}</span>
+          <post-card 
+            v-for="post in myPosts" 
+            :key="post.id" 
+            :post="post"
+            @like="toggleLike"
+            @comment="goToComments"
+          />
+        </div>
+  
+        <!-- 좋아요한 글 탭 -->
+        <div v-else-if="activeTab === 1" class="liked-posts tab-panel">
+          <div v-if="likedPosts.length === 0" class="empty-state">
+            <p>아직 좋아요한 게시글이 없어요 💖</p>
+            <button class="action-btn" @click="goToBoard">게시판 둘러보기</button>
           </div>
-          <div class="run-stat">
-            <span class="stat-icon">🔥</span>
-            <span class="stat-label">칼로리:</span>
-            <span class="stat-value">{{ run.calories }}</span>
+          <post-card 
+            v-for="post in likedPosts" 
+            :key="post.id" 
+            :post="post"
+            @like="toggleLike"
+            @comment="goToComments"
+          />
+        </div>
+  
+        <!-- 팔로워 탭 -->
+        <div v-else-if="activeTab === 2" class="followers-panel tab-panel">
+          <div v-if="followers.length === 0" class="empty-state">
+            <p>아직 팔로워가 없어요 👀</p>
+            <button class="action-btn" @click="goToDiscover">다른 러너 찾아보기</button>
           </div>
-        </div>
-        
-        <div class="run-map-preview">
-          <img :src="run.routeImage" alt="러닝 루트" class="route-image">
-          <button class="view-route-btn" @click="viewRoute(run.id)">
-            <span class="icon">🗺️</span> 루트 보기
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 러닝 기록이 없는 경우 -->
-    <div v-else-if="selectedDay && !selectedDay.hasRun" class="no-run-message">
-      <span class="icon">🏃</span>
-      <p>{{ formatDate(selectedDay.date) }}에는 러닝 기록이 없습니다.</p>
-    </div>
-
-    <!-- 루트 모음 버튼 -->
-    <div class="route-collection-btn-container">
-      <button class="route-collection-btn" @click="showRouteCollection = true">
-        <span class="icon">🗺️</span> 모든 루트 보기
-      </button>
-    </div>
-
-    <!-- 루트 모음 모달 -->
-    <div v-if="showRouteCollection" class="modal-overlay" @click="showRouteCollection = false">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h2 class="modal-title">내 러닝 루트 모음</h2>
-          <button class="close-modal-btn" @click="showRouteCollection = false">
-            <span class="icon">✕</span>
-          </button>
-        </div>
-        
-        <div class="routes-grid">
-          <div v-for="(route, index) in routes" :key="index" class="route-item">
-            <div class="route-image-container">
-              <img :src="route.image" alt="러닝 루트" class="route-thumbnail">
+          <div v-else class="user-list">
+            <div v-for="follower in followers" :key="follower.id" class="user-item">
+              <img :src="defaultAvatar" alt="프로필" class="user-item-avatar">
+              <div class="user-item-info">
+                <span class="user-item-name">{{ follower.nickname }}</span>
+                <span class="user-item-desc">{{ follower.activityLevel }}</span>
+              </div>
+              <button 
+                :class="['follow-btn', { 'following': isFollowing(follower.id) }]"
+                @click="toggleFollow(follower.id)"
+              >
+                {{ isFollowing(follower.id) ? '팔로잉' : '팔로우' }}
+              </button>
             </div>
-            <div class="route-info">
-              <h3 class="route-name">{{ route.name }}</h3>
-              <div class="route-meta">
-                <span>{{ route.distance }}</span>
-                <span class="route-separator">•</span>
-                <span>{{ route.runCount }}회 달림</span>
+          </div>
+        </div>
+  
+        <!-- 팔로잉 탭 -->
+        <div v-else-if="activeTab === 3" class="following-panel tab-panel">
+          <div v-if="following.length === 0" class="empty-state">
+            <p>아직 팔로우 중인 러너가 없어요 🏃‍♀️</p>
+            <button class="action-btn" @click="goToDiscover">러너 찾아보기</button>
+          </div>
+          <div v-else class="user-list">
+            <div v-for="follow in following" :key="follow.id" class="user-item">
+              <img :src="defaultAvatar" alt="프로필" class="user-item-avatar">
+              <div class="user-item-info">
+                <span class="user-item-name">{{ follow.nickname }}</span>
+                <span class="user-item-desc">{{ follow.activityLevel }}</span>
+              </div>
+              <button class="follow-btn following" @click="toggleFollow(follow.id)">
+                팔로잉
+              </button>
+            </div>
+          </div>
+        </div>
+  
+        <!-- 피드 탭 -->
+        <div v-else-if="activeTab === 4" class="feed-panel tab-panel">
+          <div v-if="feedPosts.length === 0" class="empty-state">
+            <p>팔로우 중인 러너들의 게시글이 없어요 📝</p>
+            <button class="action-btn" @click="goToDiscover">러너 찾아보기</button>
+          </div>
+          <post-card 
+            v-for="post in feedPosts" 
+            :key="post.id" 
+            :post="post"
+            @like="toggleLike"
+            @comment="goToComments"
+          />
+        </div>
+      </div>
+    </div>
+  </template>
+  
+  <script>
+  // 프로필 이미지 import
+  import profileImg from '../assets/profile.png'
+  
+  export default {
+    name: 'ProfilePage',
+    components: {
+      // 가정: PostCard 컴포넌트가 별도로 구현되어 있음
+      PostCard: {
+        props: ['post'],
+        template: `
+          <div class="post-card">
+            <div class="post-header">
+              <img :src="post.authorAvatar" class="post-avatar">
+              <span class="post-author">{{ post.author }}</span>
+              <span class="post-time">{{ post.time }}</span>
+            </div>
+            <p class="post-content">{{ post.content }}</p>
+            <div class="post-footer">
+              <div class="post-action" @click="$emit('like', post.id)">
+                <span :class="['action-icon', { active: post.liked }]">❤️</span>
+                <span class="action-count">{{ post.likes }}</span>
+              </div>
+              <div class="post-action" @click="$emit('comment', post.id)">
+                <span class="action-icon">💬</span>
+                <span class="action-count">{{ post.comments }}</span>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
-<script>
-import profileImg from '../assets/profile.png';
-
-export default {
-  name: 'Profile',
-  data() {
-    return {
-      profile: profileImg,
-      user: {
-        name: '러너홍길동',
-        level: '열정적인 러너',
-        totalDistance: '158.2km',
-        totalRuns: 24,
-        achievements: 8
-      },
-      currentDate: new Date(),
-      selectedDate: new Date(),
-      selectedDay: null,
-      monthlyStats: {
-        totalRuns: 12,
-        totalDistance: '78.5km',
-        totalTime: '8시간 45분',
-        totalCalories: '4,320kcal'
-      },
-      weekdays: ['일', '월', '화', '수', '목', '금', '토'],
-      runningData: [
-        {
-          date: new Date(2025, 4, 15), // 2025년 5월 15일
-          runs: [
-            {
-              id: 1,
-              routeName: '한강 공원 러닝',
-              time: '오전 7:30',
-              duration: '42분 30초',
-              distance: '5.2km',
-              calories: '320kcal',
-              routeImage: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=한강공원코스'
-            }
-          ]
-        },
-        {
-          date: new Date(2025, 4, 13), // 2025년 5월 13일
-          runs: [
-            {
-              id: 2,
-              routeName: '동네 공원 산책',
-              time: '오후 6:15',
-              duration: '28분 10초',
-              distance: '3.1km',
-              calories: '180kcal',
-              routeImage: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=동네공원코스'
-            }
-          ]
-        },
-        {
-          date: new Date(2025, 4, 10), // 2025년 5월 10일
-          runs: [
-            {
-              id: 3,
-              routeName: '아침 조깅',
-              time: '오전 6:45',
-              duration: '35분 20초',
-              distance: '4.3km',
-              calories: '250kcal',
-              routeImage: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=아침조깅코스'
-            },
-            {
-              id: 4,
-              routeName: '저녁 달리기',
-              time: '오후 7:30',
-              duration: '50분 15초',
-              distance: '6.8km',
-              calories: '420kcal',
-              routeImage: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=저녁달리기코스'
-            }
-          ]
-        },
-        {
-          date: new Date(2025, 4, 8), // 2025년 5월 8일
-          runs: [
-            {
-              id: 5,
-              routeName: '오피스 점심 러닝',
-              time: '오후 12:30',
-              duration: '22분 40초',
-              distance: '2.8km',
-              calories: '170kcal',
-              routeImage: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=점심러닝코스'
-            }
-          ]
-        },
-        {
-          date: new Date(2025, 4, 5), // 2025년 5월 5일
-          runs: [
-            {
-              id: 6,
-              routeName: '주말 장거리 달리기',
-              time: '오전 8:15',
-              duration: '1시간 25분',
-              distance: '12.6km',
-              calories: '850kcal',
-              routeImage: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=장거리코스'
-            }
-          ]
-        },
-        {
-          date: new Date(2025, 4, 2), // 2025년 5월 2일
-          runs: [
-            {
-              id: 7,
-              routeName: '야간 조깅',
-              time: '오후 9:00',
-              duration: '30분 50초',
-              distance: '3.5km',
-              calories: '210kcal',
-              routeImage: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=야간코스'
-            }
-          ]
-        }
-      ],
-      routes: [
-        {
+        `
+      }
+    },
+    data() {
+      return {
+        // 이미지 경로
+        defaultAvatar: profileImg,
+        
+        activeTab: 0,
+        tabs: ['내 게시글', '좋아요한 글', '팔로워', '팔로잉', '피드'],
+        // 사용자 데이터 - 실제로는 API에서 가져옴
+        user: {
           id: 1,
-          name: '한강 공원 코스',
-          distance: '5.2km',
-          runCount: 8,
-          image: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=한강공원코스'
+          email: 'user@example.com',
+          nickname: '러닝마니아',
+          gender: '남성',
+          age: 28,
+          height: 175.0,
+          weight: 68.5,
+          activity_level: '신나는 강아지',
+          activity_goal: '힘찬 질주 말',
+          avg_distance: 5.2,
+          total_distance: 324.8,
+          role: 'USER'
         },
-        {
-          id: 2,
-          name: '동네 공원 코스',
-          distance: '3.1km',
-          runCount: 12,
-          image: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=동네공원코스'
+        stats: {
+          totalRuns: 42
         },
-        {
-          id: 3,
-          name: '아침 조깅 코스',
-          distance: '4.3km',
-          runCount: 5,
-          image: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=아침조깅코스'
-        },
-        {
-          id: 4,
-          name: '장거리 코스',
-          distance: '12.6km',
-          runCount: 3,
-          image: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=장거리코스'
-        },
-        {
-          id: 5,
-          name: '야간 코스',
-          distance: '3.5km',
-          runCount: 4,
-          image: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=야간코스'
-        },
-        {
-          id: 6,
-          name: '점심 러닝 코스',
-          distance: '2.8km',
-          runCount: 7,
-          image: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=점심러닝코스'
-        }
-      ],
-      showRouteCollection: false,
-      calendarDays: []
-    };
-  },
-  computed: {
-    currentMonth() {
-      const months = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
-      return months[this.selectedDate.getMonth()];
+        // 샘플 데이터 - 실제로는 API에서 가져옴
+        myPosts: [
+          {
+            id: 1,
+            author: '러닝마니아',
+            authorAvatar: profileImg, // 이미지 경로 변경
+            content: '오늘도 힘차게 5km 뛰었습니다! 날씨가 좋아서 기분도 좋고 컨디션도 최고였어요 😊',
+            time: '3시간 전',
+            likes: 24,
+            comments: 5,
+            liked: false
+          },
+          {
+            id: 2,
+            author: '러닝마니아',
+            authorAvatar: profileImg, // 이미지 경로 변경
+            content: '혼자 뛰기 심심해서 러닝 메이트 구합니다. 한강 잠실 쪽에서 주 3회 뛰어요!',
+            time: '어제',
+            likes: 15,
+            comments: 8,
+            liked: false
+          }
+        ],
+        likedPosts: [
+          {
+            id: 3,
+            author: '마라톤왕',
+            authorAvatar: profileImg, // 이미지 경로 변경
+            content: '처음으로 하프 마라톤 완주했습니다! 21km 완주 인증! 다음 목표는 풀 마라톤 도전!',
+            time: '1일 전',
+            likes: 76,
+            comments: 12,
+            liked: true
+          }
+        ],
+        feedPosts: [
+          {
+            id: 4,
+            author: '달림이',
+            authorAvatar: profileImg, // 이미지 경로 변경
+            content: '오늘 새벽 러닝 완료! 아침 공기가 상쾌해서 5km가 금방 지나갔네요.',
+            time: '2시간 전',
+            likes: 32,
+            comments: 3,
+            liked: true
+          },
+          {
+            id: 5,
+            author: '조깅중독',
+            authorAvatar: profileImg, // 이미지 경로 변경
+            content: '비 오는 날씨에 러닝하는 맛이란.. 적당히 맞는 빗방울과 함께하는 7km 완료!',
+            time: '어제',
+            likes: 28,
+            comments: 6,
+            liked: false
+          }
+        ],
+        followers: [
+          { id: 101, nickname: '달림이', activityLevel: '신나는 강아지', avatar: profileImg }, // 이미지 경로 변경
+          { id: 102, nickname: '조깅중독', activityLevel: '힘찬 질주 말', avatar: profileImg } // 이미지 경로 변경
+        ],
+        following: [
+          { id: 201, nickname: '마라톤왕', activityLevel: '전광석화 치타', avatar: profileImg }, // 이미지 경로 변경
+          { id: 101, nickname: '달림이', activityLevel: '신나는 강아지', avatar: profileImg } // 이미지 경로 변경
+        ]
+      };
     },
-    currentMonthYear() {
-      const months = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
-      return `${months[this.selectedDate.getMonth()]} ${this.selectedDate.getFullYear()}`;
-    },
-    selectedDayRuns() {
-      if (!this.selectedDay || !this.selectedDay.hasRun) return [];
-      
-      const runData = this.runningData.find(data => 
-        this.isSameDay(data.date, this.selectedDay.date)
-      );
-      
-      return runData ? runData.runs : [];
-    }
-  },
-  methods: {
-    generateCalendar() {
-      const year = this.selectedDate.getFullYear();
-      const month = this.selectedDate.getMonth();
-      
-      // 선택된 달의 첫날과 마지막 날
-      const firstDay = new Date(year, month, 1);
-      const lastDay = new Date(year, month + 1, 0);
-      
-      // 첫날의 요일 (0: 일요일, 6: 토요일)
-      const firstDayOfWeek = firstDay.getDay();
-      
-      // 캘린더 배열 초기화
-      this.calendarDays = [];
-      
-      // 첫 주의 빈 칸 채우기
-      for (let i = 0; i < firstDayOfWeek; i++) {
-        this.calendarDays.push({ date: null });
-      }
-      
-      // 날짜 채우기
-      for (let i = 1; i <= lastDay.getDate(); i++) {
-        const currentDate = new Date(year, month, i);
+    methods: {
+      calculateLevel() {
+        // 총 달린 거리에 따라 레벨 계산 (예시)
+        const distance = this.user.total_distance;
+        if (distance < 50) return 1;
+        if (distance < 100) return 2;
+        if (distance < 200) return 3;
+        if (distance < 300) return 4;
+        if (distance < 500) return 5;
+        return Math.floor(distance / 100) + 1;
+      },
+      getActivityLevel() {
+        return this.user.activity_level;
+      },
+      getActivityGoal() {
+        return this.user.activity_goal;
+      },
+      formatDistance(distance) {
+        if (distance === null || distance === undefined) return '0km';
+        return distance.toFixed(1) + 'km';
+      },
+      editProfile() {
+        // 프로필 수정 페이지로 이동
+        this.$router.push('/profile/edit');
+      },
+      goToNewPost() {
+        // 새 게시글 작성 페이지로 이동
+        this.$router.push('/board/write');
+      },
+      goToBoard() {
+        // 게시판으로 이동
+        this.$router.push('/board');
+      },
+      goToDiscover() {
+        // 유저 검색 페이지로 이동
+        this.$router.push('/discover');
+      },
+      goToComments(postId) {
+        // 댓글 페이지로 이동
+        this.$router.push(`/board/${postId}`);
+      },
+      toggleLike(postId) {
+        // 모든 게시글 배열에서 해당 게시글 찾아 좋아요 상태 토글
+        const updateLike = (posts) => {
+          const post = posts.find(p => p.id === postId);
+          if (post) {
+            post.liked = !post.liked;
+            post.likes += post.liked ? 1 : -1;
+          }
+        };
         
-        // 러닝 기록 확인
-        const hasRun = this.runningData.some(data => 
-          this.isSameDay(data.date, currentDate)
-        );
-        
-        this.calendarDays.push({
-          date: currentDate,
-          hasRun: hasRun,
-          isToday: this.isSameDay(currentDate, this.currentDate),
-          isActive: this.selectedDay ? this.isSameDay(currentDate, this.selectedDay.date) : false
-        });
-      }
-      
-      // 마지막 주의 빈 칸 채우기 (7의 배수로 맞추기)
-      const remaining = 7 - (this.calendarDays.length % 7);
-      if (remaining < 7) {
-        for (let i = 0; i < remaining; i++) {
-          this.calendarDays.push({ date: null });
+        updateLike(this.myPosts);
+        updateLike(this.likedPosts);
+        updateLike(this.feedPosts);
+      },
+      toggleFollow(userId) {
+        // 팔로우/언팔로우 처리
+        if (this.isFollowing(userId)) {
+          this.following = this.following.filter(f => f.id !== userId);
+        } else {
+          // 팔로워 목록에서 해당 유저 찾기
+          const userToFollow = this.followers.find(f => f.id === userId);
+          if (userToFollow) {
+            this.following.push(userToFollow);
+          }
         }
+      },
+      isFollowing(userId) {
+        return this.following.some(f => f.id === userId);
       }
-    },
-    changeMonth(delta) {
-      const newDate = new Date(this.selectedDate);
-      newDate.setMonth(newDate.getMonth() + delta);
-      this.selectedDate = newDate;
-      this.selectedDay = null;
-      this.generateCalendar();
-    },
-    selectDay(day) {
-      this.selectedDay = day;
-      
-      // 활성화 상태 업데이트
-      this.calendarDays = this.calendarDays.map(d => ({
-        ...d,
-        isActive: d.date && day.date ? this.isSameDay(d.date, day.date) : false
-      }));
-    },
-    isSameDay(date1, date2) {
-      return date1.getFullYear() === date2.getFullYear() &&
-             date1.getMonth() === date2.getMonth() &&
-             date1.getDate() === date2.getDate();
-    },
-    formatDate(date) {
-      const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
-      return date.toLocaleDateString('ko-KR', options);
-    },
-    viewRoute(routeId) {
-      // 루트 상세보기로 이동 (실제 구현에서는 라우터 사용)
-      alert(`루트 ID: ${routeId} 상세보기로 이동합니다.`);
     }
-  },
-  mounted() {
-    this.generateCalendar();
-    
-    // 오늘 날짜에 러닝 기록이 있는지 확인하고 선택
-    const today = this.calendarDays.find(day => 
-      day.date && this.isSameDay(day.date, this.currentDate)
-    );
-    
-    if (today && today.hasRun) {
-      this.selectDay(today);
-    }
-  }
-};
-</script>
-
-<style scoped>
-.container {
-  max-width: 100%;
-  margin: 0 auto;
-  background-color: var(--background-color, #F5F5F5);
-  min-height: 100vh;
-  padding: 16px;
-  animation: fadeIn 0.4s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (min-width: 768px) {
-  .container {
-    max-width: 700px;
-    margin: 0 auto;
-  }
-}
-
-/* 헤더 */
-.profile-header {
-  margin-bottom: 20px;
-}
-
-.page-title {
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--dark-text, #333);
-}
-
-/* 프로필 카드 */
-.profile-card {
-  background-color: var(--card-color, white);
-  border-radius: var(--border-radius, 16px);
-  box-shadow: var(--shadow-md, 0 2px 8px rgba(0, 0, 0, 0.08));
-  padding: 20px;
-  margin-bottom: 20px;
-}
-
-.profile-info {
-  display: flex;
-  align-items: center;
-}
-
-.profile-avatar {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  overflow: hidden;
-  margin-right: 20px;
-}
-
-.profile-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.profile-details {
-  flex: 1;
-}
-
-.profile-name {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 4px;
-  color: var(--dark-text, #333);
-}
-
-.profile-level {
-  font-size: 14px;
-  color: var(--primary-color, #FF5722);
-  margin-bottom: 12px;
-}
-
-.profile-stats {
-  display: flex;
-  gap: 16px;
-}
-
-.stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.stat-value {
-  font-weight: 600;
-  color: var(--dark-text, #333);
-}
-
-.stat-label {
-  font-size: 12px;
-  color: var(--medium-text, #757575);
-}
-
-/* 러닝 통계 카드 */
-.stats-card {
-  background-color: var(--card-color, white);
-  border-radius: var(--border-radius, 16px);
-  box-shadow: var(--shadow-md, 0 2px 8px rgba(0, 0, 0, 0.08));
-  padding: 20px;
-  margin-bottom: 20px;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.card-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--dark-text, #333);
-}
-
-.card-subtitle {
-  font-size: 14px;
-  color: var(--primary-color, #FF5722);
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-}
-
-.stat-item {
-  display: flex;
-  align-items: center;
-  background-color: rgba(255, 87, 34, 0.05);
-  padding: 16px;
-  border-radius: var(--border-radius, 12px);
-}
-
-.stat-icon {
-  font-size: 24px;
-  margin-right: 12px;
-}
-
-.stat-content {
-  display: flex;
-  flex-direction: column;
-}
-
-/* 캘린더 섹션 */
-.calendar-section {
-  background-color: var(--card-color, white);
-  border-radius: var(--border-radius, 16px);
-  box-shadow: var(--shadow-md, 0 2px 8px rgba(0, 0, 0, 0.08));
-  padding: 20px;
-  margin-bottom: 20px;
-}
-
-.month-selector {
-  display: flex;
-  align-items: center;
-}
-
-.month-btn {
-  background: none;
-  border: none;
-  color: var(--primary-color, #FF5722);
-  cursor: pointer;
-  font-size: 20px;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-}
-
-.month-btn:hover {
-  background-color: rgba(255, 87, 34, 0.1);
-}
-
-.current-month {
-  font-weight: 500;
-  margin: 0 12px;
-  min-width: 100px;
-  text-align: center;
-}
-
-.calendar-weekdays {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  margin-bottom: 8px;
-  border-bottom: 1px solid var(--border-color, #EEE);
-  padding-bottom: 8px;
-}
-
-.weekday {
-  text-align: center;
-  font-weight: 500;
-  font-size: 14px;
-  color: var(--medium-text, #757575);
-}
-
-.calendar-days {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-}
-
-.calendar-day {
-  aspect-ratio: 1/1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: var(--transition, all 0.3s ease);
-}
-
-.calendar-day:not(.empty):hover {
-  background-color: rgba(255, 87, 34, 0.1);
-}
-
-.calendar-day.today {
-  border: 2px solid var(--primary-color, #FF5722);
-}
-
-.calendar-day.active {
-  background-color: var(--primary-color, #FF5722);
-  color: white;
-}
-
-.calendar-day.active .run-indicator {
-  background-color: white;
-}
-
-.calendar-day.empty {
-  cursor: default;
-}
-
-.day-number {
-  font-weight: 500;
-  font-size: 14px;
-}
-
-.run-indicator {
-  width: 6px;
-  height: 6px;
-  background-color: var(--primary-color, #FF5722);
-  border-radius: 50%;
-  position: absolute;
-  bottom: 4px;
-}
-
-/* 러닝 기록 상세 */
-.run-details {
-  margin-bottom: 24px;
-}
-
-.run-date {
-  display: flex;
-  align-items: center;
-  font-weight: 600;
-  margin-bottom: 12px;
-  color: var(--primary-color, #FF5722);
-}
-
-.run-date .icon {
-  margin-right: 8px;
-}
-
-.run-card {
-  background-color: var(--card-color, white);
-  border-radius: var(--border-radius, 16px);
-  box-shadow: var(--shadow-md, 0 2px 8px rgba(0, 0, 0, 0.08));
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.run-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.run-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--dark-text, #333);
-}
-
-.run-time {
-  font-size: 14px;
-  color: var(--medium-text, #757575);
-}
-
-.run-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.run-stat {
-  display: flex;
-  align-items: center;
-  background-color: rgba(255, 87, 34, 0.05);
-  padding: 8px 12px;
-  border-radius: 12px;
-  font-size: 14px;
-}
-
-.run-stat .stat-icon {
-  margin-right: 6px;
-  font-size: 16px;
-}
-
-.run-stat .stat-label {
-  margin-right: 4px;
-  color: var(--medium-text, #757575);
-}
-
-.run-stat .stat-value {
-  font-weight: 500;
-}
-
-.run-map-preview {
-  position: relative;
-}
-
-.route-image {
-  width: 100%;
-  border-radius: var(--border-radius, 12px);
-  height: 140px;
-  object-fit: cover;
-}
-
-.view-route-btn {
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  background-color: var(--primary-color, #FF5722);
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-.view-route-btn:hover {
-  background-color: var(--primary-dark, #E64A19);
-}
-
-/* 러닝 기록 없음 메시지 */
-.no-run-message {
-  background-color: var(--card-color, white);
-  border-radius: var(--border-radius, 16px);
-  box-shadow: var(--shadow-md, 0 2px 8px rgba(0, 0, 0, 0.08));
-  padding: 20px;
-  margin-bottom: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: var(--medium-text, #757575);
-  gap: 12px;
-  text-align: center;
-}
-
-.no-run-message .icon {
-  font-size: 32px;
-}
-
-/* 루트 모음 버튼 */
-.route-collection-btn-container {
-  margin-bottom: 30px;
-  display: flex;
-  justify-content: center;
-}
-
-.route-collection-btn {
-  background-color: var(--primary-color, #FF5722);
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 30px;
-  font-size: 15px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-  box-shadow: var(--shadow-md, 0 2px 8px rgba(0, 0, 0, 0.08));
-  transition: var(--transition, all 0.3s ease);
-}
-
-.route-collection-btn:hover {
-  background-color: var(--primary-dark, #E64A19);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg, 0 4px 12px rgba(0, 0, 0, 0.15));
-}
-
-/* 모달 */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.modal-content {
-  background-color: var(--card-color, white);
-  border-radius: var(--border-radius, 16px);
-  width: 90%;
-  max-width: 600px;
-  max-height: 80vh;
-  overflow-y: auto;
-  padding: 20px;
-  box-shadow: var(--shadow-lg, 0 10px 25px rgba(0, 0, 0, 0.15));
-  animation: slideUp 0.3s ease-out;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border-color, #EEE);
-}
-
-.modal-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--dark-text, #333);
-}
-
-.close-modal-btn {
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: var(--medium-text, #757575);
-  cursor: pointer;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: var(--transition, all 0.3s ease);
-}
-
-.close-modal-btn:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-  color: var(--primary-color, #FF5722);
-}
-
-/* 루트 그리드 */
-.routes-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 16px;
-}
-
-.route-item {
-  background-color: var(--card-color, white);
-  border-radius: var(--border-radius, 12px);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.1));
-  transition: var(--transition, all 0.3s ease);
-  cursor: pointer;
-}
-
-.route-item:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.1));
-}
-
-.route-image-container {
-  width: 100%;
-  height: 140px;
-  overflow: hidden;
-}
-
-.route-thumbnail {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.route-item:hover .route-thumbnail {
-  transform: scale(1.05);
-}
-
-.route-info {
-  padding: 12px;
-}
-
-.route-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--dark-text, #333);
-  margin-bottom: 6px;
-}
-
-.route-meta {
-  font-size: 13px;
-  color: var(--medium-text, #757575);
-  display: flex;
-  align-items: center;
-}
-
-.route-separator {
-  margin: 0 6px;
-}
-
-/* 반응형 조정 */
-@media (max-width: 768px) {
-  .routes-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 480px) {
-  .routes-grid {
-    grid-template-columns: 1fr;
+  };
+  </script>
+  
+  <style scoped>
+  .profile-container {
+    background-color: #FFF8F2;
+    min-height: 100vh;
+    padding-bottom: 60px;
+    font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
   }
   
-  .modal-content {
-    width: 95%;
-    padding: 16px;
+  .user-profile-card {
+    background-color: white;
+    border-radius: 16px;
+    margin: 20px 16px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   }
-}
-</style>
+  
+  .profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .profile-avatar {
+    position: relative;
+    margin-right: 16px;
+  }
+  
+  .avatar-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #FF7043;
+  }
+  
+  .level-badge {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background-color: #FF7043;
+    color: white;
+    border-radius: 12px;
+    font-size: 12px;
+    padding: 2px 8px;
+    font-weight: 600;
+  }
+  
+  .profile-basic-info {
+    flex: 1;
+  }
+  
+  .user-nickname {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 4px;
+    color: #333;
+  }
+  
+  .user-desc {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 10px;
+  }
+  
+  .edit-profile-btn {
+    display: inline-block;
+    background-color: #F0F0F0;
+    color: #555;
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 16px;
+    cursor: pointer;
+  }
+  
+  .edit-profile-btn:hover {
+    background-color: #E0E0E0;
+  }
+  
+  .follow-stats {
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0;
+    border-top: 1px solid #f2f2f2;
+    border-bottom: 1px solid #f2f2f2;
+    margin: 0 -8px 20px;
+  }
+  
+  .follow-stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .follow-count {
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+  }
+  
+  .follow-label {
+    font-size: 13px;
+    color: #888;
+  }
+  
+  .detailed-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .info-label {
+    font-size: 14px;
+    color: #555;
+  }
+  
+  .info-value {
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+  }
+  
+  .info-value-goal {
+    font-size: 14px;
+    color: #FF7043;
+    font-weight: 600;
+  }
+  
+  .info-value-highlight {
+    font-size: 16px;
+    color: #FF7043;
+    font-weight: 700;
+  }
+  
+  .total-distance {
+    margin-top: 4px;
+  }
+  
+  /* 탭 메뉴 */
+  .tab-container {
+    display: flex;
+    overflow-x: auto;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    margin-bottom: 12px;
+    white-space: nowrap;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+  .tab-container::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+  
+  .tab-item {
+    padding: 14px 16px;
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+  }
+  
+  .tab-item.active {
+    color: #FF7043;
+    font-weight: 600;
+  }
+  
+  .tab-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #FF7043;
+  }
+  
+  /* 탭 콘텐츠 */
+  .tab-content {
+    margin: 0 16px;
+  }
+  
+  .tab-panel {
+    margin-bottom: 20px;
+  }
+  
+  .empty-state {
+    text-align: center;
+    padding: 40px 0;
+    color: #888;
+  }
+  
+  .empty-state p {
+    margin-bottom: 16px;
+  }
+  
+  .action-btn {
+    background-color: #FF7043;
+    color: white;
+    border: none;
+    border-radius: 24px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  /* 게시글 카드 */
+  .post-card {
+    background-color: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+  
+  .post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  
+  .post-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  
+  .post-author {
+    font-weight: 600;
+    color: #333;
+    margin-right: 8px;
+  }
+  
+  .post-time {
+    font-size: 12px;
+    color: #999;
+  }
+  
+  .post-content {
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+    color: #333;
+  }
+  
+  .post-footer {
+    display: flex;
+    gap: 16px;
+  }
+  
+  .post-action {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+  }
+  
+  .action-icon {
+    font-size: 16px;
+    opacity: 0.7;
+  }
+  
+  .action-icon.active {
+    opacity: 1;
+  }
+  
+  .action-count {
+    font-size: 14px;
+    color: #666;
+  }
+  
+  /* 유저 리스트 */
+  .user-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .user-item {
+    display: flex;
+    align-items: center;
+    background-color: white;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+  
+  .user-item-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    margin-right: 12px;
+  }
+  
+  .user-item-info {
+    flex: 1;
+  }
+  
+  .user-item-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    display: block;
+    margin-bottom: 2px;
+  }
+  
+  .user-item-desc {
+    font-size: 13px;
+    color: #777;
+  }
+  
+  .follow-btn {
+    background-color: #FF7043;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  .follow-btn.following {
+    background-color: #F0F0F0;
+    color: #555;
+  }
+  </style>
