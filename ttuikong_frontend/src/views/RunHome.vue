@@ -69,7 +69,7 @@ export default {
 <style scoped>
 .run-container {
   min-height: 100vh;
-  background-color: #f0f9f0;
+  background-color: white;
 }
 
 /* 애니메이션 효과 */

@@ -1,6 +1,8 @@
 // views/RunWithRank.vue
 <template>
-  <div>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet" />
+
+  <div class="container">
     <h3>🔥 러닝 랭킹</h3>
 
     <div class="rank-container">
@@ -28,8 +30,8 @@
     </div>
 
     <!-- <button class="back-button" @click="goBack">돌아가기</button> -->
-     <br>
-     <br>
+    <br>
+    <br>
     
     <!-- 추가된 네비게이션 메뉴 -->
     <div class="run-nav">
@@ -83,9 +85,17 @@ export default {
 </script>
 
 <style scoped>
+.container {
+    background-color: #ffe3d6;
+}
+
+h3 {
+  padding: 10px;
+}
+
 h3, h4 {
   font-size: 25px;
-  margin: 15px 0 10px 15px;
+  margin: 10px 0 10px 15px;
   font-weight: 600;
   color: #333;
 }
@@ -111,7 +121,7 @@ h4 {
 }
 
 .rank-item.highlight {
-  background: linear-gradient(to right, #E8F5E9, white);
+  background: linear-gradient(to right, #ffe3d6, white);
   border-left: 4px solid #FF7E47;
 }
 

@@ -101,25 +101,25 @@ export default {
 <style scoped>
 /* 전체 페이지 배경 */
 :root {
-  --main-bg-color: #e8f5e2;
+  --main-bg-color: #fffbf9;
   --header-bg-color: #FF7043;
   --send-button-color: #FF7043;
   --send-button-hover: #FF7043;
-  --my-bubble-color: #bbdefb;
-  --other-bubble-color: #e1f5fe;
-  --chat-box-bg: #f5fff7;
+  --my-bubble-color: #fbd8bb;
+  --other-bubble-color: #feeee1;
+  --chat-box-bg: #fffbf9;
   --border-radius: 20px;
   --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  --border-color: #c8e6c9;
+  --border-color: #e6d4c8;
 }
 
 body {
   background-color: var(--main-bg-color);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-image: 
-    radial-gradient(circle at 50% 50%, rgba(144, 238, 144, 0.15) 10%, transparent 10.5%),
-    radial-gradient(circle at 70% 20%, rgba(144, 238, 144, 0.1) 15%, transparent 15.5%),
-    radial-gradient(circle at 20% 80%, rgba(144, 238, 144, 0.15) 8%, transparent 8.5%);
+    radial-gradient(circle at 50% 50%, rgba(238, 189, 144, 0.15) 10%, transparent 10.5%),
+    radial-gradient(circle at 70% 20%, rgba(238, 189, 144, 0.15) 15%, transparent 15.5%),
+    radial-gradient(circle at 20% 80%, rgba(238, 189, 144, 0.15) 8%, transparent 8.5%);
   background-size: 60px 60px, 80px 80px, 70px 70px;
   background-position: 0 0, 30px 40px, 50px 20px;
 }
@@ -298,7 +298,7 @@ body {
   background-color: var(--my-bubble-color);
   border-bottom-right-radius: 4px;
   color: #333;
-  border: 1px solid rgba(187, 222, 251, 0.5);
+  border: 1px solid rgba(251, 208, 187, 0.5);
 }
 
 .me .bubble:after {
@@ -311,15 +311,15 @@ body {
   background-color: var(--my-bubble-color);
   border-bottom-left-radius: 16px;
   z-index: -1;
-  border-right: 1px solid rgba(187, 222, 251, 0.5);
-  border-bottom: 1px solid rgba(187, 222, 251, 0.5);
+  border-right: 1px solid rgba(251, 207, 187, 0.5);
+  border-bottom: 1px solid rgba(251, 207, 187, 0.5);
 }
 
 .other .bubble {
   background-color: var(--other-bubble-color);
   border-bottom-left-radius: 4px;
   color: #333;
-  border: 1px solid rgba(225, 245, 254, 0.5);
+  border: 1px solid rgba(251, 207, 187, 0.5);
 }
 
 .other .bubble:after {
@@ -332,8 +332,8 @@ body {
   background-color: var(--other-bubble-color);
   border-bottom-right-radius: 16px;
   z-index: -1;
-  border-left: 1px solid rgba(225, 245, 254, 0.5);
-  border-bottom: 1px solid rgba(225, 245, 254, 0.5);
+  border-left: 1px solid rgba(251, 207, 187, 0.5);
+  border-bottom: 1px solid rgba(251, 207, 187, 0.5);
 }
 
 .chat-input-area {
@@ -364,7 +364,7 @@ body {
   font-size: 1rem;
   margin-right: 10px;
   transition: all 0.3s;
-  background-color: #f9fff9;
+  background-color: #fffbf9;
   box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
 }
 

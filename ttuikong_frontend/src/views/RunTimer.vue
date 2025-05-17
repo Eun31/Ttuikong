@@ -7,35 +7,27 @@
       <div id="info">{{ infoText }}</div>
     </div> -->
 
-<div class="timer-card">
-  <h2>현재 러닝 시간</h2>
-  <div class="time">{{ formattedTime }}</div>
-
-  <div class="play-area">
-  <div class="dog-zone">
-    <img
-      class="dog-image"
-      :src="isRunning ? dogRun : dogSit"
-      alt="강아지 상태"
-    />
-
-    <transition name="fade">
-      <div v-if="isRunning" class="paw-prints">
-        <img src="@/assets/paw.png" class="paw one" />
-        <img src="@/assets/paw.png" class="paw two" />
-        <img src="@/assets/paw.png" class="paw three" />
-        <img src="@/assets/paw.png" class="paw four" />
+  <div class="timer-card">
+    <div class="play-area">
+      <div class="dog-zone">
+        <!-- 타이머 -->
+        <h2>현재 러닝 시간</h2>
+        <div class="time">{{ formattedTime }}</div>
+        <!-- 강아지 이미지 -->
+        <img
+          class="dog-image"
+          :src="isRunning ? dogRun : dogSit"
+          alt="강아지 상태"
+        />
       </div>
-    </transition>
-  </div>
-  <button class="play-button" @click="toggleTimer">
-    {{ isRunning ? '■' : '▶' }}
-  </button>
+    </div>
+    <!-- 플레이 버튼 -->
+      <button class="play-button" @click="toggleTimer">
+        {{ isRunning ? '■' : '▶' }}
+      </button>
 </div>
 
-</div>
 
-    
     <div class="crew-list-section">
       <div class="crew-top">
         <h3>크루 목록</h3>
@@ -103,12 +95,14 @@ export default {
   emits: ['navigate'],
   data() {
     return {
+      searchQuery: '', 
       dogSit,
       dogRun,
       seconds: 0,
       timer: null,
       isRunning: false,
       map: null,
+      kakaoMapLoaded: false,
       infoText: '러닝을 시작하려면 ▶를 누르세요',
       positions: [],
       distance: 0,
@@ -165,7 +159,7 @@ export default {
 
   },
   mounted() {
-    this.initMap();
+    this.loadKakaoMapScript();
   },
   beforeUnmount() {
     if (this.timer) {
@@ -173,21 +167,80 @@ export default {
     }
   },
   methods: {
-    toggleTimer() {
-      if (this.isRunning) {
-        // 타이머 정지
-        clearInterval(this.timer);
-        this.saveRunningData();
-      } else {
-        // 타이머 시작
-        this.timer = setInterval(() => {
-          this.seconds++;
-          this.updateLocation();
-        }, 1000);
-        this.infoText = '달리는 중...';
+    loadKakaoMapScript() {
+      // 이미 로드된 스크립트가 있는지 확인
+      const existingScript = document.getElementById('kakao-map-sdk');
+      if (existingScript) {
+        this.waitForKakao();
+        return;
       }
-      this.isRunning = !this.isRunning;
+
+      // API 키 가져오기
+      fetch("http://localhost:8080/api/config/kakao-map-key")
+        .then(res => res.text())
+        .then(apiKey => {
+          const script = document.createElement("script");
+          script.id = "kakao-map-sdk";
+          script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&autoload=false`;
+          script.async = true;
+          script.onload = () => {
+            // 스크립트 로드 완료 후 카카오맵 초기화
+            if (window.kakao && window.kakao.maps) {
+              window.kakao.maps.load(() => {
+                this.kakaoMapLoaded = true;
+                this.initMap();
+              });
+            }
+          };
+          document.head.appendChild(script);
+        })
+        .catch(error => {
+          console.error("Kakao map key fetch error", error);
+          this.infoText = 'API 키를 가져오는 중 오류가 발생했습니다.';
+        });
     },
+    
+    waitForKakao() {
+      // 카카오 맵 객체가 로드될 때까지 대기
+      if (window.kakao && window.kakao.maps) {
+        window.kakao.maps.load(() => {
+          this.kakaoMapLoaded = true;
+          this.initMap();
+        });
+      } else {
+        setTimeout(() => this.waitForKakao(), 100);
+      }
+    },
+
+    async toggleTimer() {
+    if (this.isRunning) {
+      clearInterval(this.timer);
+      await this.saveRunningData(); // 종료시 저장
+    } else {
+      // 러닝 시작 백엔드 알림
+      const startTime = new Date().toISOString();
+      this.startTime = startTime;
+
+      await fetch("http://localhost:8080/api/runs/running-status", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          startTime: startTime,
+          status: "start"
+        })
+      });
+
+      this.timer = setInterval(() => {
+        this.seconds++;
+        if (this.kakaoMapLoaded) this.updateLocation();
+      }, 1000);
+      this.infoText = '달리는 중...';
+    }
+    this.isRunning = !this.isRunning;
+  },
+
     toggleCrew(id) {
       if (this.expandedCrews.includes(id)) {
         this.expandedCrews = this.expandedCrews.filter(cid => cid !== id);
@@ -195,22 +248,28 @@ export default {
         this.expandedCrews.push(id);
       }
     },
+    
     initMap() {
-      if (window.kakao && window.kakao.maps) {
+      try {
         const mapContainer = document.getElementById('map');
+        if (!mapContainer) {
+          console.error('Map container not found');
+          return;
+        }
+        
         const mapOption = {
-          center: new kakao.maps.LatLng(37.566826, 126.9786567),
+          center: new window.kakao.maps.LatLng(37.566826, 126.9786567),
           level: 3
         };
-        this.map = new kakao.maps.Map(mapContainer, mapOption);
         
-        // 현재 위치 표시
+        this.map = new window.kakao.maps.Map(mapContainer, mapOption);
+
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
             (position) => {
               const lat = position.coords.latitude;
               const lng = position.coords.longitude;
-              const locPosition = new kakao.maps.LatLng(lat, lng);
+              const locPosition = new window.kakao.maps.LatLng(lat, lng);
               this.map.setCenter(locPosition);
             },
             (err) => {
@@ -221,24 +280,30 @@ export default {
         } else {
           this.infoText = '이 브라우저에서는 위치 기능을 지원하지 않습니다.';
         }
-      } else {
-        console.error('Kakao maps SDK not loaded');
-        this.infoText = '지도를 로드할 수 없습니다.';
+      } catch (error) {
+        console.error('Error initializing map:', error);
+        this.infoText = '지도를 초기화하는 중 오류가 발생했습니다.';
       }
     },
+
     updateLocation() {
+      if (!this.kakaoMapLoaded || !window.kakao || !window.kakao.maps) {
+        console.warn('Kakao maps not loaded yet');
+        return;
+      }
+      
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
-            const newPosition = new kakao.maps.LatLng(lat, lng);
+            const newPosition = new window.kakao.maps.LatLng(lat, lng);
             
             // 위치 추가 및 거리 계산
             if (this.positions.length > 0) {
               const lastPosition = this.positions[this.positions.length - 1];
               const linePath = [lastPosition, newPosition];
-              const polyline = new kakao.maps.Polyline({
+              const polyline = new window.kakao.maps.Polyline({
                 path: linePath,
                 strokeWeight: 5,
                 strokeColor: '#db4040',
@@ -262,43 +327,71 @@ export default {
         );
       }
     },
-    saveRunningData() {
-      // 러닝 데이터 저장 로직
-      const runData = {
-        duration: this.seconds,
-        distance: this.distance,
-        date: new Date(),
-        path: this.positions
-      };
-      
-      // 로컬 스토리지에 저장 (나중에 서버로 전송하도록 변경 가능)
-      const savedRuns = JSON.parse(localStorage.getItem('runningData') || '[]');
-      savedRuns.push(runData);
-      localStorage.setItem('runningData', JSON.stringify(savedRuns));
-      
-      this.infoText = `러닝 완료! ${(this.distance/1000).toFixed(2)}km를 ${this.formattedTime} 동안 달렸습니다.`;
+    
+    async saveRunningData() {
+      const endTime = new Date().toISOString();
+
+      await fetch("http://localhost:8080/api/runs/track-location", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          startTime: this.startTime,
+          endTime: endTime,
+          distance: this.distance
+        })
+      });
+
+      this.infoText = `러닝 완료! ${(this.distance / 1000).toFixed(2)}km를 ${this.formattedTime} 동안 달렸습니다.`;
     },
+
+    async uploadMapImage(file) {
+      const formData = new FormData();
+      formData.append("image", file); // 이미지 파일
+      formData.append("startTime", this.startTime);
+      formData.append("endTime", new Date().toISOString());
+
+      await fetch("http://localhost:8080/api/runs/upload-map-image", {
+        method: "POST",
+        body: formData
+      });
+    },
+
     // 추가된 네비게이션 메소드
     stayOnTimer() {
       // 현재 화면이므로 아무 작업 안함
-    },    goToChat() {
+    },
+    
+    goToChat() {
       // 채팅 페이지로 이동
       this.$router.push('/chat');
     },
+    
     navigateToTimer() {
       this.$emit('navigate', 'RunTimer');
     },
+    
     navigateToRank() {
       this.$emit('navigate', 'RunWithRank');
-    }
+    },
     
+    createCrew() {
+      // 크루 생성 로직 구현 필요
+      console.log('크루 생성 기능 개발 필요');
+    },
+    
+    joinCrew(crew) {
+      // 크루 가입 로직 구현 필요
+      console.log('크루 가입 기능 개발 필요:', crew.name);
+    }
   }
 }
 </script>
 
 <style scoped>
-
 @import url('https://fonts.googleapis.com/css2?family=Pretendard&display=swap');
+
 .run-container {
   padding: 16px;
   background-color: #FFF8F2;
@@ -321,7 +414,6 @@ body {
   font-family: sans-serif;
   background-color: #f0f9f0;
   margin: 0;
-  padding: 20px;
   max-width: 390px; /* 가로 지정 */
 }
 
@@ -333,12 +425,15 @@ body {
   position: absolute;
   top: -9999px;
 }
+
 .timer-card {
-  background: linear-gradient(135deg, #FFCE9E, #FFA172);
-  border-radius: 20px;
-  padding: 24px;
-  color: #fff;
+  color: orange;
+  background-color: #FFE3D6;
   text-align: center;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   box-shadow: 0 4px 12px rgba(255, 112, 67, 0.25);
   font-family: 'Pretendard', sans-serif;
   position: relative;
@@ -347,13 +442,11 @@ body {
 
 .timer-card h2 {
   font-size: 16px;
-  margin-bottom: 8px;
 }
 
 .timer-card .time {
   font-size: 42px;
   font-weight: 800;
-  margin-bottom: 16px;
 }
 
 .play-area {
@@ -361,14 +454,12 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  gap: 16px;
+  gap: 10px;
   background: linear-gradient(135deg, #FFF5E1 60%, #FFD1A1 100%);
-  border-radius: 32px;
-  padding: 32px 24px 24px 24px;
-  box-shadow: 0 6px 24px rgba(255, 112, 67, 0.15);
+  padding: 10px;
+  box-shadow: 0 6px 20px rgba(255, 112, 67, 0.15);
   position: relative;
   min-width: 300px;
-
   background-image: url('@/assets/dog_bg.png');
   background-size: cover;       
   background-position: center;   
@@ -377,75 +468,30 @@ body {
 
 .dog-zone {
   position: relative;
-  width: 100%;
-  height: 150px; 
+  width: 70%;
 }
 
 .dog-image {
-  width: 100%;
-  height: 100%;
+  width: 50%;
   object-fit: contain;
-  animation: float 2s ease-in-out infinite;
-  filter: drop-shadow(0 4px 16px rgba(255, 160, 67, 0.15));
-}
-
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-12px); }
-  100% { transform: translateY(0px); }
-}
-
-/* 발자국 애니메이션 */
-.paw-prints {
-  position: absolute;
-  width: 100%;
-  top: 5%;
-  left: -150px;
-  pointer-events: none;
-}
-
-.paw {
-  position: absolute;
-  width: 50px;
-  opacity: 0.25;
-  filter: drop-shadow(0 2px 4px rgba(255, 160, 67, 0.18));
-  animation: paw-step 1.5s linear infinite;
-}
-
-.paw.one   { top: 20px;  left: 10px;   animation-delay: 0s;   transform: rotate(-10deg);}
-.paw.two   { top: 60px;  left: 80px;   animation-delay: 0.3s; transform: rotate(12deg);}
-.paw.three { top: 100px; left: 40px;   animation-delay: 0.6s; transform: rotate(-5deg);}
-.paw.four  { top: 30px;  left: 110px;  animation-delay: 0.8s; transform: rotate(18deg);}
-.paw.five  { top: 120px; left: 100px;  animation-delay: 1.1s; transform: rotate(-15deg);}
-
-@keyframes paw-step {
-  0%   { opacity: 0.25; transform: scale(1) translateY(0);}
-  100% { opacity: 0;    transform: scale(1.3) translateY(-30px);}
+  margin-top: -26px;
+  margin-left: 25px;
+  filter: drop-shadow(0 4px 10px rgba(255, 160, 67, 0.15));
 }
 
 .play-button {
   background: linear-gradient(135deg, #FFB172, #FF7043);
   color: #fff;
   border: none;
-  border-radius: 50%;
-  width: 72px;
-  height: 72px;
-  font-size: 32px;
+  width: 100%;
+  height: 5%;
+  font-size: 30px;
   font-weight: bold;
   cursor: pointer;
   box-shadow: 0 4px 16px rgba(255, 112, 67, 0.22);
-  transition: 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 10px;
-}
-
-.play-button:hover {
-  background: #FFD1A1;
-  color: #FF7043;
-  transform: scale(1.08) rotate(-5deg);
-  box-shadow: 0 8px 28px rgba(255, 112, 67, 0.25);
 }
 
 .section {
@@ -532,8 +578,6 @@ body {
 
 /* 추가된 네비게이션 스타일 */
 .run-nav {
-  position: fixed;
-  bottom: 0;
   left: 0;
   right: 0;
   background: white;
