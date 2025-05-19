@@ -11,12 +11,16 @@
           <i class="ri-close-line" v-else></i>
         </button>
         <nav class="nav-buttons">
-          <button v-if="isLoggedIn" class="nav-btn text" @click="logout"><i class="ri-logout-box-r-line"></i> <span>로그아웃</span></button>
+          <button v-if="isLoggedIn" class="nav-btn text" @click="logout"><i class="ri-logout-box-r-line"></i>
+            <span>로그아웃</span></button>
           <template v-else>
-            <router-link to="/login" class="nav-btn fill"><i class="ri-login-box-line"></i> <span>로그인</span></router-link>
-            <router-link to="/signup" class="nav-btn text"><i class="ri-user-add-line"></i> <span>회원가입</span></router-link>
+            <router-link to="/login" class="nav-btn fill"><i class="ri-login-box-line"></i>
+              <span>로그인</span></router-link>
+            <router-link to="/signup" class="nav-btn text"><i class="ri-user-add-line"></i>
+              <span>회원가입</span></router-link>
           </template>
-          <router-link v-if="isLoggedIn" to="/profile" class="nav-btn fill"><i class="ri-user-line"></i> <span>마이페이지</span></router-link>
+          <router-link v-if="isLoggedIn" to="/profile" class="nav-btn fill"><i class="ri-user-line"></i>
+            <span>마이페이지</span></router-link>
         </nav>
       </div>
     </header>
@@ -25,7 +29,7 @@
       <router-link to="/" class="menu-item" @click="closeMenu">홈</router-link>
       <router-link to="/board" class="menu-item" @click="closeMenu">게시판</router-link>
       <router-link to="/chat" class="menu-item" @click="closeMenu">채팅</router-link>
-      
+
       <!-- 인증 관련 메뉴 항목 추가 -->
       <div class="menu-auth-section">
         <template v-if="isLoggedIn">
@@ -78,7 +82,7 @@ export default {
     logout() {
       // 토큰 제거
       localStorage.removeItem('token');
-      
+
       // 홈으로 리다이렉트
       this.$router.push('/');
     }
@@ -131,7 +135,8 @@ button {
 
 .header {
   background-color: #FFFFFF;
-  padding: 0; /* 패딩 줄임 */
+  padding: 0;
+  /* 패딩 줄임 */
   position: relative;
   color: #333;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -166,49 +171,59 @@ button {
 .nav-buttons {
   display: flex;
   gap: 12px;
-  margin-top: 25px; 
+  margin-top: 25px;
 }
 
 .nav-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 14px; /* 패딩 줄임 (상하 패딩 5px로 감소) */
+  padding: 5px 14px;
+  /* 패딩 줄임 (상하 패딩 5px로 감소) */
   border-radius: 20px;
   font-weight: 500;
   transition: all 0.3s ease;
   font-size: 14px;
-  height: 28px; /* 높이 직접 지정해서 줄임 */
-  line-height: 1; /* 줄 높이 조정 */
+  height: 28px;
+  /* 높이 직접 지정해서 줄임 */
+  line-height: 1;
+  /* 줄 높이 조정 */
 }
 
 .nav-btn i {
-  font-size: 16px; /* 아이콘 크기 줄임 */
+  font-size: 16px;
+  /* 아이콘 크기 줄임 */
 }
 
 .nav-btn.text {
-  color: #FF7E47; /* 주황색 텍스트 */
-  border: 1px solid rgba(255, 126, 71, 0.5); /* 주황색 테두리 */
+  color: #FF7E47;
+  /* 주황색 텍스트 */
+  border: 1px solid rgba(255, 126, 71, 0.5);
+  /* 주황색 테두리 */
 }
 
 .nav-btn.text:hover {
-  background-color: rgba(255, 126, 71, 0.1); /* 주황색 연한 배경 */
+  background-color: rgba(255, 126, 71, 0.1);
+  /* 주황색 연한 배경 */
 }
 
 .nav-btn.fill {
-  background-color: #FF7E47; /* 주황색 배경 */
+  background-color: #FF7E47;
+  /* 주황색 배경 */
   color: white;
 }
 
 .nav-btn.fill:hover {
-  background-color: #F26B31; /* 더 진한 주황색으로 변경 */
+  background-color: #F26B31;
+  /* 더 진한 주황색으로 변경 */
 }
 
 /* 메뉴 토글 버튼 색상 변경 */
 .menu-toggle {
   display: none;
   font-size: 24px;
-  color: #FF7E47; /* 주황색으로 변경 */
+  color: #FF7E47;
+  /* 주황색으로 변경 */
   padding: 8px;
   border-radius: 4px;
 }
@@ -249,9 +264,10 @@ button {
 /* 반응형 스타일 - 모바일 우선 */
 @media (max-width: 768px) {
   .main-nav {
-    display: none; /* 모바일에서는 네비게이션 숨김 */
+    display: none;
+    /* 모바일에서는 네비게이션 숨김 */
   }
-  
+
   .menu-toggle {
     display: block;
     position: absolute;
@@ -263,38 +279,49 @@ button {
 
   .logo img {
     margin-top: 20px;
-    height: 32px; /* 모바일에서 로고 크기 줄임 */
+    height: 32px;
+    /* 모바일에서 로고 크기 줄임 */
   }
 
   /* 네비게이션 버튼은 유지하되 크기 조정 */
   .nav-buttons {
     display: flex;
-    gap: 6px; /* 버튼 간격 줄임 */
-    margin-top: 25px; /* 위쪽으로 이동 조정 */
+    gap: 6px;
+    /* 버튼 간격 줄임 */
+    margin-top: 25px;
+    /* 위쪽으로 이동 조정 */
   }
-  
+
   .nav-btn {
-    padding: 4px 8px; /* 패딩 더 줄임 */
-    font-size: 12px; /* 글꼴 크기 줄임 */
-    height: 26px; /* 높이 줄임 */
+    padding: 4px 8px;
+    /* 패딩 더 줄임 */
+    font-size: 12px;
+    /* 글꼴 크기 줄임 */
+    height: 26px;
+    /* 높이 줄임 */
     display: flex;
     align-items: center;
     justify-content: center;
   }
-  
+
   .nav-btn i {
-    font-size: 14px; /* 아이콘 크기 줄임 */
+    font-size: 14px;
+    /* 아이콘 크기 줄임 */
   }
-  
+
   /* 텍스트를 숨기지 않도록 수정 */
   .nav-btn span {
-    display: inline-block; /* 텍스트 표시 */
-    font-size: 11px; /* 텍스트 크기 더 줄임 */
-    margin-left: 3px; /* 아이콘과 텍스트 사이 간격 */
+    display: inline-block;
+    /* 텍스트 표시 */
+    font-size: 11px;
+    /* 텍스트 크기 더 줄임 */
+    margin-left: 3px;
+    /* 아이콘과 텍스트 사이 간격 */
   }
-  
+
   .main-content {
-    padding: 15px 10px; /* 모바일에서 컨텐츠 영역 패딩 조정 */
+    padding: 0px;
+    /* 모바일에서 컨텐츠 영역 패딩 조정 */
   }
 
   /* 모바일 메뉴 크기 조정 */
@@ -302,12 +329,12 @@ button {
     width: 250px;
     right: -250px;
   }
-  
+
   .menu-item {
     padding: 12px 8px;
     font-size: 16px;
   }
-  
+
   .menu-auth-section {
     margin-top: 15px;
     padding-top: 8px;
@@ -317,48 +344,58 @@ button {
 /* 매우 작은 모바일 기기용 추가 스타일 */
 @media (max-width: 480px) {
   .header {
-    padding: 0.5rem 0; /* 패딩 더 줄임 */
+    padding: 0.5rem 0;
+    /* 패딩 더 줄임 */
   }
-  
+
   .logo img {
     margin-top: 20px;
-    height: 28px; /* 더 작은 기기에서 로고 크기 더 줄임 */
+    height: 28px;
+    /* 더 작은 기기에서 로고 크기 더 줄임 */
   }
-  
+
   .nav-buttons {
-    margin-top: 25px; /* 작은 화면에서 위쪽 이동 조정 */
-    gap: 4px; /* 버튼 간격 더 줄임 */
+    margin-top: 25px;
+    /* 작은 화면에서 위쪽 이동 조정 */
+    gap: 4px;
+    /* 버튼 간격 더 줄임 */
   }
-  
+
   /* 작은 화면에서도 텍스트 유지하도록 수정 */
   .nav-btn {
-    padding: 3px 6px; /* 패딩 더 줄임 */
+    padding: 3px 6px;
+    /* 패딩 더 줄임 */
     min-width: 0;
-    height: 24px; /* 높이 더 줄임 */
+    height: 24px;
+    /* 높이 더 줄임 */
   }
-  
+
   .nav-btn span {
-    display: inline-block; /* 텍스트 표시 유지 */
-    font-size: 10px; /* 텍스트 크기 더 줄임 */
+    display: inline-block;
+    /* 텍스트 표시 유지 */
+    font-size: 10px;
+    /* 텍스트 크기 더 줄임 */
   }
-  
+
   .nav-btn i {
-    font-size: 14px; /* 아이콘 크기 줄임 */
-    margin-right: 1px; /* 아이콘과 텍스트 간격 줄임 */
+    font-size: 14px;
+    /* 아이콘 크기 줄임 */
+    margin-right: 1px;
+    /* 아이콘과 텍스트 간격 줄임 */
   }
-  
+
   /* 작은 모바일 메뉴 조정 */
   .mobile-menu {
     width: 220px;
     right: -220px;
     padding-top: 50px;
   }
-  
+
   .menu-item {
     padding: 10px 8px;
     font-size: 15px;
   }
-  
+
   .menu-auth-section {
     margin-top: 12px;
     padding-top: 6px;
@@ -368,11 +405,13 @@ button {
 /* 큰 화면에서는 모바일 메뉴 토글 버튼 숨김 */
 @media (min-width: 769px) {
   .mobile-menu {
-    display: none; /* PC에서는 모바일 메뉴 숨김 */
+    display: none;
+    /* PC에서는 모바일 메뉴 숨김 */
   }
-  
+
   .menu-toggle {
-    display: none; /* PC에서는 메뉴 토글 버튼 숨김 */
+    display: none;
+    /* PC에서는 메뉴 토글 버튼 숨김 */
   }
 }
 </style>
