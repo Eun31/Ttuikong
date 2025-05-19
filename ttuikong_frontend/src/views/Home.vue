@@ -1,8 +1,7 @@
-
 <template>
   <div class="home-container">
 
-        <!-- 상단 헤더 영역 -->
+    <!-- 상단 헤더 영역 -->
     <div class="welcome-header">
       <h1 class="greeting">안녕하세요,</h1>
       <h1 class="username">{{ userName }}님!</h1>
@@ -97,7 +96,7 @@ export default {
         {
           id: 1,
           author: '러닝마스터',
-          authorAvatar: 'https://via.placeholder.com/36',
+          authorAvatar: 'https://placehold.co/36x36',
           title: '초보 러너를 위한 효과적인 훈련법',
           content: '처음 러닝을 시작하시는 분들을 위한 팁을 공유합니다...',
           likes: 42,
@@ -106,7 +105,7 @@ export default {
         {
           id: 2,
           author: '마라톤조아',
-          authorAvatar: 'https://via.placeholder.com/36',
+          authorAvatar: 'https://placehold.co/36x36',
           title: '서울 근교 러닝 코스 추천',
           content: '주말에 러닝하기 좋은 서울 근교 코스를 소개합니다...',
           likes: 35,
@@ -117,7 +116,7 @@ export default {
         {
           id: 3,
           author: '달려라하니',
-          authorAvatar: 'https://via.placeholder.com/36',
+          authorAvatar: 'https://placehold.co/36x36',
           title: '오늘의 러닝 완료!',
           content: '오늘도 5km 러닝 완료했습니다. 날씨가 정말 좋았어요!',
           likes: 15,
@@ -127,7 +126,7 @@ export default {
         {
           id: 4,
           author: '조깅왕',
-          authorAvatar: 'https://via.placeholder.com/36',
+          authorAvatar: 'https://placehold.co/36x36',
           title: '챌린지 참여했어요',
           content: '"30일 러닝 습관 만들기" 챌린지에 참여했습니다. 함께해요!',
           likes: 22,
@@ -278,7 +277,7 @@ export default {
   border-radius: 16px;
   text-align: center;
   font-weight: 500;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
   padding: 10px 4px;
   font-size: 14px;
   color: #333;
@@ -325,7 +324,7 @@ export default {
   padding: 12px;
   background: #FFF8F2;
   border-radius: 10px;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
 }
 
 .post-header {
@@ -429,21 +428,21 @@ export default {
     grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
     gap: 12px;
   }
-  
+
   .menu-icon {
     width: 50px;
     height: 50px;
     font-size: 20px;
   }
-  
+
   .stat-bubble {
     padding: 12px 8px;
   }
-  
+
   .stat-value {
     font-size: 18px;
   }
-  
+
   .recommend-text {
     font-size: 20px;
   }
@@ -455,9 +454,11 @@ export default {
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.05);
   }
+
   100% {
     transform: scale(1);
   }

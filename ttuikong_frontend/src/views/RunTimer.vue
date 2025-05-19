@@ -3,29 +3,22 @@
   <div>
     <!-- 지도 위치용 hidden map -->
     <div id="map"></div>
-    <!-- <div class="section">
-      <div id="info">{{ infoText }}</div>
-    </div> -->
 
-  <div class="timer-card">
-    <div class="play-area">
-      <div class="dog-zone">
-        <!-- 타이머 -->
-        <h2>현재 러닝 시간</h2>
-        <div class="time">{{ formattedTime }}</div>
-        <!-- 강아지 이미지 -->
-        <img
-          class="dog-image"
-          :src="isRunning ? dogRun : dogSit"
-          alt="강아지 상태"
-        />
+    <div class="timer-card">
+      <div class="play-area">
+        <div class="dog-zone">
+          <!-- 타이머 -->
+          <h2>현재 러닝 시간</h2>
+          <div class="time">{{ formattedTime }}</div>
+          <!-- 강아지 이미지 -->
+          <img class="dog-image" :src="isRunning ? dogRun : dogSit" alt="강아지 상태" />
+        </div>
       </div>
-    </div>
-    <!-- 플레이 버튼 -->
+      <!-- 플레이 버튼 -->
       <button class="play-button" @click="toggleTimer">
         {{ isRunning ? '■' : '▶' }}
       </button>
-</div>
+    </div>
 
 
     <div class="crew-list-section">
@@ -33,24 +26,20 @@
         <h3>크루 목록</h3>
         <button class="create-crew-btn" @click="createCrew">+ 크루 생성</button>
       </div>
-        <!--크루 검색-->
-        <div
-          v-for="crew in filteredCrews"
-          :key="'search-' + crew.id"
-          class="crew-card search-result"
-        >
-          <div class="crew-header">
-            <h4>{{ crew.name }}</h4>
-            <button class="join-btn" @click.stop="joinCrew(crew)">가입하기</button>
-          </div>
-          <p class="crew-meta">참여 인원: {{ crew.members.length }}명 · 목표: {{ crew.mission }}</p>
+      <!--크루 검색-->
+      <div v-for="crew in filteredCrews" :key="'search-' + crew.id" class="crew-card search-result">
+        <div class="crew-header">
+          <h4>{{ crew.name }}</h4>
+          <button class="join-btn" @click.stop="joinCrew(crew)">가입하기</button>
         </div>
-        <div class="group-search">
-          <input type="text" v-model="searchQuery" placeholder="크루 이름으로 검색..." class="search-input" />
-          <button>검색</button>
-        </div>
+        <p class="crew-meta">참여 인원: {{ crew.members.length }}명 · 목표: {{ crew.mission }}</p>
+      </div>
+      <div class="group-search">
+        <input type="text" v-model="searchQuery" placeholder="크루 이름으로 검색..." class="search-input" />
+        <button>검색</button>
+      </div>
 
-    <!-- 내 크루 목록 -->
+      <!-- 내 크루 목록 -->
       <h3>내가 속한 크루</h3>
       <div v-for="crew in crews" :key="crew.id" class="crew-card" @click="toggleCrew(crew.id)">
         <div class="crew-header">
@@ -95,7 +84,7 @@ export default {
   emits: ['navigate'],
   data() {
     return {
-      searchQuery: '', 
+      searchQuery: '',
       dogSit,
       dogRun,
       seconds: 0,
@@ -139,7 +128,7 @@ export default {
         { id: 5, name: '정수빈', status: '오프라인' }
       ],
       expandedCrews: []
-    
+
     }
   },
 
@@ -199,7 +188,7 @@ export default {
           this.infoText = 'API 키를 가져오는 중 오류가 발생했습니다.';
         });
     },
-    
+
     waitForKakao() {
       // 카카오 맵 객체가 로드될 때까지 대기
       if (window.kakao && window.kakao.maps) {
@@ -213,33 +202,36 @@ export default {
     },
 
     async toggleTimer() {
-    if (this.isRunning) {
-      clearInterval(this.timer);
-      await this.saveRunningData(); // 종료시 저장
-    } else {
-      // 러닝 시작 백엔드 알림
-      const startTime = new Date().toISOString();
-      this.startTime = startTime;
+      if (this.isRunning) {
+        clearInterval(this.timer);
+        await this.saveRunningData(); // 종료시 저장
+      } else {
+        // 러닝 시작 백엔드 알림
+        const startTime = new Date().toISOString();
+        this.startTime = startTime;
+        console.log("startTime to send:", startTime);
 
-      await fetch("http://localhost:8080/api/runs/running-status", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          startTime: startTime,
-          status: "start"
-        })
-      });
+        const token = localStorage.getItem("jwt");
+        await fetch("http://localhost:8080/api/runs/running-status", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            startTime: this.startTime,
+            status: "start"
+          })
+        });
 
-      this.timer = setInterval(() => {
-        this.seconds++;
-        if (this.kakaoMapLoaded) this.updateLocation();
-      }, 1000);
-      this.infoText = '달리는 중...';
-    }
-    this.isRunning = !this.isRunning;
-  },
+        this.timer = setInterval(() => {
+          this.seconds++;
+          if (this.kakaoMapLoaded) this.updateLocation();
+        }, 1000);
+        this.infoText = '달리는 중...';
+      }
+      this.isRunning = !this.isRunning;
+    },
 
     toggleCrew(id) {
       if (this.expandedCrews.includes(id)) {
@@ -248,7 +240,7 @@ export default {
         this.expandedCrews.push(id);
       }
     },
-    
+
     initMap() {
       try {
         const mapContainer = document.getElementById('map');
@@ -256,12 +248,12 @@ export default {
           console.error('Map container not found');
           return;
         }
-        
+
         const mapOption = {
           center: new window.kakao.maps.LatLng(37.566826, 126.9786567),
           level: 3
         };
-        
+
         this.map = new window.kakao.maps.Map(mapContainer, mapOption);
 
         if (navigator.geolocation) {
@@ -291,14 +283,14 @@ export default {
         console.warn('Kakao maps not loaded yet');
         return;
       }
-      
+
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
             const newPosition = new window.kakao.maps.LatLng(lat, lng);
-            
+
             // 위치 추가 및 거리 계산
             if (this.positions.length > 0) {
               const lastPosition = this.positions[this.positions.length - 1];
@@ -310,15 +302,15 @@ export default {
                 strokeOpacity: 0.7,
                 strokeStyle: 'solid'
               });
-              
+
               // 거리 계산 (미터 단위)
               const newDistance = polyline.getLength();
               this.distance += newDistance;
-              
+
               // 정보 업데이트
-              this.infoText = `거리: ${(this.distance/1000).toFixed(2)}km`;
+              this.infoText = `거리: ${(this.distance / 1000).toFixed(2)}km`;
             }
-            
+
             this.positions.push(newPosition);
           },
           (err) => {
@@ -327,14 +319,17 @@ export default {
         );
       }
     },
-    
+
     async saveRunningData() {
       const endTime = new Date().toISOString();
+      const token = localStorage.getItem("jwt");
+      console.log("🐛 token:", token);
 
       await fetch("http://localhost:8080/api/runs/track-location", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
           startTime: this.startTime,
@@ -362,25 +357,25 @@ export default {
     stayOnTimer() {
       // 현재 화면이므로 아무 작업 안함
     },
-    
+
     goToChat() {
       // 채팅 페이지로 이동
       this.$router.push('/chat');
     },
-    
+
     navigateToTimer() {
       this.$emit('navigate', 'RunTimer');
     },
-    
+
     navigateToRank() {
       this.$emit('navigate', 'RunWithRank');
     },
-    
+
     createCrew() {
       // 크루 생성 로직 구현 필요
       console.log('크루 생성 기능 개발 필요');
     },
-    
+
     joinCrew(crew) {
       // 크루 가입 로직 구현 필요
       console.log('크루 가입 기능 개발 필요:', crew.name);
@@ -403,7 +398,9 @@ export default {
   background-color: #FFF8F2;
 }
 
-#map, .timer-card, .section > #info {
+#map,
+.timer-card,
+.section>#info {
   position: fixed;
   top: 0;
   left: 0;
@@ -414,7 +411,8 @@ body {
   font-family: sans-serif;
   background-color: #f0f9f0;
   margin: 0;
-  max-width: 390px; /* 가로 지정 */
+  max-width: 390px;
+  /* 가로 지정 */
 }
 
 #map {
@@ -461,9 +459,9 @@ body {
   position: relative;
   min-width: 300px;
   background-image: url('@/assets/dog_bg.png');
-  background-size: cover;       
-  background-position: center;   
-  background-repeat: no-repeat;  
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .dog-zone {
@@ -510,7 +508,10 @@ body {
   padding: 20px;
 }
 
-.crew-list-section h3 { font-size: 18px; margin: 16px 0 10px; }
+.crew-list-section h3 {
+  font-size: 18px;
+  margin: 16px 0 10px;
+}
 
 .crew-card {
   background: #FFF8F2;
@@ -521,6 +522,7 @@ body {
   box-shadow: 0 4px 8px rgba(255, 126, 71, 0.1);
   transition: transform 0.2s ease;
 }
+
 .crew-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 6px 12px rgba(255, 126, 71, 0.2);
@@ -543,19 +545,36 @@ body {
   color: #444;
 }
 
-.sub-title { margin-top: 12px; font-size: 16px; font-weight: bold; color: #333; }
+.sub-title {
+  margin-top: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
 .user-list {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 12px; padding-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding-top: 10px;
 }
+
 .user-card {
-  background: white; border-radius: 12px; padding: 10px; text-align: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  background: white;
+  border-radius: 12px;
+  padding: 10px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
+
 .talk-button {
   margin-top: 10px;
-  background: #FF7043; color: white; border: none;
-  padding: 10px 16px; border-radius: 999px; font-weight: 600;
+  background: #FF7043;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -570,6 +589,7 @@ body {
   box-shadow: 0 3px 5px rgba(255, 112, 67, 0.2);
   transition: all 0.3s ease;
 }
+
 .join-btn:hover {
   background: #FF8A65;
   transform: scale(1.05);
@@ -625,7 +645,8 @@ body {
 
 .group-search input {
   flex: 1;
-  height: 44px; /* 높이 명시 */
+  height: 44px;
+  /* 높이 명시 */
   padding: 0 20px 0 42px;
   font-size: 14px;
   border: 1px solid #ffd9c1;
@@ -640,7 +661,8 @@ body {
 }
 
 .group-search button {
-  height: 44px; /* 동일한 높이 */
+  height: 44px;
+  /* 동일한 높이 */
   padding: 0 20px;
   font-size: 14px;
   font-weight: 600;
@@ -672,15 +694,18 @@ body {
   cursor: pointer;
   transition: 0.3s;
 }
+
 .create-crew-btn:hover {
   background: #FFBFA2;
 }
+
 .crew-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
 }
+
 .search-input {
   width: 100%;
   padding: 10px 14px;
@@ -700,5 +725,4 @@ body {
   color: #666;
   margin-top: 6px;
 }
-
 </style>

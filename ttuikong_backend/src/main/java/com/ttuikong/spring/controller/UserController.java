@@ -101,7 +101,11 @@ public class UserController {
 		response.put("message", "Login successful");
 		response.put("user", loggedUser);
 		response.put("token", token);
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		return ResponseEntity.ok(Map.of(
+        "message", "Login successful",
+        "user", loggedUser,
+        "token", token 
+    ));
 	}
 
 	@Operation(summary = "로그아웃", description = "사용자가 로그아웃합니다.")

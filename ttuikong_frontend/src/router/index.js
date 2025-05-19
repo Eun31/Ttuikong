@@ -125,14 +125,14 @@ const router = createRouter({
 })
 
 // 로그인 필요한 페이지에 대한 네비게이션 가드 설정
-router.beforeEach((to, from, next) => {
-  const isAuthenticated = localStorage.getItem('token')
+router.beforeEach((to, from) => {
+  const isAuthenticated = localStorage.getItem('jwt')
   
   // 로그인 없이 접근 가능한 페이지가 아니면서 인증이 안된 경우
   if (!to.meta.allowAnonymous && !isAuthenticated) {
-    next({ name: 'login' })
+    return { name: 'login' }
   } else {
-    next()
+    return true
   }
 })
 

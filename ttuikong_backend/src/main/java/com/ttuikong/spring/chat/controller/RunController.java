@@ -13,7 +13,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,10 +25,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ttuikong.spring.annotation.LoginRequired;
 import com.ttuikong.spring.annotation.LoginUser;
 import com.ttuikong.spring.chat.model.service.RunService;
 import com.ttuikong.spring.model.dto.Route;
 import com.ttuikong.spring.model.dto.User;
+import com.ttuikong.spring.chat.model.dto.RunningStatus;
+import com.ttuikong.spring.chat.model.dto.TrackLocation;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -75,27 +80,51 @@ public class RunController {
 
     @Operation(summary = "러닝 상태 변화 추적")
     @PostMapping("/running-status")
-    public ResponseEntity<?> startRunning(@RequestBody Map<String, Object> body,
+    @LoginRequired
+    public ResponseEntity<?> startRunning(@RequestBody RunningStatus body,
             @Parameter(hidden = true) @LoginUser User loginUser) {
-        String startTimeStr = (String) body.get("startTime");
-        String status = (String) body.get("status");
-        LocalDateTime startTime = OffsetDateTime.parse(startTimeStr).toLocalDateTime();
-        runService.insertRunningStatus(loginUser.getId(), startTime, status);
-        return ResponseEntity.ok(Map.of("message", "러닝 시작 기록 완료"));
+
+        if (loginUser == null) {
+            System.out.println("❌ loginUser is null");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "로그인 필요"));
+        }
+
+        String startTimeStr = body.getStartTime();
+        String status = body.getStatus();
+
+        System.out.println("📥 raw startTime: " + body.getStartTime());
+        System.out.println("📥 raw status: " + body.getStatus());
+
+        try {
+            LocalDateTime startTime = OffsetDateTime.parse(startTimeStr).toLocalDateTime();
+            runService.insertRunningStatus(loginUser.getId(), startTime, status);
+            return ResponseEntity.ok(Map.of("message", "러닝 시작 기록 완료"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Map.of("error", "서버 에러: " + e.getMessage()));
+        }
     }
 
     @Operation(summary = "러닝 후 시간과 거리 데이터 저장")
     @PostMapping("/track-location")
-    public ResponseEntity<?> trackRunning(@RequestBody Map<String, Object> body,
+    @LoginRequired
+    public ResponseEntity<?> trackRunning(@RequestBody TrackLocation body,
             @Parameter(hidden = true) @LoginUser User loginUser) {
-        String startTimeStr = (String) body.get("startTime");
-        String endTimeStr = (String) body.get("endTime");
-        double distance = Double.parseDouble(body.get("distance").toString());
+       
+        if (loginUser == null) {
+            System.out.println("❌ loginUser is null");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "로그인 필요"));
+        }
 
-        LocalDateTime start = OffsetDateTime.parse(startTimeStr).toLocalDateTime();
-        LocalDateTime end = OffsetDateTime.parse(endTimeStr).toLocalDateTime();
+        System.out.println("📥 [trackRunning] startTime: " + body.getStartTime());
+        System.out.println("📥 [trackRunning] endTime: " + body.getEndTime());
+        System.out.println("📥 [trackRunning] distance: " + body.getDistance());
+
+        LocalDateTime start = OffsetDateTime.parse(body.getStartTime()).toLocalDateTime();
+        LocalDateTime end = OffsetDateTime.parse(body.getEndTime()).toLocalDateTime();
+        double distance = body.getDistance();
+
         long duration = Duration.between(start, end).getSeconds();
-
         runService.updateRunRecord(loginUser.getId(), start, end, distance, duration);
 
         return ResponseEntity.ok(Map.of("message", "러닝 기록 저장 완료"));

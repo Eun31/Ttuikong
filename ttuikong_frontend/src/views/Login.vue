@@ -5,43 +5,33 @@
         <div class="signup-header">
           <img :src="logo" class="logo animated" alt="logo" />
         </div>
-        
+
         <div class="signup-form">
           <div class="form-group">
             <label for="email">이메일</label>
             <div class="input-wrapper">
               <i class="icon-email"></i>
-              <input 
-                type="email" 
-                id="email" 
-                v-model="email" 
-                placeholder="이메일을 입력해주세요" 
-              />
+              <input type="email" id="email" v-model="email" placeholder="이메일을 입력해주세요" />
             </div>
           </div>
-          
+
           <div class="form-group">
             <label for="password">비밀번호</label>
             <div class="input-wrapper">
               <i class="icon-lock"></i>
-              <input 
-                type="password" 
-                id="password" 
-                v-model="password" 
-                placeholder="비밀번호를 입력해주세요" 
-              />
+              <input type="password" id="password" v-model="password" placeholder="비밀번호를 입력해주세요" />
             </div>
           </div>
-          
+
           <button class="btn btn-primary" @click="login">
             로그인 <i class="icon-arrow-right"></i>
           </button>
-          
+
           <div class="login-links">
             <div class="login-divider"></div>
-            
+
             <span class="signup-text">아직 회원이 아니신가요?
-            <router-link to="/signup" class="signup-link">회원가입</router-link>
+              <router-link to="/signup" class="signup-link">회원가입</router-link>
             </span>
           </div>
         </div>
@@ -61,14 +51,28 @@ export default {
     }
   },
   methods: {
-    login() {
+    async login() {
       // 로그인 로직 구현
       console.log('로그인 시도:', this.email);
-      
+
       // 이메일과 비밀번호가 비어있지 않은지 확인
       if (this.email && this.password) {
         // 임시 인증 토큰 저장
-        localStorage.setItem('token', 'example-token-12345');
+        const response = await fetch('http://localhost:8080/api/users/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: this.email,
+            password: this.password
+          })
+        });
+
+        const data = await response.json();
+        localStorage.setItem('jwt', data.token);
+        console.log(data.token);
+
         // 홈 화면으로 리다이렉트
         this.$router.push('/');
       } else {
@@ -120,9 +124,17 @@ export default {
 }
 
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
 }
 
 /* 폼 스타일 */
@@ -188,9 +200,11 @@ input::placeholder {
 
 /* 로그인 버튼 스타일 - 색상 조정 */
 .btn-primary {
-  background-color: #FF8A65; /* 더 부드러운 색상으로 변경 */
+  background-color: #FF8A65;
+  /* 더 부드러운 색상으로 변경 */
   color: white;
-  font-weight: 500; /* 두께 줄임 */
+  font-weight: 500;
+  /* 두께 줄임 */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -208,7 +222,8 @@ input::placeholder {
 }
 
 .btn-primary:hover {
-  background-color: #FF7043; /* 호버 시 약간 더 진한 색상 */
+  background-color: #FF7043;
+  /* 호버 시 약간 더 진한 색상 */
   transform: translateY(-2px);
   box-shadow: var(--shadow-sm);
 }
@@ -262,6 +277,7 @@ input::placeholder {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
