@@ -62,8 +62,13 @@
           <h2 class="post-title">{{ post.title }}</h2>
           <div class="post-body">{{ post.content }}</div>
           
-          <div v-if="post.imageUrl || post.image_url" class="post-image">
-            <img :src="getFullImageUrl(post.imageUrl || post.image_url)" :alt="post.title" @error="handleImageError">
+          <!-- 수정된 이미지 부분 -->
+          <div v-if="validImageUrl" class="post-image">
+            <img 
+              :src="validImageUrl" 
+              @error="handleImageError"
+              :alt="post.title"
+            >
           </div>
           
           <div v-if="post.location" class="post-location">
@@ -94,7 +99,6 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import axios from 'axios';
 import profileImg from '../assets/profile.png';
-import defaultImg from '../assets/profile.png';
 
 // 라우터와 라우트 가져오기
 const router = useRouter();
@@ -141,7 +145,32 @@ const isAuthor = computed(() => {
   return currentUser.value.id && post.value.userId === currentUser.value.id;
 });
 
-// 이미지 URL을 완전한 URL로 변환하는 함수
+// 이미지 URL 유효성 검사 (수정된 부분)
+const validImageUrl = computed(() => {
+  if (!post.value?.imageUrl && !post.value?.image_url) {
+    return null;
+  }
+  
+  const imageUrl = post.value.imageUrl || post.value.image_url;
+  
+  if (!imageUrl || imageUrl.trim() === '') {
+    return null;
+  }
+  
+  if (imageUrl.startsWith('/uploads/')) {
+    return `${API_URL.replace('/api', '')}${imageUrl}`;
+  }
+  
+  return imageUrl;
+});
+
+// 이미지 에러 처리 (추가된 부분)
+const handleImageError = (event) => {
+  console.warn('이미지 로드 실패:', event.target.src);
+  event.target.style.display = 'none';
+};
+
+// 이미지 URL을 완전한 URL로 변환하는 함수 (기존 함수는 유지)
 function getFullImageUrl(imageUrl) {
   if (!imageUrl) return '';
   
@@ -264,7 +293,6 @@ async function fetchPostDetail() {
       console.log('오류 상태:', err.response.status);
       console.log('오류 데이터:', err.response.data);
       
-      // 404 오류인 경우 사용자 친화적 메시지
       if (err.response.status === 404) {
         error.value = '게시글을 찾을 수 없습니다.';
       } else {
@@ -388,15 +416,8 @@ function formatDate(dateString) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
-// 프로필 이미지 얻기
 function getProfileImage() {
   return profileImg;
-}
-
-// 이미지 로딩 에러 처리
-function handleImageError(event) {
-  console.error('이미지 로딩 실패:', event.target.src);
-  event.target.src = defaultImg;
 }
 
 // 컴포넌트 마운트 시 실행
@@ -863,27 +884,5 @@ onMounted(async () => {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
-}
-
-.error-container {
-  text-align: center;
-  padding: 40px 16px;
-  color: #e74c3c;
-}
-
-.retry-btn {
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  cursor: pointer;
-  margin: 8px;
-  transition: all 0.3s ease;
-}
-
-.retry-btn:hover{
-  background: #e65100;
-  transform: translateY(-2px);
 }
 </style>

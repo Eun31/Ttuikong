@@ -190,12 +190,12 @@ const tagInput = ref('');
 const tags = ref([]);
 const isSubmitting = ref(false);
 const loading = ref(false);
+const imageRemoved = ref(false);
 
 const token = localStorage.getItem('jwt');
 
-// 편집 모드 관련
 const postId = ref(null);
-const originalImageUrl = ref(''); // 원본 이미지 URL 저장
+const originalImageUrl = ref('');
 
 const categories = [
   { value: '자유', label: '자유' },
@@ -255,13 +255,19 @@ async function loadPostData() {
     selectedCategory.value = post.category || '자유';
     location.value = post.location || '';
     
-    // 기존 이미지가 있는 경우
+    // 이미지 처리
     if (post.imageUrl || post.image_url) {
-      originalImageUrl.value = post.imageUrl || post.image_url;
-      imagePreviewUrl.value = originalImageUrl.value;
+      const imageUrl = post.imageUrl || post.image_url;
+      originalImageUrl.value = imageUrl;
+      
+      if (imageUrl.startsWith('/uploads/')) {
+        imagePreviewUrl.value = `${API_URL.replace('/api', '')}${imageUrl}`;
+      } else {
+        imagePreviewUrl.value = imageUrl;
+      }
     }
     
-    // 태그가 있는 경우 (문자열이면 배열로 변환, 배열이면 그대로 사용)
+    // 태그 처리
     if (post.tags) {
       if (typeof post.tags === 'string') {
         tags.value = post.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
@@ -272,7 +278,9 @@ async function loadPostData() {
     
     postId.value = parseInt(route.params.id, 10);
     
-    console.log('게시글 데이터 로드 완료:', post);
+    // 초기 상태 설정
+    imageFile.value = null;
+    imageRemoved.value = false;
     
   } catch (error) {
     console.error('게시글 로드 중 오류:', error);
@@ -334,8 +342,11 @@ function handleImageUpload(event) {
 function removeImage() {
   imageFile.value = null;
   imagePreviewUrl.value = '';
-  originalImageUrl.value = '';
-  imageInput.value.value = '';
+  imageRemoved.value = true; // 명시적으로 삭제 의도 표시
+  
+  if (imageInput.value) {
+    imageInput.value.value = '';
+  }
 }
 
 function selectCategory(category) {
@@ -411,7 +422,6 @@ function removeTag(tag) {
 }
 
 async function submitPost() {
-  // 입력 유효성 검사
   if (!title.value.trim()) {
     alert('제목을 입력해주세요.');
     return;
@@ -425,14 +435,12 @@ async function submitPost() {
   isSubmitting.value = true;
   
   try {
-    // 게시글 데이터 객체 생성
     const boardData = {
       title: title.value.trim(),
       content: content.value.trim(),
       category: selectedCategory.value
     };
     
-    // 선택적 필드들 추가
     if (location.value) {
       boardData.location = location.value;
     }
@@ -441,79 +449,111 @@ async function submitPost() {
       boardData.tags = tags.value;
     }
     
-    // FormData 생성
-    const formData = new FormData();
+    console.log('=== 제출 전 상태 확인 ===');
+    console.log('imageFile:', imageFile.value?.name || 'null');
+    console.log('imageRemoved:', imageRemoved.value);
+    console.log('originalImageUrl:', originalImageUrl.value);
     
-    const json = JSON.stringify(boardData);
-    const blob = new Blob([json], {type:"application/json"});
-
-    formData.append('board', blob);
-    
-    // 이미지 파일 추가 (있는 경우만)
-    if (imageFile.value) {
-      formData.append('image', imageFile.value);
-    }
-    
-    console.log('전송할 데이터:');
-    console.log('- boardData:', boardData);
-    console.log('- image:', imageFile.value?.name);
-    console.log('- isEditMode:', isEditMode.value);
-    
-    // API 호출 - 편집 모드에 따라 다른 엔드포인트 사용
     let response;
+    
     if (isEditMode.value) {
-      // 수정 API 호출
+      const formData = new FormData();
+      formData.append('board', new Blob([JSON.stringify(boardData)], {type: "application/json"}));
+      
+      // 새 이미지가 있는 경우 (삭제 후 새 이미지 포함)
+      if (imageFile.value) {
+        console.log('케이스: 새 이미지 업로드');
+        formData.append('image', imageFile.value);
+        // imageRemoved는 자동으로 false (기본값)
+      } 
+      // 이미지 삭제만 하는 경우 (새 이미지 없음)
+      else if (imageRemoved.value && originalImageUrl.value) {
+        console.log('케이스: 기존 이미지 삭제만');
+        formData.append('imageRemoved', 'true');
+      }
+      // 그 외의 경우 (이미지 변경 없음)
+      else {
+        console.log('케이스: 이미지 변경 없음');
+        // FormData에 아무것도 추가하지 않음 (기본값 사용)
+      }
+      
+      // FormData 내용 확인
+      console.log('=== FormData 내용 ===');
+      for (let [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`${key}:`, value.name, `(${value.size} bytes)`);
+        } else if (value instanceof Blob) {
+          console.log(`${key}:`, 'Blob', `(${value.size} bytes)`);
+        } else {
+          console.log(`${key}:`, value);
+        }
+      }
+      
       response = await axios.put(`${API_URL}/board/${postId.value}`, formData, {
         headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
+          Authorization: `Bearer ${token}`
+          // Content-Type은 브라우저가 자동 설정
         }
       });
-      console.log('게시글 수정 성공:', response.data);
-      alert('게시글이 수정되었습니다.');
       
-      // 수정된 게시글 상세 페이지로 이동
+      alert('게시글이 수정되었습니다.');
       router.push(`/board/${postId.value}`);
+      
     } else {
-      // 작성 API 호출
+      // 작성 모드
+      console.log('케이스: 새 게시글 작성');
+      const formData = new FormData();
+      formData.append('board', new Blob([JSON.stringify(boardData)], {type: "application/json"}));
+      
+      if (imageFile.value) {
+        formData.append('image', imageFile.value);
+        console.log('새 게시글에 이미지 추가:', imageFile.value.name);
+      }
+      
       response = await axios.post(`${API_URL}/board/post`, formData, {
         headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
+          Authorization: `Bearer ${token}`
         }
       });
-      console.log('게시글 작성 성공:', response.data);
-      alert('게시글이 작성되었습니다.');
       
-      // 게시글 목록으로 이동
+      alert('게시글이 작성되었습니다.');
       router.push('/board');
     }
     
   } catch (error) {
-    console.error('게시글 처리 중 오류가 발생했습니다:', error);
+    console.error('에러:', error);
     
-    // 상세 오류 정보 출력
     if (error.response) {
-      console.log('오류 상태:', error.response.status);
-      console.log('오류 데이터:', error.response.data);
+      const status = error.response.status;
+      const message = error.response.data?.message || error.response.data;
       
-      // 특정 오류에 대한 사용자 친화적 메시지
-      if (error.response.status === 401) {
-        alert('로그인이 만료되었습니다. 다시 로그인해 주세요.');
-        localStorage.removeItem('userToken');
-        router.push('/login');
-      } else if (error.response.status === 400) {
-        const errorMessage = error.response.data.message || '입력 데이터에 오류가 있습니다.';
-        alert(`오류: ${errorMessage}`);
-      } else if (error.response.status === 403) {
-        alert('게시글을 수정할 권한이 없습니다.');
-      } else if (error.response.status === 404) {
-        alert('게시글을 찾을 수 없습니다.');
-      } else {
-        alert(`게시글 ${isEditMode.value ? '수정' : '작성'}에 실패했습니다. 다시 시도해 주세요.`);
+      switch (status) {
+        case 400:
+          alert(`입력 오류: ${message}`);
+          break;
+        case 401:
+          alert('로그인이 만료되었습니다.');
+          localStorage.removeItem('jwt');
+          router.push('/login');
+          break;
+        case 403:
+          alert('권한이 없습니다.');
+          break;
+        case 404:
+          alert('게시글을 찾을 수 없습니다.');
+          break;
+        case 415:
+          console.error('415 에러 상세:', error.response);
+          alert('요청 형식 오류입니다.');
+          break;
+        case 500:
+          alert('서버 오류가 발생했습니다.');
+          break;
+        default:
+          alert(`오류가 발생했습니다. (${status})`);
       }
     } else {
-      alert('네트워크 오류가 발생했습니다. 인터넷 연결을 확인해 주세요.');
+      alert('네트워크 오류가 발생했습니다.');
     }
   } finally {
     isSubmitting.value = false;
