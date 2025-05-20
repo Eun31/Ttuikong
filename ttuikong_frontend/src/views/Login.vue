@@ -48,6 +48,7 @@ const logo = new URL('../assets/logo_orange.png', import.meta.url).href;
 const email = ref('');
 const password = ref('');
 const router = useRouter();
+const userId = ref('');
 
 const login = async () => {
   console.log('로그인 시도:', email.value);
@@ -67,7 +68,9 @@ const login = async () => {
 
       const data = await response.json();
       localStorage.setItem('jwt', data.token);
+      localStorage.setItem('userId', data.user.id);
       console.log(data.token);
+      console.log(data.user.id);
 
       router.push('/');
     } catch (error) {
