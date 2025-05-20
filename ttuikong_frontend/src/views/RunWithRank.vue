@@ -32,7 +32,7 @@
     <!-- <button class="back-button" @click="goBack">돌아가기</button> -->
     <br>
     <br>
-    
+
     <!-- 추가된 네비게이션 메뉴 -->
     <div class="run-nav">
       <button class="nav-btn" @click="navigateToTimer">개인 러닝</button>
@@ -41,59 +41,89 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'RunWithRank',
-  data() {
-    return {
-      userName: '김러너',
-      myDistance: 45.8,
-      myRanking: 8,
-      rankings: [
-        { id: 1, name: '마라토너', distance: 120.5 },
-        { id: 2, name: '달리기왕', distance: 98.3 },
-        { id: 3, name: '러닝퀸', distance: 87.2 },
-        { id: 4, name: '김달림', distance: 76.1 },
-        { id: 5, name: '박조깅', distance: 68.5 },
-        { id: 6, name: '정스프린트', distance: 58.9 },
-        { id: 7, name: '최건강', distance: 52.6 },
-        { id: 8, name: '김러너', distance: 45.8 },
-        { id: 9, name: '이운동', distance: 41.2 },
-        { id: 10, name: '장마라톤', distance: 38.7 }
-      ]
+<script setup>
+import { ref } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+
+const emit = defineEmits(['navigate']);
+
+// Login 페이지 관련 상태 및 메서드
+const logo = new URL('../assets/logo_orange.png', import.meta.url).href;
+const email = ref('');
+const password = ref('');
+const router = useRouter();
+
+const login = async () => {
+  console.log('로그인 시도:', email.value);
+
+  if (email.value && password.value) {
+    try {
+      const response = await fetch('http://localhost:8080/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: email.value,
+          password: password.value
+        })
+      });
+
+      const data = await response.json();
+      localStorage.setItem('jwt', data.token);
+      console.log(data.token);
+
+      router.push('/');
+    } catch (error) {
+      console.error('로그인 오류:', error);
     }
-  },
-  methods: {
-    getMedalClass(index) {
-      if (index === 0) return 'gold';
-      if (index === 1) return 'silver';
-      if (index === 2) return 'bronze';
-      return '';
-    },
-    goBack() {
-      this.$router.push('/');
-    },
-    // 추가된 네비게이션 메소드
-    navigateToTimer() {
-      this.$emit('navigate', 'RunTimer');
-    },
-    navigateToCrew() {
-      this.$root.$emit('navigate', 'RunWithCrew');
-    }
+  } else {
+    alert('이메일과 비밀번호를 입력해주세요.');
   }
-}
+};
+
+// RunWithRank 컴포넌트 상태 및 메서드
+const userName = ref('김러너');
+const myDistance = ref(45.8);
+const myRanking = ref(8);
+
+const rankings = ref([
+  { id: 1, name: '마라토너', distance: 120.5 },
+  { id: 2, name: '달리기왕', distance: 98.3 },
+  { id: 3, name: '러닝퀸', distance: 87.2 },
+  { id: 4, name: '김달림', distance: 76.1 },
+  { id: 5, name: '박조깅', distance: 68.5 },
+  { id: 6, name: '정스프린트', distance: 58.9 },
+  { id: 7, name: '최건강', distance: 52.6 },
+  { id: 8, name: '김러너', distance: 45.8 },
+  { id: 9, name: '이운동', distance: 41.2 },
+  { id: 10, name: '장마라톤', distance: 38.7 }
+]);
+
+const getMedalClass = (index) => {
+  if (index === 0) return 'gold';
+  if (index === 1) return 'silver';
+  if (index === 2) return 'bronze';
+  return '';
+};
+
+const navigateToTimer = () => {
+  emit('navigate', 'RunTimer');
+};
+
 </script>
 
 <style scoped>
 .container {
-    background-color: #ffe3d6;
+  background-color: #ffe3d6;
 }
 
 h3 {
   padding: 10px;
 }
 
-h3, h4 {
+h3,
+h4 {
   font-size: 25px;
   margin: 10px 0 10px 15px;
   font-weight: 600;

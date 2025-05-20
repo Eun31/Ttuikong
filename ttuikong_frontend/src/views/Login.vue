@@ -40,47 +40,43 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'Login',
-  data() {
-    return {
-      logo: new URL('../assets/logo_orange.png', import.meta.url).href,
-      email: '',
-      password: ''
+<script setup>
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+const logo = new URL('../assets/logo_orange.png', import.meta.url).href;
+const email = ref('');
+const password = ref('');
+const router = useRouter();
+
+const login = async () => {
+  console.log('로그인 시도:', email.value);
+
+  if (email.value && password.value) {
+    try {
+      const response = await fetch('http://localhost:8080/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: email.value,
+          password: password.value
+        })
+      });
+
+      const data = await response.json();
+      localStorage.setItem('jwt', data.token);
+      console.log(data.token);
+
+      router.push('/');
+    } catch (error) {
+      console.error('로그인 오류:', error);
     }
-  },
-  methods: {
-    async login() {
-      // 로그인 로직 구현
-      console.log('로그인 시도:', this.email);
-
-      // 이메일과 비밀번호가 비어있지 않은지 확인
-      if (this.email && this.password) {
-        // 임시 인증 토큰 저장
-        const response = await fetch('http://localhost:8080/api/users/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            email: this.email,
-            password: this.password
-          })
-        });
-
-        const data = await response.json();
-        localStorage.setItem('jwt', data.token);
-        console.log(data.token);
-
-        // 홈 화면으로 리다이렉트
-        this.$router.push('/');
-      } else {
-        alert('이메일과 비밀번호를 입력해주세요.');
-      }
-    }
+  } else {
+    alert('이메일과 비밀번호를 입력해주세요.');
   }
-}
+};
 </script>
 
 <style scoped>

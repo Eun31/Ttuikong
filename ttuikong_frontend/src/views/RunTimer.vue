@@ -11,7 +11,7 @@
           <h2>현재 러닝 시간</h2>
           <div class="time">{{ formattedTime }}</div>
           <!-- 강아지 이미지 -->
-          <img class="dog-image" :src="isRunning ? dogRun : dogSit" alt="강아지 상태" />
+          <img class="dog-image" :src="isRunning ? dogRunImg : dogSitImg" alt="강아지 상태" />
         </div>
       </div>
       <!-- 플레이 버튼 -->
@@ -76,321 +76,239 @@
   </div>
 </template>
 
-<script>
-import dogRun from '@/assets/dog_run.gif'
-import dogSit from '@/assets/dog_sit.gif'
-export default {
-  name: 'RunTimer',
-  emits: ['navigate'],
-  data() {
-    return {
-      searchQuery: '',
-      dogSit,
-      dogRun,
-      seconds: 0,
-      timer: null,
-      isRunning: false,
-      map: null,
-      kakaoMapLoaded: false,
-      infoText: '러닝을 시작하려면 ▶를 누르세요',
-      positions: [],
-      distance: 0,
-      crews: [
-        {
-          id: 1,
-          name: '테일즈러너즈',
-          mission: '5km 이상 달리기',
-          avgDistance: 4.7,
-          participationRate: 80,
-          members: ['A', 'B', 'C']
-        },
-        {
-          id: 2,
-          name: '런닝걸스',
-          mission: '30분 연속 달리기',
-          avgDistance: 5.4,
-          participationRate: 60,
-          members: ['D', 'E']
-        },
-        {
-          id: 3,
-          name: '아침햇살조',
-          mission: '아침 7시 달리기',
-          participationRate: 40,
-          members: ['F']
-        }
-      ],
-      crewMembers: [
-        { id: 1, name: '김민준', status: '달리는 중' },
-        { id: 2, name: '이지우', status: '대기 중' },
-        { id: 3, name: '박서연', status: '오프라인' },
-        { id: 4, name: '최준호', status: '대기 중' },
-        { id: 5, name: '정수빈', status: '오프라인' }
-      ],
-      expandedCrews: []
+<script setup>
+import { ref, computed, onMounted, onBeforeUnmount, defineEmits } from 'vue';
+import { useRouter } from 'vue-router';
+import dogRun from '@/assets/dog_run.gif';
+import dogSit from '@/assets/dog_sit.gif';
 
-    }
-  },
+const emit = defineEmits(['navigate']);
+const router = useRouter();
 
-  computed: {
-    formattedTime() {
-      const minutes = Math.floor(this.seconds / 60);
-      const remainingSeconds = this.seconds % 60;
-      return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-    },
-    filteredCrews() {
-      const query = (this.searchQuery || '').trim().toLowerCase();
-      if (!query) return this.crews;
-      return this.crews.filter(crew =>
-        crew.name.toLowerCase().includes(query)
-      );
-    }
+const searchQuery = ref('');
+const seconds = ref(0);
+const timer = ref(null);
+const isRunning = ref(false);
+const map = ref(null);
+const kakaoMapLoaded = ref(false);
+const infoText = ref('러닝을 시작하려면 ▶를 누르세요');
+const positions = ref([]);
+const distance = ref(0);
+const expandedCrews = ref([]);
+const startTime = ref('');
 
-  },
-  mounted() {
-    this.loadKakaoMapScript();
-  },
-  beforeUnmount() {
-    if (this.timer) {
-      clearInterval(this.timer);
-    }
-  },
-  methods: {
-    loadKakaoMapScript() {
-      // 이미 로드된 스크립트가 있는지 확인
-      const existingScript = document.getElementById('kakao-map-sdk');
-      if (existingScript) {
-        this.waitForKakao();
-        return;
-      }
+const crews = ref([
+  { id: 1, name: '테일즈러너즈', mission: '5km 이상 달리기', avgDistance: 4.7, participationRate: 80, members: ['A', 'B', 'C'] },
+  { id: 2, name: '런닝걸스', mission: '30분 연속 달리기', avgDistance: 5.4, participationRate: 60, members: ['D', 'E'] },
+  { id: 3, name: '아침햇살조', mission: '아침 7시 달리기', participationRate: 40, members: ['F'] }
+]);
 
-      // API 키 가져오기
-      fetch("http://localhost:8080/api/config/kakao-map-key")
-        .then(res => res.text())
-        .then(apiKey => {
-          const script = document.createElement("script");
-          script.id = "kakao-map-sdk";
-          script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&autoload=false`;
-          script.async = true;
-          script.onload = () => {
-            // 스크립트 로드 완료 후 카카오맵 초기화
-            if (window.kakao && window.kakao.maps) {
-              window.kakao.maps.load(() => {
-                this.kakaoMapLoaded = true;
-                this.initMap();
-              });
-            }
-          };
-          document.head.appendChild(script);
-        })
-        .catch(error => {
-          console.error("Kakao map key fetch error", error);
-          this.infoText = 'API 키를 가져오는 중 오류가 발생했습니다.';
-        });
-    },
+const crewMembers = ref([
+  { id: 1, name: '김민준', status: '달리는 중' },
+  { id: 2, name: '이지우', status: '대기 중' },
+  { id: 3, name: '박서연', status: '오프라인' },
+  { id: 4, name: '최준호', status: '대기 중' },
+  { id: 5, name: '정수빈', status: '오프라인' }
+]);
 
-    waitForKakao() {
-      // 카카오 맵 객체가 로드될 때까지 대기
-      if (window.kakao && window.kakao.maps) {
-        window.kakao.maps.load(() => {
-          this.kakaoMapLoaded = true;
-          this.initMap();
-        });
-      } else {
-        setTimeout(() => this.waitForKakao(), 100);
-      }
-    },
+const formattedTime = computed(() => {
+  const min = Math.floor(seconds.value / 60);
+  const sec = seconds.value % 60;
+  return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+});
 
-    async toggleTimer() {
-      if (this.isRunning) {
-        clearInterval(this.timer);
-        await this.saveRunningData(); // 종료시 저장
-      } else {
-        // 러닝 시작 백엔드 알림
-        const startTime = new Date().toISOString();
-        this.startTime = startTime;
-        console.log("startTime to send:", startTime);
+const filteredCrews = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase();
+  if (!query) return crews.value;
+  return crews.value.filter(c => c.name.toLowerCase().includes(query));
+});
 
-        const token = localStorage.getItem("jwt");
-        await fetch("http://localhost:8080/api/runs/running-status", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            startTime: this.startTime,
-            status: "start"
-          })
-        });
-
-        this.timer = setInterval(() => {
-          this.seconds++;
-          if (this.kakaoMapLoaded) this.updateLocation();
-        }, 1000);
-        this.infoText = '달리는 중...';
-      }
-      this.isRunning = !this.isRunning;
-    },
-
-    toggleCrew(id) {
-      if (this.expandedCrews.includes(id)) {
-        this.expandedCrews = this.expandedCrews.filter(cid => cid !== id);
-      } else {
-        this.expandedCrews.push(id);
-      }
-    },
-
-    initMap() {
-      try {
-        const mapContainer = document.getElementById('map');
-        if (!mapContainer) {
-          console.error('Map container not found');
-          return;
-        }
-
-        const mapOption = {
-          center: new window.kakao.maps.LatLng(37.566826, 126.9786567),
-          level: 3
-        };
-
-        this.map = new window.kakao.maps.Map(mapContainer, mapOption);
-
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              const lat = position.coords.latitude;
-              const lng = position.coords.longitude;
-              const locPosition = new window.kakao.maps.LatLng(lat, lng);
-              this.map.setCenter(locPosition);
-            },
-            (err) => {
-              console.error('Geolocation error', err);
-              this.infoText = '위치 정보를 가져올 수 없습니다.';
-            }
-          );
-        } else {
-          this.infoText = '이 브라우저에서는 위치 기능을 지원하지 않습니다.';
-        }
-      } catch (error) {
-        console.error('Error initializing map:', error);
-        this.infoText = '지도를 초기화하는 중 오류가 발생했습니다.';
-      }
-    },
-
-    updateLocation() {
-      if (!this.kakaoMapLoaded || !window.kakao || !window.kakao.maps) {
-        console.warn('Kakao maps not loaded yet');
-        return;
-      }
-
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            const newPosition = new window.kakao.maps.LatLng(lat, lng);
-
-            // 위치 추가 및 거리 계산
-            if (this.positions.length > 0) {
-              const lastPosition = this.positions[this.positions.length - 1];
-              const linePath = [lastPosition, newPosition];
-              const polyline = new window.kakao.maps.Polyline({
-                path: linePath,
-                strokeWeight: 5,
-                strokeColor: '#db4040',
-                strokeOpacity: 0.7,
-                strokeStyle: 'solid'
-              });
-
-              // 거리 계산 (미터 단위)
-              const newDistance = polyline.getLength();
-              this.distance += newDistance;
-
-              // 정보 업데이트
-              this.infoText = `거리: ${(this.distance / 1000).toFixed(2)}km`;
-            }
-
-            this.positions.push(newPosition);
-          },
-          (err) => {
-            console.error('Geolocation update error', err);
-          }
-        );
-      }
-    },
-
-    async saveRunningData() {
-      const endTime = new Date().toISOString();
-      const token = localStorage.getItem("jwt");
-      console.log("🐛 token:", token);
-
-      await fetch("http://localhost:8080/api/runs/track-location", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          startTime: this.startTime,
-          endTime: endTime,
-          distance: this.distance
-        })
-      });
-
-      this.infoText = `러닝 완료! ${(this.distance / 1000).toFixed(2)}km를 ${this.formattedTime} 동안 달렸습니다.`;
-    },
-
-    async uploadMapImage(file) {
-      const formData = new FormData();
-      formData.append("image", file); // 이미지 파일
-      formData.append("startTime", this.startTime);
-      formData.append("endTime", new Date().toISOString());
-
-      await fetch("http://localhost:8080/api/runs/upload-map-image", {
-        method: "POST",
-        body: formData
-      });
-    },
-
-    // 추가된 네비게이션 메소드
-    stayOnTimer() {
-      // 현재 화면이므로 아무 작업 안함
-    },
-
-    goToChat() {
-      // 채팅 페이지로 이동
-      this.$router.push('/chat');
-    },
-
-    navigateToTimer() {
-      this.$emit('navigate', 'RunTimer');
-    },
-
-    navigateToRank() {
-      this.$emit('navigate', 'RunWithRank');
-    },
-
-    createCrew() {
-      // 크루 생성 로직 구현 필요
-      console.log('크루 생성 기능 개발 필요');
-    },
-
-    joinCrew(crew) {
-      // 크루 가입 로직 구현 필요
-      console.log('크루 가입 기능 개발 필요:', crew.name);
-    }
+const loadKakaoMapScript = () => {
+  const existingScript = document.getElementById('kakao-map-sdk');
+  if (existingScript) {
+    waitForKakao();
+    return;
   }
-}
+
+  fetch("http://localhost:8080/api/config/kakao-map-key")
+    .then(res => res.text())
+    .then(apiKey => {
+      const script = document.createElement("script");
+      script.id = "kakao-map-sdk";
+      script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&autoload=false`;
+      script.async = true;
+      script.onload = () => {
+        if (window.kakao && window.kakao.maps) {
+          window.kakao.maps.load(() => {
+            kakaoMapLoaded.value = true;
+            initMap();
+          });
+        }
+      };
+      document.head.appendChild(script);
+    })
+    .catch(error => {
+      console.error("Kakao map key fetch error", error);
+      infoText.value = 'API 키를 가져오는 중 오류가 발생했습니다.';
+    });
+};
+
+const waitForKakao = () => {
+  if (window.kakao && window.kakao.maps) {
+    window.kakao.maps.load(() => {
+      kakaoMapLoaded.value = true;
+      initMap();
+    });
+  } else {
+    setTimeout(() => waitForKakao(), 100);
+  }
+};
+
+const toggleTimer = async () => {
+  if (isRunning.value) {
+    clearInterval(timer.value);
+    await saveRunningData();
+  } else {
+    startTime.value = new Date().toISOString();
+    const token = localStorage.getItem("jwt");
+    await fetch("http://localhost:8080/api/runs/running-status", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        startTime: startTime.value,
+        status: "start"
+      })
+    });
+
+    timer.value = setInterval(() => {
+      seconds.value++;
+      if (kakaoMapLoaded.value) updateLocation();
+    }, 1000);
+    infoText.value = '달리는 중...';
+  }
+  isRunning.value = !isRunning.value;
+};
+
+const toggleCrew = (id) => {
+  if (expandedCrews.value.includes(id)) {
+    expandedCrews.value = expandedCrews.value.filter(cid => cid !== id);
+  } else {
+    expandedCrews.value.push(id);
+  }
+};
+
+const initMap = () => {
+  const mapContainer = document.getElementById('map');
+  if (!mapContainer) return;
+
+  const mapOption = {
+    center: new window.kakao.maps.LatLng(37.566826, 126.9786567),
+    level: 3
+  };
+
+  map.value = new window.kakao.maps.Map(mapContainer, mapOption);
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        map.value.setCenter(new window.kakao.maps.LatLng(lat, lng));
+      },
+      (err) => {
+        console.error('Geolocation error', err);
+        infoText.value = '위치 정보를 가져올 수 없습니다.';
+      }
+    );
+  } else {
+    infoText.value = '이 브라우저에서는 위치 기능을 지원하지 않습니다.';
+  }
+};
+
+const updateLocation = () => {
+  if (!kakaoMapLoaded.value) return;
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      const newPos = new window.kakao.maps.LatLng(lat, lng);
+
+      if (positions.value.length > 0) {
+        const lastPos = positions.value[positions.value.length - 1];
+        const polyline = new window.kakao.maps.Polyline({
+          path: [lastPos, newPos],
+          strokeWeight: 5,
+          strokeColor: '#db4040',
+          strokeOpacity: 0.7,
+          strokeStyle: 'solid'
+        });
+
+        distance.value += polyline.getLength();
+        infoText.value = `거리: ${(distance.value / 1000).toFixed(2)}km`;
+      }
+
+      positions.value.push(newPos);
+    });
+  }
+};
+
+const saveRunningData = async () => {
+  const endTime = new Date().toISOString();
+  const token = localStorage.getItem("jwt");
+
+  await fetch("http://localhost:8080/api/runs/track-location", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      startTime: startTime.value,
+      endTime,
+      distance: distance.value
+    })
+  });
+
+  infoText.value = `러닝 완료! ${(distance.value / 1000).toFixed(2)}km를 ${formattedTime.value} 동안 달렸습니다.`;
+};
+
+const uploadMapImage = async (file) => {
+  const formData = new FormData();
+  formData.append("image", file);
+  formData.append("startTime", startTime.value);
+  formData.append("endTime", new Date().toISOString());
+
+  await fetch("http://localhost:8080/api/runs/upload-map-image", {
+    method: "POST",
+    body: formData
+  });
+};
+
+const stayOnTimer = () => { };
+const goToChat = () => router.push('/chat');
+const navigateToTimer = () => emit('navigate', 'RunTimer');
+const navigateToRank = () => emit('navigate', 'RunWithRank');
+const createCrew = () => console.log('크루 생성 기능 개발 필요');
+const joinCrew = (crew) => console.log('크루 가입 기능 개발 필요:', crew.name);
+
+onMounted(loadKakaoMapScript);
+onBeforeUnmount(() => {
+  if (timer.value) clearInterval(timer.value);
+});
+
+const dogRunImg = dogRun;
+const dogSitImg = dogSit;
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Pretendard&display=swap');
-
 .run-container {
   padding: 16px;
   background-color: #FFF8F2;
-  font-family: 'Pretendard', sans-serif;
+  font-family: sans-serif;
 }
 
 .run-container {
@@ -433,7 +351,7 @@ body {
   flex-direction: column;
   align-items: center;
   box-shadow: 0 4px 12px rgba(255, 112, 67, 0.25);
-  font-family: 'Pretendard', sans-serif;
+  font-family: sans-serif;
   position: relative;
   overflow: hidden;
 }

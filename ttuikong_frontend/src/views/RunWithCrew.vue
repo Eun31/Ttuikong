@@ -16,7 +16,7 @@
 
     <br><br><br>
     <button id="cancelBtn" @click="goBack">돌아가기</button>
-    
+
     <!-- 추가된 네비게이션 메뉴 -->
     <div class="run-nav">
       <button class="nav-btn" @click="navigateToTimer">개인 러닝</button>
@@ -26,41 +26,40 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'RunWithCrew',
-  emits: ['navigate'],
-  data() {
-    return {
-      crewName: '서울 8반 러닝 챌린지',
-      crewMembers: [
-        { id: 1, name: '김민준', status: '달리는 중' },
-        { id: 2, name: '이지우', status: '대기 중' },
-        { id: 3, name: '박서연', status: '오프라인' },
-        { id: 4, name: '최준호', status: '대기 중' },
-        { id: 5, name: '정수빈', status: '오프라인' }
-      ]
-    }
-  },
-  methods: {
-    goToChat() {
-      // 채팅 페이지로 이동
-      this.$router.push('/chat');
-    },
-    goBack() {
-      // 이전 페이지로 돌아가기
-      this.$router.go(-1);
-    },
-    // 추가된 네비게이션 메소드
-    navigateToTimer() {
-      this.$emit('navigate', 'RunTimer');
-    },
-    navigateToRank() {
-      this.$emit('navigate', 'RunWithRank');
-    }
-  }
-}
+<script setup>
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+const emit = defineEmits(['navigate']);
+const router = useRouter();
+
+const crewName = ref('서울 8반 러닝 챌린지');
+
+const crewMembers = ref([
+  { id: 1, name: '김민준', status: '달리는 중' },
+  { id: 2, name: '이지우', status: '대기 중' },
+  { id: 3, name: '박서연', status: '오프라인' },
+  { id: 4, name: '최준호', status: '대기 중' },
+  { id: 5, name: '정수빈', status: '오프라인' }
+]);
+
+const goToChat = () => {
+  router.push('/chat');
+};
+
+const goBack = () => {
+  router.go(-1);
+};
+
+const navigateToTimer = () => {
+  emit('navigate', 'RunTimer');
+};
+
+const navigateToRank = () => {
+  emit('navigate', 'RunWithRank');
+};
 </script>
+
 
 <style scoped>
 body {
@@ -70,7 +69,8 @@ body {
   padding: 20px;
 }
 
-h3, p {
+h3,
+p {
   font-size: 25px;
   margin: 15px 0 10px 15px;
   font-weight: 600;
@@ -122,7 +122,7 @@ p {
   margin-top: 10px;
 }
 
-.progress > div {
+.progress>div {
   background: #FF7E47;
   height: 15px;
   border-radius: 20px;

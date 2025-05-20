@@ -49,55 +49,46 @@
   </div>
 </template>
 
-<script>
-import logo from './assets/logo_orange.png'; // 이미지 임포트
+<script setup>
+import { ref, computed, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import logoImg from './assets/logo_orange.png';
 
-export default {
-  name: 'App',
-  data() {
-    return {
-      menuActive: false,
-      logo: logo // 이미지를 data로 제공
-    };
-  },
-  computed: {
-    // 로그인 상태 확인
-    isLoggedIn() {
-      return localStorage.getItem('token') !== null;
-    },
-    // 현재 페이지가 인증 관련 페이지인지 확인
-    isAuthPage() {
-      const authPages = ['/login', '/signup', '/signup2', '/signup3'];
-      return authPages.includes(this.$route.path);
-    }
-  },
-  methods: {
-    toggleMenu() {
-      this.menuActive = !this.menuActive;
-    },
-    closeMenu() {
-      this.menuActive = false;
-    },
-    // 로그아웃 기능
-    logout() {
-      // 토큰 제거
-      localStorage.removeItem('token');
+const route = useRoute();
+const router = useRouter();
 
-      // 홈으로 리다이렉트
-      this.$router.push('/');
-    }
-  },
-  watch: {
-    // 라우트 변경 시 모바일 메뉴 닫기
-    '$route'() {
-      this.closeMenu();
-    }
-  }
+const menuActive = ref(false);
+const logo = logoImg;
+
+const isLoggedIn = computed(() => {
+  return localStorage.getItem('token') !== null;
+});
+
+const isAuthPage = computed(() => {
+  const authPages = ['/login', '/signup', '/signup2', '/signup3'];
+  return authPages.includes(route.path);
+});
+
+const toggleMenu = () => {
+  menuActive.value = !menuActive.value;
 };
+
+const closeMenu = () => {
+  menuActive.value = false;
+};
+
+const logout = () => {
+  localStorage.removeItem('token');
+  router.push('/');
+};
+
+watch(route, () => {
+  closeMenu();
+});
 </script>
 
+
 <style>
-/* 기본 스타일 리셋 */
 * {
   margin: 0;
   padding: 0;
@@ -105,7 +96,7 @@ export default {
 }
 
 body {
-  font-family: 'Pretendard', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background-color: #FFFFFF;
   color: #333;
   line-height: 1.6;

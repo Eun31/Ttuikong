@@ -156,7 +156,7 @@ export default {
 .home-container {
   padding: 24px;
   background-color: #FFF8F2;
-  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+  font-family: 'Noto Sans KR', sans-serif;
 }
 
 /* 상단 환영 헤더 */

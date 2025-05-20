@@ -19,12 +19,12 @@
     <div class="post-content">
       <h2 class="post-title">{{ post.title }}</h2>
       <p class="post-desc">{{ post.description }}</p>
-      
+
       <!-- 게시글 이미지 (있는 경우만) -->
       <div class="post-image" v-if="post.image">
         <img :src="post.image" :alt="post.title">
       </div>
-      
+
       <!-- 미디어 컨텐츠 (있는 경우만) -->
       <div class="media-content" v-if="post.mediaContent">
         <div class="media-container">
@@ -35,49 +35,48 @@
           </div>
         </div>
       </div>
-      
+
       <!-- 태그 (있는 경우만) -->
       <div class="post-tags" v-if="post.tags && post.tags.length">
         <span class="tag" v-for="(tag, index) in post.tags" :key="index">{{ tag }}</span>
       </div>
-      
+
       <div class="post-footer">
         <div class="post-location" v-if="post.location">
           <i class="ri-map-pin-line location-icon"></i>
           <span>{{ post.location }}</span>
         </div>
         <div class="post-stats">
-            <!-- 아이콘 대체 (텍스트 이모지 사용) -->
-            <span class="heart-icon" :class="{ 'liked': post.liked }">
-              {{ post.liked ? '❤️' : '♡' }}
-            </span>
-            <span>{{ post.likes }}</span>
-          </div>
-          <div class="stat">
-            <span class="comment-icon">💬</span>
-            <span>{{ post.comments }}</span>
-          </div>
+          <!-- 아이콘 대체 (텍스트 이모지 사용) -->
+          <span class="heart-icon" :class="{ 'liked': post.liked }">
+            {{ post.liked ? '❤️' : '♡' }}
+          </span>
+          <span>{{ post.likes }}</span>
+        </div>
+        <div class="stat">
+          <span class="comment-icon">💬</span>
+          <span>{{ post.comments }}</span>
         </div>
       </div>
+    </div>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'PostCard',
-  props: {
-    post: {
-      type: Object,
-      required: true
-    }
-  },
-  methods: {
-    toggleLike() {
-      // 실제 구현에서는 API 호출을 통해 좋아요 처리
-      this.post.liked = !this.post.liked;
-      this.post.likes += this.post.liked ? 1 : -1;
-    }
+<script setup>
+import { toRefs } from 'vue';
+
+const props = defineProps({
+  post: {
+    type: Object,
+    required: true
   }
+});
+
+const { post } = toRefs(props);
+
+const toggleLike = () => {
+  post.value.liked = !post.value.liked;
+  post.value.likes += post.value.liked ? 1 : -1;
 };
 </script>
 
@@ -99,6 +98,7 @@ export default {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -293,7 +293,7 @@ export default {
     border-radius: var(--border-radius, 12px);
     margin-bottom: 12px;
   }
-  
+
   .post-content {
     padding: 12px;
   }
