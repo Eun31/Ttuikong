@@ -78,33 +78,30 @@
 
       <!-- 내 크루 목록 -->
       <h3>내가 속한 크루</h3>
-      <div v-for="crew in crews" :key="crew.id" class="crew-card" @click="toggleCrew(crew.id)">
-        <div
-          v-if="crew.creatorId == userId || crewMembers.find(c => c.crewId === crew.id)?.members.some(m => m.id == userId)">
-          <div class="crew-header">
-            <h4>{{ crew.roomName }}</h4>
-            <span>{{crewMembers.find(c => c.crewId === crew.id)?.members.length || 0}}명
-              <button v-if="crew.creatorId != userId" class="quit-btn" @click.stop="quitCrew(crew)">탈퇴하기</button>
-              <button v-else class="delete-btn" @click.stop="deleteCrew(crew)">삭제하기</button>
-            </span>
-          </div>
-          <transition name="fade">
-            <div v-show="expandedCrews.includes(crew.id)" class="crew-detail">
-              <p>📍 목표: <strong>{{ crew.goalType }} : {{ crew.goalTime }}</strong></p>
-              <!-- <p>🏅 목표 달성률: {{ crew.participationRate }}%</p> -->
-              <h3 class="sub-title">크루 멤버</h3>
-              <div class="user-list">
-                <div v-for="member in crewMembers.find(c => c.crewId === crew.id)?.members || []" :key="member.id"
-                  class="user-card">
-                  <strong>{{ member.nickname }}</strong>
-                  <!-- <span>{{ member.status }}</span> -->
-                </div>
-              </div>
-              <h3 class="sub-title">실시간 메신저</h3>
-              <button class="talk-button" @click="goToChat">▶ Talk</button>
-            </div>
-          </transition>
+      <div v-for="crew in myCrews" :key="crew.id" class="crew-card" @click="toggleCrew(crew.id)">
+        <div class="crew-header">
+          <h4>{{ crew.roomName }}</h4>
+          <span>{{crewMembers.find(c => c.crewId === crew.id)?.members.length || 0}}명
+            <button v-if="crew.creatorId != userId" class="quit-btn" @click.stop="quitCrew(crew)">탈퇴하기</button>
+            <button v-else class="delete-btn" @click.stop="deleteCrew(crew)">삭제하기</button>
+          </span>
         </div>
+        <transition name="fade">
+          <div v-show="expandedCrews.includes(crew.id)" class="crew-detail">
+            <p>📍 목표: <strong>{{ crew.goalType }} : {{ crew.goalTime }}</strong></p>
+            <!-- <p>🏅 목표 달성률: {{ crew.participationRate }}%</p> -->
+            <h3 class="sub-title">크루 멤버</h3>
+            <div class="user-list">
+              <div v-for="member in crewMembers.find(c => c.crewId === crew.id)?.members || []" :key="member.id"
+                class="user-card">
+                <strong>{{ member.nickname }}</strong>
+                <!-- <span>{{ member.status }}</span> -->
+              </div>
+            </div>
+            <h3 class="sub-title">실시간 메신저</h3>
+            <button class="talk-button" @click="goToChat">▶ Talk</button>
+          </div>
+        </transition>
       </div>
     </div>
 
@@ -298,6 +295,16 @@ const toggleCrew = (id) => {
   }
 };
 
+const myCrews = computed(() => {
+  return crews.value.filter(crew => {
+    return (
+      crew &&
+      (crew.creatorId == userId.value ||
+        crewMembers.value.find(c => c.crewId === crew.id)?.members?.some(m => m.id == userId.value))
+    );
+  });
+});
+
 /* 시간 format */
 const formattedTime = computed(() => {
   const min = Math.floor(seconds.value / 60);
@@ -451,17 +458,21 @@ const toggleTimer = async () => {
     await saveRunningData();
   } else {
     startTime.value = new Date().toISOString();
-    const token = localStorage.getItem("jwt");
+    const currentToken = localStorage.getItem("jwt");
+
+    const jsonData = JSON.stringify({
+      startTime: startTime.value,
+      status: "running"
+    });
+    console.log("보내는 JSON 데이터:", jsonData);
+
     await fetch("http://localhost:8080/api/runs/running-status", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        "Authorization": `Bearer ${currentToken}`
       },
-      body: JSON.stringify({
-        startTime: startTime.value,
-        status: "start"
-      })
+      body: jsonData
     });
 
     timer.value = setInterval(() => {
@@ -473,13 +484,14 @@ const toggleTimer = async () => {
   isRunning.value = !isRunning.value;
 };
 
+
 /* 유저 불러오기 */
 const getCurrentUser = async () => {
   const currentToken = localStorage.getItem("jwt");
   const currentuserId = localStorage.getItem("userId");
 
-  token.value = localStorage.getItem("jwt");
-  userId.value = localStorage.getItem("userId");
+  token.value = currentToken;
+  userId.value = currentuserId;
 
   try {
     const res = await fetch("http://localhost:8080/api/users/me", {

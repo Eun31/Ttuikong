@@ -5,13 +5,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface RunDao {
     public void updateImageUrl(int userId, String startTime, String imageUrl);
 
-    void insertRunningStatus(int userId, LocalDateTime startTime, String status);
-
+    void insertRunningStatus(@Param("userId") int userId,
+                             @Param("startTime") LocalDateTime startTime,
+                             @Param("status") String status);
+                             
     void updateRunRecord(int userId, LocalDateTime startTime, LocalDateTime endTime, double distance, long duration);
 
     void updateDailyDuration(int userId);
