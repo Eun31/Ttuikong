@@ -7,6 +7,7 @@ import java.util.List;
 public class Board {
     private int postId;
     private int userId;
+    private String userNickname; 
     private String title;
     private String content;
     private String category;
@@ -49,7 +50,21 @@ public class Board {
         this.imageUrl = imageUrl;
     }
     
-    public Integer getPostId() {
+    public Board(int postId, int userId, String userNickname, String title, String content, String category,
+			LocalDateTime createdAt, LocalDateTime updatedAt, String imageUrl) {
+		super();
+		this.postId = postId;
+		this.userId = userId;
+		this.userNickname = userNickname;
+		this.title = title;
+		this.content = content;
+		this.category = category;
+		this.createdAt = createdAt;
+		this.updatedAt = updatedAt;
+		this.imageUrl = imageUrl;
+	}
+
+	public Integer getPostId() {
         return postId;
     }
     
@@ -63,6 +78,14 @@ public class Board {
     
     public void setUserId(Integer userId) {
         this.userId = userId;
+    }
+    
+    public String getUserNickname() {
+    	return userNickname;
+    }
+    
+    public void setUserNickname(String userNickname) {
+    	this.userNickname = userNickname;
     }
     
     public String getTitle() {

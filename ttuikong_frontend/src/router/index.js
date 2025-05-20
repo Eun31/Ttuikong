@@ -40,13 +40,13 @@ const routes = [
     meta: { allowAnonymous: true }
   },
   {
-    path: '/signup2',  
+    path: '/signup2',
     name: 'signup2',
     component: SignUp2,
     meta: { allowAnonymous: true }
   },
   {
-    path: '/signup3',  
+    path: '/signup3',
     name: 'signup3',
     component: SignUp3,
     meta: { allowAnonymous: true }
@@ -57,12 +57,18 @@ const routes = [
     component: Board
   },
   {
-    path: '/board/write',  // 구체적인 경로를 먼저 배치
+    path: '/board/write',
     name: 'post-write',
     component: PostWrite
   },
   {
-    path: '/board/:id',    // 동적 경로를 나중에 배치
+    path: '/board/edit/:id', 
+    name: 'post-edit',
+    component: PostWrite,
+    props: true
+  },
+  {
+    path: '/board/:id',
     name: 'post-detail',
     component: PostDetail,
     props: true
@@ -127,7 +133,7 @@ const router = createRouter({
 // 로그인 필요한 페이지에 대한 네비게이션 가드 설정
 router.beforeEach((to, from) => {
   const isAuthenticated = localStorage.getItem('jwt')
-  
+
   // 로그인 없이 접근 가능한 페이지가 아니면서 인증이 안된 경우
   if (!to.meta.allowAnonymous && !isAuthenticated) {
     return { name: 'login' }

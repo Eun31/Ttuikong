@@ -1,6 +1,6 @@
 // components/PostCard.vue
 <template>
-  <div class="post-card" @click="$emit('click')">
+  <div class="post-card" @click="$emit('click', post-id)">
     <!-- 작성자 정보 -->
     <div class="user-profile">
       <img :src="post.user.avatar" alt="프로필" class="user-avatar">
@@ -72,7 +72,15 @@ const props = defineProps({
   }
 });
 
+const emit = defineEmits(['click']);
+
 const { post } = toRefs(props);
+
+// 클릭 이벤트 핸들러 추가
+const handleClick = () => {
+  // 게시글 ID를 명시적으로 전달
+  emit('click', post.value.id);
+};
 
 const toggleLike = () => {
   post.value.liked = !post.value.liked;

@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.ttuikong.spring.interceptor.AuthenticationInterceptor;
@@ -29,7 +30,7 @@ public class WebConfig implements WebMvcConfigurer {
                 "/api/users/login",   
                 "/api/users/signup"     
             )
-            .excludePathPatterns("/css/**", "/js/**", "/img/**", "/");
+            .excludePathPatterns("/css/**", "/js/**", "/img/**", "/uploads/**", "/");
     }
 
     @Override
@@ -46,5 +47,13 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .maxAge(3600);
+    }
+    
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/uploads/**")
+        		.addResourceLocations("file:src/main/resources/static/uploads/")
+                .setCachePeriod(0)
+                .resourceChain(true);
     }
 }

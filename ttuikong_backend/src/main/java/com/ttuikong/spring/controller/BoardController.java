@@ -37,7 +37,7 @@ public class BoardController {
     }
     
     //게시글 작성
-    @PostMapping(value = "/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/post")
     @LoginRequired
     public ResponseEntity<?> writeBoard(@RequestPart Board board, 
     									@RequestPart(value = "image", required = false) MultipartFile image,
@@ -92,7 +92,7 @@ public class BoardController {
     }
     
     //게시글 수정
-    @PutMapping(value = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/{postId}")
     @LoginRequired
     public ResponseEntity<?> updatePost(@PathVariable("postId") int postId, 
     								@RequestPart Board board, 
