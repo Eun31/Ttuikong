@@ -122,6 +122,7 @@ import { ref, computed, onMounted, onBeforeUnmount, defineEmits } from 'vue';
 import { useRouter } from 'vue-router';
 import dogRun from '@/assets/dog_run.gif';
 import dogSit from '@/assets/dog_sit.gif';
+import html2canvas from "html2canvas";
 
 const emit = defineEmits(['navigate']);
 const router = useRouter();
@@ -334,6 +335,7 @@ const loadKakaoMapScript = () => {
       script.id = "kakao-map-sdk";
       script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&autoload=false`;
       script.async = true;
+      // script.crossOrigin = "anonymous";
       script.onload = () => {
         if (window.kakao && window.kakao.maps) {
           window.kakao.maps.load(() => {
@@ -431,21 +433,35 @@ const saveRunningData = async () => {
     body: JSON.stringify({
       startTime: startTime.value,
       endTime,
-      distance: distance.value
+      distance: (distance.value / 1000).toFixed(2)
     })
   });
 
   infoText.value = `러닝 완료! ${(distance.value / 1000).toFixed(2)}km를 ${formattedTime.value} 동안 달렸습니다.`;
 };
 
-const uploadMapImage = async (file) => {
+const uploadMapImage = async () => {
+  const currentToken = localStorage.getItem("jwt");
+  const mapContainer = document.getElementById("map");
+  const canvas = await html2canvas(mapContainer, {
+    useCORS: true
+  });
+  const blob = await new Promise(resolve => canvas.toBlob(resolve));
+  if (!blob) {
+    console.error("canvas.toBlob 실패");
+    return;
+  }
+
   const formData = new FormData();
-  formData.append("image", file);
+  formData.append("image", blob);
   formData.append("startTime", startTime.value);
   formData.append("endTime", new Date().toISOString());
 
   await fetch("http://localhost:8080/api/runs/upload-map-image", {
     method: "POST",
+    headers: {
+      Authorization: `Bearer ${currentToken}`
+    },
     body: formData
   });
 };
@@ -456,6 +472,7 @@ const toggleTimer = async () => {
   if (isRunning.value) {
     clearInterval(timer.value);
     await saveRunningData();
+    await uploadMapImage();
   } else {
     startTime.value = new Date().toISOString();
     const currentToken = localStorage.getItem("jwt");
@@ -568,9 +585,12 @@ body {
   width: 100%;
   height: 400px;
   margin-bottom: 10px;
-  visibility: hidden;
-  position: absolute;
-  top: -9999px;
+  opacity: 0;
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
 }
 
 

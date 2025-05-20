@@ -34,8 +34,6 @@ import com.ttuikong.spring.annotation.LoginUser;
 import com.ttuikong.spring.chat.model.service.RunService;
 import com.ttuikong.spring.model.dto.Route;
 import com.ttuikong.spring.model.dto.User;
-import com.ttuikong.spring.chat.model.dto.RunningStatus;
-import com.ttuikong.spring.chat.model.dto.TrackLocation;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -57,7 +55,6 @@ public class RunController {
             @RequestParam String endTime,
             @Parameter(hidden = true) @LoginUser User loginUser) throws IOException {
 
-        // Z(UTC) 포함된 ISO 포맷 처리
         OffsetDateTime parsedStart = OffsetDateTime.parse(startTime);
         // OffsetDateTime parsedEnd = OffsetDateTime.parse(endTime);
 
@@ -98,7 +95,7 @@ public class RunController {
                                 .lines()
                                 .collect(Collectors.joining());
 
-            System.out.println("📥 받은 raw JSON: " + rawJson);
+            // System.out.println("받은 JSON: " + rawJson);
 
             JsonNode node = mapper.readTree(rawJson);
             String startTimeStr = node.get("startTime").asText();
@@ -117,26 +114,38 @@ public class RunController {
     @Operation(summary = "러닝 후 시간과 거리 데이터 저장")
     @PostMapping("/track-location")
     @LoginRequired
-    public ResponseEntity<?> trackRunning(@RequestBody TrackLocation body,
+    public ResponseEntity<?> trackRunning(HttpServletRequest request,
             @Parameter(hidden = true) @LoginUser User loginUser) {
-       
+        
         if (loginUser == null) {
-            System.out.println("❌ loginUser is null");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "로그인 필요"));
         }
 
-        System.out.println("📥 [trackRunning] startTime: " + body.getStartTime());
-        System.out.println("📥 [trackRunning] endTime: " + body.getEndTime());
-        System.out.println("📥 [trackRunning] distance: " + body.getDistance());
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            String rawJson = new BufferedReader(new InputStreamReader(request.getInputStream()))
+                                .lines()
+                                .collect(Collectors.joining());
 
-        LocalDateTime start = OffsetDateTime.parse(body.getStartTime()).toLocalDateTime();
-        LocalDateTime end = OffsetDateTime.parse(body.getEndTime()).toLocalDateTime();
-        double distance = body.getDistance();
+            System.out.println("받은 JSON: " + rawJson);
 
-        long duration = Duration.between(start, end).getSeconds();
-        runService.updateRunRecord(loginUser.getId(), start, end, distance, duration);
+            JsonNode node = mapper.readTree(rawJson);
+            String startTimeStr = node.get("startTime").asText();
+            String distance = node.get("distance").asText();
+            String endTimeStr = node.get("endTime").asText();
 
-        return ResponseEntity.ok(Map.of("message", "러닝 기록 저장 완료"));
+            LocalDateTime startTime = OffsetDateTime.parse(startTimeStr).toLocalDateTime();
+            LocalDateTime endTime = OffsetDateTime.parse(endTimeStr).toLocalDateTime();
+            double distanceDbl = Double.valueOf(distance);
+
+            long duration = Duration.between(startTime, endTime).getSeconds();
+            runService.updateRunRecord(loginUser.getId(), startTime, endTime, distanceDbl, duration);
+
+            return ResponseEntity.ok(Map.of("message", "러닝 기록 저장 완료"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Map.of("error", "서버 에러: " + e.getMessage()));
+        }
     }
 
     @Operation(summary = "하루 러닝시간 계산")
