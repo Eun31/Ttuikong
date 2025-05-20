@@ -154,211 +154,230 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'PostWrite',
-  data() {
-    return {
-      title: '',
-      content: '',
-      imageFile: null,
-      imagePreviewUrl: '',
-      selectedCategory: 'DAILY',
-      categories: [
-        { value: 'DAILY', label: '일상' },
-        { value: 'TRAVEL', label: '여행' },
-        { value: 'FOOD', label: '맛집' },
-        { value: 'QUESTION', label: '질문' },
-        { value: 'INFO', label: '정보' }
-      ],
-      location: '',
-      locationKeyword: '',
-      showLocationSearch: false,
-      locationResults: [
-        '한강공원 여의도',
-        '강남구 역삼동',
-        '서울 마포구 홍대입구',
-        '서울특별시 성북구 안암동'
-      ],
-      tagInput: '',
-      tags: []
-    };
-  },
-  computed: {
-    isFormValid() {
-      return this.title.trim() && this.content.trim();
-    },
-    canAddTag() {
-      return this.tagInput.trim() && this.tags.length < 5;
-    },
-    locationDisplay() {
-      return this.location || '위치 추가';
-    },
-    hasUnsavedChanges() {
-      return this.title.trim() || 
-             this.content.trim() || 
-             this.tags.length > 0 || 
-             this.imageFile !== null ||
-             this.location !== '';
+<script setup>
+import { ref, computed, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
+
+// 라우터 설정
+const router = useRouter();
+
+// Refs
+const imageInput = ref(null);
+const title = ref('');
+const content = ref('');
+const imageFile = ref(null);
+const imagePreviewUrl = ref('');
+const selectedCategory = ref('DAILY');
+const location = ref('');
+const locationKeyword = ref('');
+const showLocationSearch = ref(false);
+const tagInput = ref('');
+const tags = ref([]);
+
+// 카테고리 목록
+const categories = [
+  { value: 'DAILY', label: '일상' },
+  { value: 'TRAVEL', label: '여행' },
+  { value: 'FOOD', label: '맛집' },
+  { value: 'QUESTION', label: '질문' },
+  { value: 'INFO', label: '정보' }
+];
+
+// 위치 검색 결과 (실제 구현에서는 API 호출 결과로 대체)
+const locationResults = ref([
+  '한강공원 여의도',
+  '강남구 역삼동',
+  '서울 마포구 홍대입구',
+  '서울특별시 성북구 안암동'
+]);
+
+// Computed 속성
+const isFormValid = computed(() => {
+  return title.value.trim() && content.value.trim();
+});
+
+const canAddTag = computed(() => {
+  return tagInput.value.trim() && tags.value.length < 5;
+});
+
+const locationDisplay = computed(() => {
+  return location.value || '위치 추가';
+});
+
+const hasUnsavedChanges = computed(() => {
+  return title.value.trim() || 
+         content.value.trim() || 
+         tags.value.length > 0 || 
+         imageFile.value !== null ||
+         location.value !== '';
+});
+
+// 메소드
+function confirmGoBack() {
+  if (hasUnsavedChanges.value) {
+    if (confirm('작성 중인 내용이 있습니다. 정말 나가시겠습니까?')) {
+      goBack();
     }
-  },
-  methods: {
-    confirmGoBack() {
-      if (this.hasUnsavedChanges) {
-        if (confirm('작성 중인 내용이 있습니다. 정말 나가시겠습니까?')) {
-          this.goBack();
-        }
-      } else {
-        this.goBack();
-      }
-    },
-    goBack() {
-      this.$router.push('/board');
-    },
-    triggerImageUpload() {
-      this.$refs.imageInput.click();
-    },
-    handleImageUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      
-      // 이미지 타입 확인
-      if (!file.type.match('image.*')) {
-        alert('이미지 파일만 업로드할 수 있습니다.');
-        return;
-      }
-      
-      // 이미지 크기 확인 (5MB 제한)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('이미지 크기는 5MB 이하여야 합니다.');
-        return;
-      }
-      
-      this.imageFile = file;
-      
-      // 이미지 미리보기 생성
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.imagePreviewUrl = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    },
-    removeImage() {
-      this.imageFile = null;
-      this.imagePreviewUrl = '';
-      this.$refs.imageInput.value = '';
-    },
-    selectCategory(category) {
-      this.selectedCategory = category;
-    },
-    toggleLocationSearch() {
-      this.showLocationSearch = !this.showLocationSearch;
-      if (this.showLocationSearch) {
-        this.$nextTick(() => {
-          this.$el.querySelector('.location-results input').focus();
-        });
-      }
-    },
-    searchLocation() {
-      // 실제 구현에서는 API를 통한 위치 검색 기능 구현
-      // 현재는 예시 데이터로 필터링만 진행
-      if (this.locationKeyword.trim() === '') {
-        this.locationResults = [
-          '한강공원 여의도',
-          '강남구 역삼동',
-          '서울 마포구 홍대입구',
-          '서울특별시 성북구 안암동'
-        ];
-      } else {
-        const keyword = this.locationKeyword.toLowerCase();
-        this.locationResults = [
-          '한강공원 여의도',
-          '강남구 역삼동',
-          '서울 마포구 홍대입구',
-          '서울특별시 성북구 안암동'
-        ].filter(location => location.toLowerCase().includes(keyword));
-      }
-    },
-    selectLocation(location) {
-      this.location = location;
-      this.showLocationSearch = false;
-    },
-    addTag() {
-      const tagText = this.tagInput.trim();
-      
-      if (!tagText) return;
-      
-      // 최대 5개 태그 제한
-      if (this.tags.length >= 5) {
-        alert('태그는 최대 5개까지만 추가할 수 있습니다.');
-        return;
-      }
-      
-      // 중복 태그 확인
-      if (this.tags.includes(tagText)) {
-        alert('이미 추가된 태그입니다.');
-        return;
-      }
-      
-      // 태그 추가
-      this.tags.push(tagText);
-      this.tagInput = '';
-      
-      // 태그 입력 필드에 포커스
-      this.$nextTick(() => {
-        this.$el.querySelector('.tag-input').focus();
-      });
-    },
-    removeTag(tag) {
-      this.tags = this.tags.filter(t => t !== tag);
-    },
-    submitPost() {
-      // 입력 유효성 검사
-      if (!this.title.trim()) {
-        alert('제목을 입력해주세요.');
-        return;
-      }
-      
-      if (!this.content.trim()) {
-        alert('내용을 입력해주세요.');
-        return;
-      }
-      
-      // 게시글 데이터 수집
-      const postData = {
-        title: this.title.trim(),
-        content: this.content.trim(),
-        category: this.selectedCategory,
-        location: this.location || null,
-        tags: this.tags
-      };
-      
-      // FormData 생성 (이미지 첨부를 위해)
-      const formData = new FormData();
-      
-      // FormData에 데이터 추가
-      Object.keys(postData).forEach(key => {
-        if (key === 'tags') {
-          // 배열은 JSON으로 변환하여 저장
-          formData.append(key, JSON.stringify(postData[key]));
-        } else {
-          formData.append(key, postData[key]);
-        }
-      });
-      
-      // 이미지 파일 추가
-      if (this.imageFile) {
-        formData.append('image', this.imageFile);
-      }
-      
-      // 개발 중이므로 콘솔에 출력하고 게시글 목록으로 이동
-      console.log('전송할 데이터:', postData);
-      alert('게시글이 작성되었습니다.');
-      
-      this.$router.push('/board');
-    }
+  } else {
+    goBack();
   }
-};
+}
+
+function goBack() {
+  router.push('/board');
+}
+
+function triggerImageUpload() {
+  imageInput.value.click();
+}
+
+function handleImageUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  // 이미지 타입 확인
+  if (!file.type.match('image.*')) {
+    alert('이미지 파일만 업로드할 수 있습니다.');
+    return;
+  }
+  
+  // 이미지 크기 확인 (5MB 제한)
+  if (file.size > 5 * 1024 * 1024) {
+    alert('이미지 크기는 5MB 이하여야 합니다.');
+    return;
+  }
+  
+  imageFile.value = file;
+  
+  // 이미지 미리보기 생성
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    imagePreviewUrl.value = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImage() {
+  imageFile.value = null;
+  imagePreviewUrl.value = '';
+  imageInput.value.value = '';
+}
+
+function selectCategory(category) {
+  selectedCategory.value = category;
+}
+
+function toggleLocationSearch() {
+  showLocationSearch.value = !showLocationSearch.value;
+  if (showLocationSearch.value) {
+    nextTick(() => {
+      document.querySelector('.location-results input').focus();
+    });
+  }
+}
+
+function searchLocation() {
+  // 실제 구현에서는 API를 통한 위치 검색 기능 구현
+  // 현재는 예시 데이터로 필터링만 진행
+  if (locationKeyword.value.trim() === '') {
+    locationResults.value = [
+      '한강공원 여의도',
+      '강남구 역삼동',
+      '서울 마포구 홍대입구',
+      '서울특별시 성북구 안암동'
+    ];
+  } else {
+    const keyword = locationKeyword.value.toLowerCase();
+    locationResults.value = [
+      '한강공원 여의도',
+      '강남구 역삼동',
+      '서울 마포구 홍대입구',
+      '서울특별시 성북구 안암동'
+    ].filter(loc => loc.toLowerCase().includes(keyword));
+  }
+}
+
+function selectLocation(loc) {
+  location.value = loc;
+  showLocationSearch.value = false;
+}
+
+function addTag() {
+  const tagText = tagInput.value.trim();
+  
+  if (!tagText) return;
+  
+  // 최대 5개 태그 제한
+  if (tags.value.length >= 5) {
+    alert('태그는 최대 5개까지만 추가할 수 있습니다.');
+    return;
+  }
+  
+  // 중복 태그 확인
+  if (tags.value.includes(tagText)) {
+    alert('이미 추가된 태그입니다.');
+    return;
+  }
+  
+  // 태그 추가
+  tags.value.push(tagText);
+  tagInput.value = '';
+  
+  // 태그 입력 필드에 포커스
+  nextTick(() => {
+    document.querySelector('.tag-input').focus();
+  });
+}
+
+function removeTag(tag) {
+  tags.value = tags.value.filter(t => t !== tag);
+}
+
+function submitPost() {
+  // 입력 유효성 검사
+  if (!title.value.trim()) {
+    alert('제목을 입력해주세요.');
+    return;
+  }
+  
+  if (!content.value.trim()) {
+    alert('내용을 입력해주세요.');
+    return;
+  }
+  
+  // 게시글 데이터 수집
+  const postData = {
+    title: title.value.trim(),
+    content: content.value.trim(),
+    category: selectedCategory.value,
+    location: location.value || null,
+    tags: tags.value
+  };
+  
+  // FormData 생성 (이미지 첨부를 위해)
+  const formData = new FormData();
+  
+  // FormData에 데이터 추가
+  Object.keys(postData).forEach(key => {
+    if (key === 'tags') {
+      // 배열은 JSON으로 변환하여 저장
+      formData.append(key, JSON.stringify(postData[key]));
+    } else {
+      formData.append(key, postData[key]);
+    }
+  });
+  
+  // 이미지 파일 추가
+  if (imageFile.value) {
+    formData.append('image', imageFile.value);
+  }
+  
+  // 개발 중이므로 콘솔에 출력하고 게시글 목록으로 이동
+  console.log('전송할 데이터:', postData);
+  alert('게시글이 작성되었습니다.');
+  
+  router.push('/board');
+}
 </script>
 
 <style scoped>

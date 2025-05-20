@@ -122,145 +122,157 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
 import profileImg from '../assets/profile.png';
 
-export default {
-  name: 'PostDetail',
-  data() {
-    return {
-      showOptions: false,
-      commentInput: '',
-      currentUser: {
-        id: 'me123',
-        name: '나',
-        avatar: profileImg
-      },
-      post: {
-        id: '1',
-        title: '오늘 한강에서 찍은 풍경',
-        content: '오늘 한강에서 산책하다가 너무 예쁜 풍경을 봐서 사진을 찍고, 한강가 벤치에서 책도 읽고, 행복한 하루였습니다. 다들 좋은 저녁 되세요!',
-        image: 'https://via.placeholder.com/600x300/FFCCBC/FF5722?text=한강',
-        location: '한강공원 여의도',
-        tags: ['자연', '여행', '일상', '한강', '산책'],
-        likes: 24,
-        isLiked: false,
-        createdAt: '오늘 오후 3:24',
-        author: {
-          id: 'user1',
-          name: 'TTUIKONG',
-          avatar: profileImg,
-          verified: true
-        },
-        comments: [
-          {
-            id: 'c1',
-            text: '정말 좋은 곳이네요! 다음에 저도 가보고 싶어요.',
-            likes: 2,
-            isLiked: false,
-            createdAt: '30분 전',
-            author: {
-              id: 'user2',
-              name: '라면이',
-              avatar: profileImg,
-              verified: false
-            }
-          },
-          {
-            id: 'c2',
-            text: '사진 너무 예쁘게 찍으셨네요~ 무슨 카메라 쓰시나요?',
-            likes: 1,
-            isLiked: true,
-            createdAt: '2시간 전',
-            author: {
-              id: 'user3',
-              name: '달리는 토끼',
-              avatar: profileImg,
-              verified: true
-            }
-          },
-          {
-            id: 'c3',
-            text: '저도 오늘 한강 갔었는데 정말 날씨 좋았어요!',
-            likes: 0,
-            isLiked: false,
-            createdAt: '3시간 전',
-            author: {
-              id: 'user4',
-              name: '테디',
-              avatar: profileImg,
-              verified: false
-            }
-          }
-        ]
-      }
-    };
+// 라우터 가져오기
+const router = useRouter();
+
+// 반응형 데이터 정의
+const showOptions = ref(false);
+const commentInput = ref('');
+
+// 현재 사용자 정보
+const currentUser = ref({
+  id: 'me123',
+  name: '나',
+  avatar: profileImg
+});
+
+// 게시글 데이터
+const post = ref({
+  id: '1',
+  title: '오늘 한강에서 찍은 풍경',
+  content: '오늘 한강에서 산책하다가 너무 예쁜 풍경을 봐서 사진을 찍고, 한강가 벤치에서 책도 읽고, 행복한 하루였습니다. 다들 좋은 저녁 되세요!',
+  image: 'https://via.placeholder.com/600x300/FFCCBC/FF5722?text=한강',
+  location: '한강공원 여의도',
+  tags: ['자연', '여행', '일상', '한강', '산책'],
+  likes: 24,
+  isLiked: false,
+  createdAt: '오늘 오후 3:24',
+  author: {
+    id: 'user1',
+    name: 'TTUIKONG',
+    avatar: profileImg,
+    verified: true
   },
-  methods: {
-    toggleOptions() {
-      this.showOptions = !this.showOptions;
-    },
-    goBack() {
-      this.$router.push('/board');
-    },
-    toggleLike() {
-      this.post.isLiked = !this.post.isLiked;
-      this.post.likes += this.post.isLiked ? 1 : -1;
-    },
-    likeComment(index) {
-      const comment = this.post.comments[index];
-      comment.isLiked = !comment.isLiked;
-      comment.likes += comment.isLiked ? 1 : -1;
-    },
-    replyToComment(username) {
-      this.commentInput = `@${username} `;
-      // 댓글 입력 필드에 포커스
-      this.$nextTick(() => {
-        document.querySelector('.comment-input').focus();
-      });
-    },
-    addComment() {
-      const text = this.commentInput.trim();
-      if (!text) return;
-      
-      // 새 댓글 객체 생성
-      const newComment = {
-        id: `c${this.post.comments.length + 1}`,
-        text: text,
-        likes: 0,
-        isLiked: false,
-        createdAt: '방금 전',
-        author: this.currentUser
-      };
-      
-      // 댓글 목록에 추가
-      this.post.comments.unshift(newComment);
-      
-      // 입력 필드 초기화
-      this.commentInput = '';
-    },
-    editPost() {
-      // 수정 페이지로 이동
-      alert('게시글 수정 페이지로 이동합니다.');
-      this.toggleOptions();
-    },
-    deletePost() {
-      if (confirm('정말 이 게시글을 삭제하시겠습니까?')) {
-        // 실제 구현에서는 서버에 삭제 요청을 보냄
-        alert('게시글이 삭제되었습니다.');
-        this.goBack();
+  comments: [
+    {
+      id: 'c1',
+      text: '정말 좋은 곳이네요! 다음에 저도 가보고 싶어요.',
+      likes: 2,
+      isLiked: false,
+      createdAt: '30분 전',
+      author: {
+        id: 'user2',
+        name: '라면이',
+        avatar: profileImg,
+        verified: false
       }
-      this.toggleOptions();
     },
-    reportPost() {
-      alert('게시글이 신고되었습니다.');
-      this.toggleOptions();
+    {
+      id: 'c2',
+      text: '사진 너무 예쁘게 찍으셨네요~ 무슨 카메라 쓰시나요?',
+      likes: 1,
+      isLiked: true,
+      createdAt: '2시간 전',
+      author: {
+        id: 'user3',
+        name: '달리는 토끼',
+        avatar: profileImg,
+        verified: true
+      }
     },
-    sharePost() {
-      alert('공유 기능은 준비 중입니다.');
+    {
+      id: 'c3',
+      text: '저도 오늘 한강 갔었는데 정말 날씨 좋았어요!',
+      likes: 0,
+      isLiked: false,
+      createdAt: '3시간 전',
+      author: {
+        id: 'user4',
+        name: '테디',
+        avatar: profileImg,
+        verified: false
+      }
     }
+  ]
+});
+
+// 메소드 정의
+function toggleOptions() {
+  showOptions.value = !showOptions.value;
+}
+
+function goBack() {
+  router.push('/board');
+}
+
+function toggleLike() {
+  post.value.isLiked = !post.value.isLiked;
+  post.value.likes += post.value.isLiked ? 1 : -1;
+}
+
+function likeComment(index) {
+  const comment = post.value.comments[index];
+  comment.isLiked = !comment.isLiked;
+  comment.likes += comment.isLiked ? 1 : -1;
+}
+
+function replyToComment(username) {
+  commentInput.value = `@${username} `;
+  // 댓글 입력 필드에 포커스
+  nextTick(() => {
+    document.querySelector('.comment-input').focus();
+  });
+}
+
+function addComment() {
+  const text = commentInput.value.trim();
+  if (!text) return;
+  
+  // 새 댓글 객체 생성
+  const newComment = {
+    id: `c${post.value.comments.length + 1}`,
+    text: text,
+    likes: 0,
+    isLiked: false,
+    createdAt: '방금 전',
+    author: currentUser.value
+  };
+  
+  // 댓글 목록에 추가
+  post.value.comments.unshift(newComment);
+  
+  // 입력 필드 초기화
+  commentInput.value = '';
+}
+
+function editPost() {
+  // 수정 페이지로 이동
+  alert('게시글 수정 페이지로 이동합니다.');
+  toggleOptions();
+}
+
+function deletePost() {
+  if (confirm('정말 이 게시글을 삭제하시겠습니까?')) {
+    // 실제 구현에서는 서버에 삭제 요청을 보냄
+    alert('게시글이 삭제되었습니다.');
+    goBack();
   }
-};
+  toggleOptions();
+}
+
+function reportPost() {
+  alert('게시글이 신고되었습니다.');
+  toggleOptions();
+}
+
+function sharePost() {
+  alert('공유 기능은 준비 중입니다.');
+}
 </script>
 
 <style scoped>

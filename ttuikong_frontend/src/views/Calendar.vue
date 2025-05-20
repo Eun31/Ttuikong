@@ -190,281 +190,291 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, onMounted } from 'vue';
 import profileImg from '../assets/profile.png';
 
-export default {
-  name: 'Profile',
-  data() {
-    return {
-      profile: profileImg,
-      user: {
-        name: '러너홍길동',
-        level: '열정적인 러너',
-        totalDistance: '158.2km',
-        totalRuns: 24,
-        achievements: 8
+// 반응형 상태 정의
+const profile = ref(profileImg);
+const user = ref({
+  name: '러너홍길동',
+  level: '열정적인 러너',
+  totalDistance: '158.2km',
+  totalRuns: 24,
+  achievements: 8
+});
+
+const currentDate = ref(new Date());
+const selectedDate = ref(new Date());
+const selectedDay = ref(null);
+const monthlyStats = ref({
+  totalRuns: 12,
+  totalDistance: '78.5km',
+  totalTime: '8시간 45분',
+  totalCalories: '4,320kcal'
+});
+
+const weekdays = ref(['일', '월', '화', '수', '목', '금', '토']);
+const showRouteCollection = ref(false);
+const calendarDays = ref([]);
+
+// 러닝 데이터
+const runningData = ref([
+  {
+    date: new Date(2025, 4, 15), // 2025년 5월 15일
+    runs: [
+      {
+        id: 1,
+        routeName: '한강 공원 러닝',
+        time: '오전 7:30',
+        duration: '42분 30초',
+        distance: '5.2km',
+        calories: '320kcal',
+        routeImage: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=한강공원코스'
+      }
+    ]
+  },
+  {
+    date: new Date(2025, 4, 13), // 2025년 5월 13일
+    runs: [
+      {
+        id: 2,
+        routeName: '동네 공원 산책',
+        time: '오후 6:15',
+        duration: '28분 10초',
+        distance: '3.1km',
+        calories: '180kcal',
+        routeImage: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=동네공원코스'
+      }
+    ]
+  },
+  {
+    date: new Date(2025, 4, 10), // 2025년 5월 10일
+    runs: [
+      {
+        id: 3,
+        routeName: '아침 조깅',
+        time: '오전 6:45',
+        duration: '35분 20초',
+        distance: '4.3km',
+        calories: '250kcal',
+        routeImage: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=아침조깅코스'
       },
-      currentDate: new Date(),
-      selectedDate: new Date(),
-      selectedDay: null,
-      monthlyStats: {
-        totalRuns: 12,
-        totalDistance: '78.5km',
-        totalTime: '8시간 45분',
-        totalCalories: '4,320kcal'
-      },
-      weekdays: ['일', '월', '화', '수', '목', '금', '토'],
-      runningData: [
-        {
-          date: new Date(2025, 4, 15), // 2025년 5월 15일
-          runs: [
-            {
-              id: 1,
-              routeName: '한강 공원 러닝',
-              time: '오전 7:30',
-              duration: '42분 30초',
-              distance: '5.2km',
-              calories: '320kcal',
-              routeImage: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=한강공원코스'
-            }
-          ]
-        },
-        {
-          date: new Date(2025, 4, 13), // 2025년 5월 13일
-          runs: [
-            {
-              id: 2,
-              routeName: '동네 공원 산책',
-              time: '오후 6:15',
-              duration: '28분 10초',
-              distance: '3.1km',
-              calories: '180kcal',
-              routeImage: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=동네공원코스'
-            }
-          ]
-        },
-        {
-          date: new Date(2025, 4, 10), // 2025년 5월 10일
-          runs: [
-            {
-              id: 3,
-              routeName: '아침 조깅',
-              time: '오전 6:45',
-              duration: '35분 20초',
-              distance: '4.3km',
-              calories: '250kcal',
-              routeImage: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=아침조깅코스'
-            },
-            {
-              id: 4,
-              routeName: '저녁 달리기',
-              time: '오후 7:30',
-              duration: '50분 15초',
-              distance: '6.8km',
-              calories: '420kcal',
-              routeImage: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=저녁달리기코스'
-            }
-          ]
-        },
-        {
-          date: new Date(2025, 4, 8), // 2025년 5월 8일
-          runs: [
-            {
-              id: 5,
-              routeName: '오피스 점심 러닝',
-              time: '오후 12:30',
-              duration: '22분 40초',
-              distance: '2.8km',
-              calories: '170kcal',
-              routeImage: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=점심러닝코스'
-            }
-          ]
-        },
-        {
-          date: new Date(2025, 4, 5), // 2025년 5월 5일
-          runs: [
-            {
-              id: 6,
-              routeName: '주말 장거리 달리기',
-              time: '오전 8:15',
-              duration: '1시간 25분',
-              distance: '12.6km',
-              calories: '850kcal',
-              routeImage: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=장거리코스'
-            }
-          ]
-        },
-        {
-          date: new Date(2025, 4, 2), // 2025년 5월 2일
-          runs: [
-            {
-              id: 7,
-              routeName: '야간 조깅',
-              time: '오후 9:00',
-              duration: '30분 50초',
-              distance: '3.5km',
-              calories: '210kcal',
-              routeImage: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=야간코스'
-            }
-          ]
-        }
-      ],
-      routes: [
-        {
-          id: 1,
-          name: '한강 공원 코스',
-          distance: '5.2km',
-          runCount: 8,
-          image: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=한강공원코스'
-        },
-        {
-          id: 2,
-          name: '동네 공원 코스',
-          distance: '3.1km',
-          runCount: 12,
-          image: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=동네공원코스'
-        },
-        {
-          id: 3,
-          name: '아침 조깅 코스',
-          distance: '4.3km',
-          runCount: 5,
-          image: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=아침조깅코스'
-        },
-        {
-          id: 4,
-          name: '장거리 코스',
-          distance: '12.6km',
-          runCount: 3,
-          image: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=장거리코스'
-        },
-        {
-          id: 5,
-          name: '야간 코스',
-          distance: '3.5km',
-          runCount: 4,
-          image: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=야간코스'
-        },
-        {
-          id: 6,
-          name: '점심 러닝 코스',
-          distance: '2.8km',
-          runCount: 7,
-          image: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=점심러닝코스'
-        }
-      ],
-      showRouteCollection: false,
-      calendarDays: []
-    };
-  },
-  computed: {
-    currentMonth() {
-      const months = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
-      return months[this.selectedDate.getMonth()];
-    },
-    currentMonthYear() {
-      const months = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
-      return `${months[this.selectedDate.getMonth()]} ${this.selectedDate.getFullYear()}`;
-    },
-    selectedDayRuns() {
-      if (!this.selectedDay || !this.selectedDay.hasRun) return [];
-      
-      const runData = this.runningData.find(data => 
-        this.isSameDay(data.date, this.selectedDay.date)
-      );
-      
-      return runData ? runData.runs : [];
-    }
-  },
-  methods: {
-    generateCalendar() {
-      const year = this.selectedDate.getFullYear();
-      const month = this.selectedDate.getMonth();
-      
-      // 선택된 달의 첫날과 마지막 날
-      const firstDay = new Date(year, month, 1);
-      const lastDay = new Date(year, month + 1, 0);
-      
-      // 첫날의 요일 (0: 일요일, 6: 토요일)
-      const firstDayOfWeek = firstDay.getDay();
-      
-      // 캘린더 배열 초기화
-      this.calendarDays = [];
-      
-      // 첫 주의 빈 칸 채우기
-      for (let i = 0; i < firstDayOfWeek; i++) {
-        this.calendarDays.push({ date: null });
+      {
+        id: 4,
+        routeName: '저녁 달리기',
+        time: '오후 7:30',
+        duration: '50분 15초',
+        distance: '6.8km',
+        calories: '420kcal',
+        routeImage: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=저녁달리기코스'
       }
-      
-      // 날짜 채우기
-      for (let i = 1; i <= lastDay.getDate(); i++) {
-        const currentDate = new Date(year, month, i);
-        
-        // 러닝 기록 확인
-        const hasRun = this.runningData.some(data => 
-          this.isSameDay(data.date, currentDate)
-        );
-        
-        this.calendarDays.push({
-          date: currentDate,
-          hasRun: hasRun,
-          isToday: this.isSameDay(currentDate, this.currentDate),
-          isActive: this.selectedDay ? this.isSameDay(currentDate, this.selectedDay.date) : false
-        });
-      }
-      
-      // 마지막 주의 빈 칸 채우기 (7의 배수로 맞추기)
-      const remaining = 7 - (this.calendarDays.length % 7);
-      if (remaining < 7) {
-        for (let i = 0; i < remaining; i++) {
-          this.calendarDays.push({ date: null });
-        }
-      }
-    },
-    changeMonth(delta) {
-      const newDate = new Date(this.selectedDate);
-      newDate.setMonth(newDate.getMonth() + delta);
-      this.selectedDate = newDate;
-      this.selectedDay = null;
-      this.generateCalendar();
-    },
-    selectDay(day) {
-      this.selectedDay = day;
-      
-      // 활성화 상태 업데이트
-      this.calendarDays = this.calendarDays.map(d => ({
-        ...d,
-        isActive: d.date && day.date ? this.isSameDay(d.date, day.date) : false
-      }));
-    },
-    isSameDay(date1, date2) {
-      return date1.getFullYear() === date2.getFullYear() &&
-             date1.getMonth() === date2.getMonth() &&
-             date1.getDate() === date2.getDate();
-    },
-    formatDate(date) {
-      const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
-      return date.toLocaleDateString('ko-KR', options);
-    },
-    viewRoute(routeId) {
-      // 루트 상세보기로 이동 (실제 구현에서는 라우터 사용)
-      alert(`루트 ID: ${routeId} 상세보기로 이동합니다.`);
-    }
+    ]
   },
-  mounted() {
-    this.generateCalendar();
+  {
+    date: new Date(2025, 4, 8), // 2025년 5월 8일
+    runs: [
+      {
+        id: 5,
+        routeName: '오피스 점심 러닝',
+        time: '오후 12:30',
+        duration: '22분 40초',
+        distance: '2.8km',
+        calories: '170kcal',
+        routeImage: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=점심러닝코스'
+      }
+    ]
+  },
+  {
+    date: new Date(2025, 4, 5), // 2025년 5월 5일
+    runs: [
+      {
+        id: 6,
+        routeName: '주말 장거리 달리기',
+        time: '오전 8:15',
+        duration: '1시간 25분',
+        distance: '12.6km',
+        calories: '850kcal',
+        routeImage: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=장거리코스'
+      }
+    ]
+  },
+  {
+    date: new Date(2025, 4, 2), // 2025년 5월 2일
+    runs: [
+      {
+        id: 7,
+        routeName: '야간 조깅',
+        time: '오후 9:00',
+        duration: '30분 50초',
+        distance: '3.5km',
+        calories: '210kcal',
+        routeImage: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=야간코스'
+      }
+    ]
+  }
+]);
+
+// 루트 데이터
+const routes = ref([
+  {
+    id: 1,
+    name: '한강 공원 코스',
+    distance: '5.2km',
+    runCount: 8,
+    image: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=한강공원코스'
+  },
+  {
+    id: 2,
+    name: '동네 공원 코스',
+    distance: '3.1km',
+    runCount: 12,
+    image: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=동네공원코스'
+  },
+  {
+    id: 3,
+    name: '아침 조깅 코스',
+    distance: '4.3km',
+    runCount: 5,
+    image: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=아침조깅코스'
+  },
+  {
+    id: 4,
+    name: '장거리 코스',
+    distance: '12.6km',
+    runCount: 3,
+    image: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=장거리코스'
+  },
+  {
+    id: 5,
+    name: '야간 코스',
+    distance: '3.5km',
+    runCount: 4,
+    image: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=야간코스'
+  },
+  {
+    id: 6,
+    name: '점심 러닝 코스',
+    distance: '2.8km',
+    runCount: 7,
+    image: 'https://via.placeholder.com/400x200/FFCCBC/FF5722?text=점심러닝코스'
+  }
+]);
+
+// Computed 속성
+const currentMonth = computed(() => {
+  const months = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
+  return months[selectedDate.value.getMonth()];
+});
+
+const currentMonthYear = computed(() => {
+  const months = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
+  return `${months[selectedDate.value.getMonth()]} ${selectedDate.value.getFullYear()}`;
+});
+
+const selectedDayRuns = computed(() => {
+  if (!selectedDay.value || !selectedDay.value.hasRun) return [];
+  
+  const runData = runningData.value.find(data => 
+    isSameDay(data.date, selectedDay.value.date)
+  );
+  
+  return runData ? runData.runs : [];
+});
+
+// 메서드
+function generateCalendar() {
+  const year = selectedDate.value.getFullYear();
+  const month = selectedDate.value.getMonth();
+  
+  // 선택된 달의 첫날과 마지막 날
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  
+  // 첫날의 요일 (0: 일요일, 6: 토요일)
+  const firstDayOfWeek = firstDay.getDay();
+  
+  // 캘린더 배열 초기화
+  calendarDays.value = [];
+  
+  // 첫 주의 빈 칸 채우기
+  for (let i = 0; i < firstDayOfWeek; i++) {
+    calendarDays.value.push({ date: null });
+  }
+  
+  // 날짜 채우기
+  for (let i = 1; i <= lastDay.getDate(); i++) {
+    const currentDateObj = new Date(year, month, i);
     
-    // 오늘 날짜에 러닝 기록이 있는지 확인하고 선택
-    const today = this.calendarDays.find(day => 
-      day.date && this.isSameDay(day.date, this.currentDate)
+    // 러닝 기록 확인
+    const hasRun = runningData.value.some(data => 
+      isSameDay(data.date, currentDateObj)
     );
     
-    if (today && today.hasRun) {
-      this.selectDay(today);
+    calendarDays.value.push({
+      date: currentDateObj,
+      hasRun: hasRun,
+      isToday: isSameDay(currentDateObj, currentDate.value),
+      isActive: selectedDay.value ? isSameDay(currentDateObj, selectedDay.value.date) : false
+    });
+  }
+  
+  // 마지막 주의 빈 칸 채우기 (7의 배수로 맞추기)
+  const remaining = 7 - (calendarDays.value.length % 7);
+  if (remaining < 7) {
+    for (let i = 0; i < remaining; i++) {
+      calendarDays.value.push({ date: null });
     }
   }
-};
+}
+
+function changeMonth(delta) {
+  const newDate = new Date(selectedDate.value);
+  newDate.setMonth(newDate.getMonth() + delta);
+  selectedDate.value = newDate;
+  selectedDay.value = null;
+  generateCalendar();
+}
+
+function selectDay(day) {
+  selectedDay.value = day;
+  
+  // 활성화 상태 업데이트
+  calendarDays.value = calendarDays.value.map(d => ({
+    ...d,
+    isActive: d.date && day.date ? isSameDay(d.date, day.date) : false
+  }));
+}
+
+function isSameDay(date1, date2) {
+  return date1.getFullYear() === date2.getFullYear() &&
+         date1.getMonth() === date2.getMonth() &&
+         date1.getDate() === date2.getDate();
+}
+
+function formatDate(date) {
+  const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+  return date.toLocaleDateString('ko-KR', options);
+}
+
+function viewRoute(routeId) {
+  // 루트 상세보기로 이동 (실제 구현에서는 라우터 사용)
+  alert(`루트 ID: ${routeId} 상세보기로 이동합니다.`);
+}
+
+// 컴포넌트 마운트 시 실행
+onMounted(() => {
+  generateCalendar();
+  
+  // 오늘 날짜에 러닝 기록이 있는지 확인하고 선택
+  const today = calendarDays.value.find(day => 
+    day.date && isSameDay(day.date, currentDate.value)
+  );
+  
+  if (today && today.hasRun) {
+    selectDay(today);
+  }
+});
 </script>
 
 <style scoped>
