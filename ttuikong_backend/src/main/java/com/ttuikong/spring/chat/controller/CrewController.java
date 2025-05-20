@@ -51,6 +51,7 @@ public class CrewController {
 
 	@Operation(summary = "크루 조회")
 	@GetMapping("/{crewId}")
+	@LoginRequired
 	public ResponseEntity<Crew> getCrew(@PathVariable int crewId) {
 		Crew crew = crewService.getCrew(crewId);
 		if (crew != null) {
@@ -74,6 +75,7 @@ public class CrewController {
 
 	@Operation(summary = "전체 그룹 리스트 조회")
 	@GetMapping("")
+	@LoginRequired
 	public ResponseEntity<?> getAllCrews() {
 		return ResponseEntity.ok(crewService.getAllCrews());
 	}
@@ -110,6 +112,7 @@ public class CrewController {
 	 */
 	@Operation(summary = "크루 멤버 목록 조회")
 	@GetMapping("/{crewId}/members")
+	@LoginRequired
 	public ResponseEntity<?> getCrewMembers(@PathVariable int crewId) {
 	    List<User> members = crewMemberService.getMembersByCrewId(crewId);
 	    return ResponseEntity.ok(members);

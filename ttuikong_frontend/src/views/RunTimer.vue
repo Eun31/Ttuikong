@@ -24,15 +24,52 @@
     <div class="crew-list-section">
       <div class="crew-top">
         <h3>크루 목록</h3>
-        <button class="create-crew-btn" @click="createCrew">+ 크루 생성</button>
+        <button class="create-crew-btn" @click="toggleCrewForm">+ 크루 생성</button>
       </div>
+
+      <!-- 크루 생성-->
+      <div v-if="showCrewForm" class="form-box">
+        <h2>크루 생성</h2>
+        <form @submit.prevent="submitCrew">
+          <div class="form-group">
+            <label>크루명</label>
+            <input v-model="newCrew.roomName" placeholder="크루명" required />
+          </div>
+          <div class="form-group">
+            <label>소개</label>
+            <textarea v-model="newCrew.roomDescription" placeholder="크루 소개" />
+          </div>
+          <div class="form-group">
+            <label>목표 유형</label>
+            <select v-model="newCrew.goalType">
+              <option value="SUM">총 시간</option>
+              <option value="AVERAGE">평균 시간</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>목표 수치</label>
+            <input v-model.number="newCrew.goalTime" type="number" placeholder="예: 30" required />
+          </div>
+          <div class="form-group">
+            <label>시작일</label>
+            <input v-model="newCrew.startDate" type="date" required />
+          </div>
+          <div class="form-group">
+            <label>종료일</label>
+            <input v-model="newCrew.endDate" type="date" required />
+          </div>
+          <button type="submit" class="submit-button">크루 생성하기</button>
+        </form>
+      </div>
+
       <!--크루 검색-->
       <div v-for="crew in filteredCrews" :key="'search-' + crew.id" class="crew-card search-result">
         <div class="crew-header">
-          <h4>{{ crew.name }}</h4>
+          <h4>{{ crew.roomName }}</h4>
           <button class="join-btn" @click.stop="joinCrew(crew)">가입하기</button>
         </div>
-        <p class="crew-meta">참여 인원: {{ crew.members.length }}명 · 목표: {{ crew.mission }}</p>
+        <p class="crew-meta"> 목표: {{ crew.goalType }} : {{ crew.goalTime }}</p>
+        <p class="crew-meta"> 참여 인원: {{crewMembers.find(c => c.crewId === crew.id)?.members.length || 0}}명</p>
       </div>
       <div class="group-search">
         <input type="text" v-model="searchQuery" placeholder="크루 이름으로 검색..." class="search-input" />
@@ -42,25 +79,32 @@
       <!-- 내 크루 목록 -->
       <h3>내가 속한 크루</h3>
       <div v-for="crew in crews" :key="crew.id" class="crew-card" @click="toggleCrew(crew.id)">
-        <div class="crew-header">
-          <h4>{{ crew.name }}</h4>
-          <span>{{ crew.members.length }}명</span>
-        </div>
-        <transition name="fade">
-          <div v-show="expandedCrews.includes(crew.id)" class="crew-detail">
-            <p>📍 목표: <strong>{{ crew.mission }}</strong></p>
-            <p>🏅 목표 달성률: {{ crew.participationRate }}%</p>
-            <h3 class="sub-title">크루 멤버</h3>
-            <div class="user-list">
-              <div v-for="member in crewMembers" :key="member.id" class="user-card">
-                <strong>{{ member.name }}</strong>
-                <span>{{ member.status }}</span>
-              </div>
-            </div>
-            <h3 class="sub-title">실시간 메신저</h3>
-            <button class="talk-button" @click="goToChat">▶ Talk</button>
+        <div
+          v-if="crew.creatorId == userId || crewMembers.find(c => c.crewId === crew.id)?.members.some(m => m.id == userId)">
+          <div class="crew-header">
+            <h4>{{ crew.roomName }}</h4>
+            <span>{{crewMembers.find(c => c.crewId === crew.id)?.members.length || 0}}명
+              <button v-if="crew.creatorId != userId" class="quit-btn" @click.stop="quitCrew(crew)">탈퇴하기</button>
+              <button v-else class="delete-btn" @click.stop="deleteCrew(crew)">삭제하기</button>
+            </span>
           </div>
-        </transition>
+          <transition name="fade">
+            <div v-show="expandedCrews.includes(crew.id)" class="crew-detail">
+              <p>📍 목표: <strong>{{ crew.goalType }} : {{ crew.goalTime }}</strong></p>
+              <!-- <p>🏅 목표 달성률: {{ crew.participationRate }}%</p> -->
+              <h3 class="sub-title">크루 멤버</h3>
+              <div class="user-list">
+                <div v-for="member in crewMembers.find(c => c.crewId === crew.id)?.members || []" :key="member.id"
+                  class="user-card">
+                  <strong>{{ member.nickname }}</strong>
+                  <!-- <span>{{ member.status }}</span> -->
+                </div>
+              </div>
+              <h3 class="sub-title">실시간 메신저</h3>
+              <button class="talk-button" @click="goToChat">▶ Talk</button>
+            </div>
+          </transition>
+        </div>
       </div>
     </div>
 
@@ -96,33 +140,179 @@ const positions = ref([]);
 const distance = ref(0);
 const expandedCrews = ref([]);
 const startTime = ref('');
+const token = ref(localStorage.getItem("jwt"));
+const userId = ref(Number(localStorage.getItem("userId")));
+const showCrewForm = ref(false);
+const crews = ref([]);
+const crewMembers = ref([]);
+const newCrew = ref({
+  roomName: '',
+  roomDescription: '',
+  goalType: '거리',
+  goalTime: 0,
+  startDate: '',
+  endDate: ''
+});
 
-const crews = ref([
-  { id: 1, name: '테일즈러너즈', mission: '5km 이상 달리기', avgDistance: 4.7, participationRate: 80, members: ['A', 'B', 'C'] },
-  { id: 2, name: '런닝걸스', mission: '30분 연속 달리기', avgDistance: 5.4, participationRate: 60, members: ['D', 'E'] },
-  { id: 3, name: '아침햇살조', mission: '아침 7시 달리기', participationRate: 40, members: ['F'] }
-]);
+/* 크루 생성 */
+const toggleCrewForm = () => {
+  showCrewForm.value = !showCrewForm.value;
+};
 
-const crewMembers = ref([
-  { id: 1, name: '김민준', status: '달리는 중' },
-  { id: 2, name: '이지우', status: '대기 중' },
-  { id: 3, name: '박서연', status: '오프라인' },
-  { id: 4, name: '최준호', status: '대기 중' },
-  { id: 5, name: '정수빈', status: '오프라인' }
-]);
+const submitCrew = async () => {
+  console.log("🚨 token for submitCrew:", token.value);
 
+  const response = await fetch('http://localhost:8080/api/crew', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(newCrew.value)
+  });
+
+  const message = await response.text();
+  alert(message);
+  if (response.ok) {
+    showCrewForm.value = false;
+    newCrew.value = {
+      roomName: '',
+      roomDescription: '',
+      goalType: '거리',
+      goalTime: 0,
+      startDate: '',
+      endDate: ''
+    };
+  }
+};
+
+const joinCrew = async (crew) => {
+  const currentToken = localStorage.getItem("jwt");
+  const currentuserId = localStorage.getItem("userId");
+
+  if (!currentuserId) {
+    alert("로그인이 필요합니다.");
+    return;
+  }
+
+  try {
+    const res = await fetch(`http://localhost:8080/api/crew/${crew.id}/join?userId=${currentuserId}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${currentToken}`
+      }
+    });
+
+    const message = await res.text();
+    alert(message);
+  } catch (err) {
+    console.error("크루 가입 중 오류:", err);
+    alert("크루 가입 실패: 서버 오류");
+  }
+};
+
+/* 크루 삭제, 탈퇴 */
+const deleteCrew = async (crew) => {
+  try {
+    const res = await fetch(`http://localhost:8080/api/crew/${crew.id}?creatorId=${userId.value}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token.value}`
+      }
+    });
+
+    const message = await res.text();
+    alert(message);
+
+    if (res.ok) {
+      // 삭제 후 목록 갱신
+      await fetchCrewsAndMembers();
+    }
+  } catch (err) {
+    console.error("크루 삭제 중 오류:", err);
+    alert("크루 삭제 실패: 서버 오류");
+  }
+};
+
+const quitCrew = async (crew) => {
+  try {
+    const res = await fetch(`http://localhost:8080/api/crew/${crew.id}/leave?userId=${userId.value}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token.value}`
+      }
+    });
+
+    const message = await res.text();
+    alert(message);
+
+    if (res.ok) {
+      // 탈퇴 후 목록 갱신
+      await fetchCrewsAndMembers();
+    }
+  } catch (err) {
+    console.error("크루 탈퇴 중 오류:", err);
+    alert("크루 탈퇴 실패: 서버 오류");
+  }
+};
+
+
+/* 크루 데이터베이스에서 불러오기*/
+const fetchCrewsAndMembers = async () => {
+  const currentToken = localStorage.getItem("jwt");
+  try {
+    const res = await fetch("http://localhost:8080/api/crew", {
+      headers: { Authorization: `Bearer ${currentToken}` }
+    });
+    if (!res.ok) throw new Error("크루 목록 불러오기 실패");
+
+    const data = await res.json();
+    console.log("crew list:", data);
+    crews.value = data;
+
+    const memberPromises = data.map(async crew => {
+      const res = await fetch(`http://localhost:8080/api/crew/${crew.id}/members`, {
+        headers: { Authorization: `Bearer ${currentToken}` }
+      });
+      if (!res.ok) throw new Error(`멤버 불러오기 실패: crewId=${crew.id}`);
+
+      const members = await res.json();
+      console.log(`members for crew ${crew.id}:`, members);
+
+      return { crewId: crew.id, members: members || [] };
+    });
+
+    const memberResults = await Promise.all(memberPromises);
+    crewMembers.value = memberResults;
+
+  } catch (error) {
+    console.error("크루 또는 멤버 불러오는 중 오류:", error);
+  }
+};
+
+const toggleCrew = (id) => {
+  if (expandedCrews.value.includes(id)) {
+    expandedCrews.value = expandedCrews.value.filter(cid => cid !== id);
+  } else {
+    expandedCrews.value.push(id);
+  }
+};
+
+/* 시간 format */
 const formattedTime = computed(() => {
   const min = Math.floor(seconds.value / 60);
   const sec = seconds.value % 60;
   return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
 });
 
+/* 크루 필터링 */
 const filteredCrews = computed(() => {
   const query = searchQuery.value.trim().toLowerCase();
   if (!query) return crews.value;
-  return crews.value.filter(c => c.name.toLowerCase().includes(query));
+  return crews.value.filter(c => c.roomName.toLowerCase().includes(query));
 });
 
+/* 카카오 API */
 const loadKakaoMapScript = () => {
   const existingScript = document.getElementById('kakao-map-sdk');
   if (existingScript) {
@@ -164,41 +354,6 @@ const waitForKakao = () => {
   }
 };
 
-const toggleTimer = async () => {
-  if (isRunning.value) {
-    clearInterval(timer.value);
-    await saveRunningData();
-  } else {
-    startTime.value = new Date().toISOString();
-    const token = localStorage.getItem("jwt");
-    await fetch("http://localhost:8080/api/runs/running-status", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        startTime: startTime.value,
-        status: "start"
-      })
-    });
-
-    timer.value = setInterval(() => {
-      seconds.value++;
-      if (kakaoMapLoaded.value) updateLocation();
-    }, 1000);
-    infoText.value = '달리는 중...';
-  }
-  isRunning.value = !isRunning.value;
-};
-
-const toggleCrew = (id) => {
-  if (expandedCrews.value.includes(id)) {
-    expandedCrews.value = expandedCrews.value.filter(cid => cid !== id);
-  } else {
-    expandedCrews.value.push(id);
-  }
-};
 
 const initMap = () => {
   const mapContainer = document.getElementById('map');
@@ -258,13 +413,13 @@ const updateLocation = () => {
 
 const saveRunningData = async () => {
   const endTime = new Date().toISOString();
-  const token = localStorage.getItem("jwt");
+  const currentToken = localStorage.getItem("jwt");
 
   await fetch("http://localhost:8080/api/runs/track-location", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`
+      "Authorization": `Bearer ${currentToken}`
     },
     body: JSON.stringify({
       startTime: startTime.value,
@@ -288,14 +443,79 @@ const uploadMapImage = async (file) => {
   });
 };
 
+
+/* 타이머 기능 */
+const toggleTimer = async () => {
+  if (isRunning.value) {
+    clearInterval(timer.value);
+    await saveRunningData();
+  } else {
+    startTime.value = new Date().toISOString();
+    const token = localStorage.getItem("jwt");
+    await fetch("http://localhost:8080/api/runs/running-status", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        startTime: startTime.value,
+        status: "start"
+      })
+    });
+
+    timer.value = setInterval(() => {
+      seconds.value++;
+      if (kakaoMapLoaded.value) updateLocation();
+    }, 1000);
+    infoText.value = '달리는 중...';
+  }
+  isRunning.value = !isRunning.value;
+};
+
+/* 유저 불러오기 */
+const getCurrentUser = async () => {
+  const currentToken = localStorage.getItem("jwt");
+  const currentuserId = localStorage.getItem("userId");
+
+  token.value = localStorage.getItem("jwt");
+  userId.value = localStorage.getItem("userId");
+
+  try {
+    const res = await fetch("http://localhost:8080/api/users/me", {
+      headers: {
+        Authorization: `Bearer ${currentToken}`
+      }
+    });
+
+    if (!res.ok) throw new Error("유저 정보 불러오기 실패");
+
+    const data = await res.json();
+    const userId = data.user.id;
+
+    localStorage.setItem("userId", currentuserId);
+    console.log("로그인된 사용자 ID:", currentuserId);
+
+    localStorage.setItem("token", currentToken);
+    console.log("사용자 token:", currentToken);
+
+  } catch (err) {
+    console.error("사용자 정보 요청 실패:", err);
+    alert("로그인이 필요합니다.");
+  }
+};
+
 const stayOnTimer = () => { };
 const goToChat = () => router.push('/chat');
 const navigateToTimer = () => emit('navigate', 'RunTimer');
 const navigateToRank = () => emit('navigate', 'RunWithRank');
-const createCrew = () => console.log('크루 생성 기능 개발 필요');
-const joinCrew = (crew) => console.log('크루 가입 기능 개발 필요:', crew.name);
 
-onMounted(loadKakaoMapScript);
+onMounted(() => {
+  getCurrentUser();
+  loadKakaoMapScript();
+  fetchCrewsAndMembers();
+});
+
 onBeforeUnmount(() => {
   if (timer.value) clearInterval(timer.value);
 });
@@ -330,7 +550,6 @@ body {
   background-color: #f0f9f0;
   margin: 0;
   max-width: 390px;
-  /* 가로 지정 */
 }
 
 #map {
@@ -341,6 +560,7 @@ body {
   position: absolute;
   top: -9999px;
 }
+
 
 .timer-card {
   color: orange;
@@ -354,6 +574,8 @@ body {
   font-family: sans-serif;
   position: relative;
   overflow: hidden;
+  max-width: 557px;
+  margin: 0 auto;
 }
 
 .timer-card h2 {
@@ -503,13 +725,29 @@ body {
   border: none;
   border-radius: 999px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 17px;
   box-shadow: 0 3px 5px rgba(255, 112, 67, 0.2);
   transition: all 0.3s ease;
 }
 
 .join-btn:hover {
   background: #FF8A65;
+  transform: scale(1.05);
+}
+
+.quit-btn,
+.delete-btn {
+  color: #FF7043;
+  padding: 8px 20px;
+  border: none;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.quit-btn:hover,
+.delete-btn:hover {
   transform: scale(1.05);
 }
 
@@ -642,5 +880,80 @@ body {
   font-size: 13px;
   color: #666;
   margin-top: 6px;
+}
+
+/* 크루 생성 css */
+.form-box {
+  background-color: #FFF3EC;
+  border: 2px solid #FFD5BD;
+  border-radius: 20px;
+  padding: 24px;
+  margin: 20px 0;
+  box-shadow: 0 4px 12px rgba(255, 112, 67, 0.15);
+  font-family: 'Pretendard', sans-serif;
+  max-width: 100%;
+}
+
+.form-box h2 {
+  color: #FF7043;
+  margin-bottom: 20px;
+  font-size: 20px;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #444;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  padding: 12px;
+  border: 1px solid #ffd1b6;
+  border-radius: 10px;
+  font-size: 14px;
+  background-color: #fffaf7;
+  box-shadow: inset 0 2px 4px rgba(255, 160, 120, 0.05);
+  transition: border 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #ff8a65;
+  background-color: #fff6f0;
+}
+
+textarea {
+  resize: none;
+  min-height: 80px;
+}
+
+.submit-button {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #FF9F69, #FF7043);
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(255, 112, 67, 0.2);
+  transition: all 0.3s ease;
+}
+
+.submit-button:hover {
+  background: #FF7E47;
+  transform: scale(1.02);
 }
 </style>

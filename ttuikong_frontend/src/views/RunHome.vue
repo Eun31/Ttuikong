@@ -7,7 +7,7 @@
 </template>
 
 <script setup>
-import { ref, watchEffect } from 'vue';
+import { ref, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import RunTimer from './RunTimer.vue';
 import RunWithCrew from './RunWithCrew.vue';
@@ -24,24 +24,17 @@ const router = useRouter();
 const currentView = ref('RunTimer');
 const viewHistory = ref(['RunTimer']);
 
-watchEffect(() => {
-  if (props.view) {
-    switch (props.view) {
-      case 'timer':
-        currentView.value = 'RunTimer';
-        break;
-      case 'crew':
-        currentView.value = 'RunWithCrew';
-        break;
-      case 'rank':
-        currentView.value = 'RunWithRank';
-        break;
-      default:
-        currentView.value = 'RunTimer';
-    }
+watch(
+  () => props.view,
+  (newView) => {
+    if (newView === 'rank') currentView.value = 'RunWithRank';
+    else if (newView === 'crew') currentView.value = 'RunWithCrew';
+    else currentView.value = 'RunTimer';
+
     viewHistory.value = [currentView.value];
-  }
-});
+  },
+  { immediate: true }
+);
 
 const navigateTo = (view) => {
   viewHistory.value.push(currentView.value);

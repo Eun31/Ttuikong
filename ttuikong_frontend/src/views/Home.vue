@@ -80,14 +80,14 @@ const router = useRouter();
 
 const userName = ref('김러너');
 const recommendation = ref(5);
-const growthRate = ref(65);
+const growthRate = ref(100);
 const stats = ref([
   { label: '총 거리', value: '45.8km', icon: '🏁' },
   { label: '총 횟수', value: '12', icon: '👟' },
   { label: '챌린지 보상', value: '3', icon: '🎁' }
 ]);
 const menus = ref([
-  { label: '챌린지', icon: '👟', path: '/challenge' },
+  { label: '랭킹', icon: '👟', path: '/run/rank' },
   { label: '캘린더', icon: '📝', path: '/calendar' },
   { label: '루트 찾기', icon: '👥', path: '/routes' },
   { label: '게시판', icon: '🖐️', path: '/board' }
@@ -97,7 +97,7 @@ const popularPosts = ref([
   {
     id: 1,
     author: '러닝마스터',
-    authorAvatar: 'https://via.placeholder.com/36',
+    authorAvatar: 'https://placehold.co/600x400',
     title: '초보 러너를 위한 효과적인 훈련법',
     content: '처음 러닝을 시작하시는 분들을 위한 팁을 공유합니다...',
     likes: 42,
@@ -106,7 +106,7 @@ const popularPosts = ref([
   {
     id: 2,
     author: '마라톤조아',
-    authorAvatar: 'https://via.placeholder.com/36',
+    authorAvatar: 'https://placehold.co/600x400',
     title: '서울 근교 러닝 코스 추천',
     content: '주말에 러닝하기 좋은 서울 근교 코스를 소개합니다...',
     likes: 35,
@@ -117,7 +117,7 @@ const followPosts = ref([
   {
     id: 3,
     author: '달려라하니',
-    authorAvatar: 'https://via.placeholder.com/36',
+    authorAvatar: 'https://placehold.co/600x400',
     title: '오늘의 러닝 완료!',
     content: '오늘도 5km 러닝 완료했습니다. 날씨가 정말 좋았어요!',
     likes: 15,
@@ -127,7 +127,7 @@ const followPosts = ref([
   {
     id: 4,
     author: '조깅왕',
-    authorAvatar: 'https://via.placeholder.com/36',
+    authorAvatar: 'https://placehold.co/600x400',
     title: '챌린지 참여했어요',
     content: '"30일 러닝 습관 만들기" 챌린지에 참여했습니다. 함께해요!',
     likes: 22,
@@ -247,6 +247,7 @@ function startRunning() {
   border-radius: 999px;
   overflow: hidden;
   margin-top: 8px;
+
 }
 
 .progress-fill {

@@ -95,6 +95,15 @@ watch(route, () => {
   box-sizing: border-box;
 }
 
+/* 웹 화면 뷰 조절 */
+#app {
+  width: 95%;
+  max-width: 1240px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 16px;
+}
+
 body {
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background-color: #FFFFFF;
