@@ -458,17 +458,21 @@ const toggleTimer = async () => {
     await saveRunningData();
   } else {
     startTime.value = new Date().toISOString();
-    const token = localStorage.getItem("jwt");
+    const currentToken = localStorage.getItem("jwt");
+
+    const jsonData = JSON.stringify({
+      startTime: startTime.value,
+      status: "running"
+    });
+    console.log("보내는 JSON 데이터:", jsonData);
+
     await fetch("http://localhost:8080/api/runs/running-status", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        "Authorization": `Bearer ${currentToken}`
       },
-      body: JSON.stringify({
-        startTime: startTime.value,
-        status: "start"
-      })
+      body: jsonData
     });
 
     timer.value = setInterval(() => {
@@ -479,6 +483,7 @@ const toggleTimer = async () => {
   }
   isRunning.value = !isRunning.value;
 };
+
 
 /* 유저 불러오기 */
 const getCurrentUser = async () => {

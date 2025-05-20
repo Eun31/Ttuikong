@@ -1,7 +1,8 @@
 package com.ttuikong.spring.chat.controller;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,6 +12,7 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ttuikong.spring.annotation.LoginRequired;
 import com.ttuikong.spring.annotation.LoginUser;
 import com.ttuikong.spring.chat.model.service.RunService;
@@ -36,6 +40,7 @@ import com.ttuikong.spring.chat.model.dto.TrackLocation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/runs")
@@ -81,23 +86,27 @@ public class RunController {
     @Operation(summary = "러닝 상태 변화 추적")
     @PostMapping("/running-status")
     @LoginRequired
-    public ResponseEntity<?> startRunning(@RequestBody RunningStatus body,
-            @Parameter(hidden = true) @LoginUser User loginUser) {
-
+    public ResponseEntity<?> startRunning(HttpServletRequest request,
+                                        @Parameter(hidden = true) @LoginUser User loginUser) {
         if (loginUser == null) {
-            System.out.println("❌ loginUser is null");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "로그인 필요"));
         }
 
-        String startTimeStr = body.getStartTime();
-        String status = body.getStatus();
-
-        System.out.println("📥 raw startTime: " + body.getStartTime());
-        System.out.println("📥 raw status: " + body.getStatus());
-
         try {
+            ObjectMapper mapper = new ObjectMapper();
+            String rawJson = new BufferedReader(new InputStreamReader(request.getInputStream()))
+                                .lines()
+                                .collect(Collectors.joining());
+
+            System.out.println("📥 받은 raw JSON: " + rawJson);
+
+            JsonNode node = mapper.readTree(rawJson);
+            String startTimeStr = node.get("startTime").asText();
+            String status = node.get("status").asText();
+
             LocalDateTime startTime = OffsetDateTime.parse(startTimeStr).toLocalDateTime();
             runService.insertRunningStatus(loginUser.getId(), startTime, status);
+
             return ResponseEntity.ok(Map.of("message", "러닝 시작 기록 완료"));
         } catch (Exception e) {
             e.printStackTrace();
