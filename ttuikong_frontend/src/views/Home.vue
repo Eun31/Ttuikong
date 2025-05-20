@@ -73,84 +73,83 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'Home',
-  data() {
-    return {
-      userName: '김러너',
-      recommendation: 5,
-      growthRate: 65,
-      stats: [
-        { label: '총 거리', value: '45.8km', icon: '🏁' },
-        { label: '총 횟수', value: '12', icon: '👟' },
-        { label: '챌린지 보상', value: '3', icon: '🎁' }
-      ],
-      menus: [
-        { label: '챌린지', icon: '👟', path: '/challenge' },
-        { label: '캘린더', icon: '📝', path: '/calendar' },
-        { label: '루트 찾기', icon: '👥', path: '/routes' },
-        { label: '게시판', icon: '🖐️', path: '/board' }
-      ],
-      isPopularFeed: true,
-      popularPosts: [
-        {
-          id: 1,
-          author: '러닝마스터',
-          authorAvatar: 'https://via.placeholder.com/36',
-          title: '초보 러너를 위한 효과적인 훈련법',
-          content: '처음 러닝을 시작하시는 분들을 위한 팁을 공유합니다...',
-          likes: 42,
-          comments: 12
-        },
-        {
-          id: 2,
-          author: '마라톤조아',
-          authorAvatar: 'https://via.placeholder.com/36',
-          title: '서울 근교 러닝 코스 추천',
-          content: '주말에 러닝하기 좋은 서울 근교 코스를 소개합니다...',
-          likes: 35,
-          comments: 8
-        }
-      ],
-      followPosts: [
-        {
-          id: 3,
-          author: '달려라하니',
-          authorAvatar: 'https://via.placeholder.com/36',
-          title: '오늘의 러닝 완료!',
-          content: '오늘도 5km 러닝 완료했습니다. 날씨가 정말 좋았어요!',
-          likes: 15,
-          comments: 3,
-          date: '1시간 전'
-        },
-        {
-          id: 4,
-          author: '조깅왕',
-          authorAvatar: 'https://via.placeholder.com/36',
-          title: '챌린지 참여했어요',
-          content: '"30일 러닝 습관 만들기" 챌린지에 참여했습니다. 함께해요!',
-          likes: 22,
-          comments: 5,
-          date: '3시간 전'
-        }
-      ]
-    };
+<script setup>
+import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+const userName = ref('김러너');
+const recommendation = ref(5);
+const growthRate = ref(65);
+const stats = ref([
+  { label: '총 거리', value: '45.8km', icon: '🏁' },
+  { label: '총 횟수', value: '12', icon: '👟' },
+  { label: '챌린지 보상', value: '3', icon: '🎁' }
+]);
+const menus = ref([
+  { label: '챌린지', icon: '👟', path: '/challenge' },
+  { label: '캘린더', icon: '📝', path: '/calendar' },
+  { label: '루트 찾기', icon: '👥', path: '/routes' },
+  { label: '게시판', icon: '🖐️', path: '/board' }
+]);
+const isPopularFeed = ref(true);
+const popularPosts = ref([
+  {
+    id: 1,
+    author: '러닝마스터',
+    authorAvatar: 'https://via.placeholder.com/36',
+    title: '초보 러너를 위한 효과적인 훈련법',
+    content: '처음 러닝을 시작하시는 분들을 위한 팁을 공유합니다...',
+    likes: 42,
+    comments: 12
   },
-  computed: {
-    currentFeed() {
-      return this.isPopularFeed ? this.popularPosts : this.followPosts;
-    }
-  },
-  methods: {
-    toggleFeedType() {
-      this.isPopularFeed = !this.isPopularFeed;
-    },
-    startRunning() {
-      this.$router.push('/run');
-    }
+  {
+    id: 2,
+    author: '마라톤조아',
+    authorAvatar: 'https://via.placeholder.com/36',
+    title: '서울 근교 러닝 코스 추천',
+    content: '주말에 러닝하기 좋은 서울 근교 코스를 소개합니다...',
+    likes: 35,
+    comments: 8
   }
-};
+]);
+const followPosts = ref([
+  {
+    id: 3,
+    author: '달려라하니',
+    authorAvatar: 'https://via.placeholder.com/36',
+    title: '오늘의 러닝 완료!',
+    content: '오늘도 5km 러닝 완료했습니다. 날씨가 정말 좋았어요!',
+    likes: 15,
+    comments: 3,
+    date: '1시간 전'
+  },
+  {
+    id: 4,
+    author: '조깅왕',
+    authorAvatar: 'https://via.placeholder.com/36',
+    title: '챌린지 참여했어요',
+    content: '"30일 러닝 습관 만들기" 챌린지에 참여했습니다. 함께해요!',
+    likes: 22,
+    comments: 5,
+    date: '3시간 전'
+  }
+]);
+
+// computed 속성
+const currentFeed = computed(() => {
+  return isPopularFeed.value ? popularPosts.value : followPosts.value;
+});
+
+// 메서드
+function toggleFeedType() {
+  isPopularFeed.value = !isPopularFeed.value;
+}
+
+function startRunning() {
+  router.push('/run');
+}
 </script>
 
 <style scoped>
@@ -282,11 +281,26 @@ export default {
   padding: 10px 4px;
   font-size: 14px;
   color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
 }
 
 .menu-icon {
   font-size: 22px;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-label {
+  font-size: 14px;
+  text-align: center;
+  line-height: 1.2;
 }
 
 .section {
@@ -426,29 +440,47 @@ export default {
 /* 반응형 스타일 */
 @media (max-width: 600px) {
   .main-menu {
-    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-    gap: 12px;
+    justify-content: space-between;
+  }
+  
+  .menu-item {
+    width: calc(25% - 10px);
+    height: 80px;
+    padding: 8px 4px;
   }
   
   .menu-icon {
-    width: 50px;
-    height: 50px;
+    font-size: 20px;
+    margin-bottom: 6px;
+    /* 고정된 높이 유지 */
+    height: 24px;
+  }
+  
+  .menu-label {
+    font-size: 12px;
+    /* 고정된 높이 유지 */
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .stat-card .icon {
     font-size: 20px;
   }
   
-  .stat-bubble {
-    padding: 12px 8px;
+  .stat-card .value {
+    font-size: 16px;
   }
   
-  .stat-value {
-    font-size: 18px;
+  .stat-card .label {
+    font-size: 12px;
   }
   
   .recommend-text {
     font-size: 20px;
   }
 }
-
 
 /* 애니메이션 효과 */
 @keyframes pulse {

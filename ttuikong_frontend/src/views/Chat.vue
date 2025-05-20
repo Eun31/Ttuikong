@@ -27,75 +27,78 @@
   </div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      crewId: null,
-      messages: [
-        { senderId: 1, message: "안녕하세요! " },
-        { senderId: 2, message: "안녕하세요, 반갑습니다 " },
-        { senderId: 1, message: "오늘 러닝 몇 시에 시작하실래요?" },
-        { senderId: 2, message: "저는 7시쯤 괜찮을 것 같아요!" }
-      ],
-      chatInput: '',
-      myUserId: 2,
-      fetchInterval: null,
-    };
-  },
-  mounted() {
-    this.crewId = new URLSearchParams(window.location.search).get('crewId');
-    this.fetchUserId().then(() => {
-      this.fetchMessages();
-      this.fetchInterval = setInterval(this.fetchMessages, 5000);
-    });
-  },
-  beforeUnmount() {
-    clearInterval(this.fetchInterval);
-  },
-  methods: {
-    goBack() {
-      // 이전 페이지로 돌아가기
-      this.$router.go(-1);
-    },
-    getAvatar(senderId) {
-      const avatars = ['🐱', '🐶', '🐰', '🦊', '🐼', '🐨', '🐯', '🐸', '🦁', '🐻'];
-      const index = senderId % avatars.length;
-      return avatars[index];
-    },
-    fetchUserId() {
-      return fetch('/api/users/me')
-        .then(res => res.json())
-        .then(user => {
-          this.myUserId = user.id;
-        });
-    },
-    fetchMessages() {
-      fetch(`/api/chat/${this.crewId}`)
-        .then(res => res.json())
-        .then(data => {
-          this.messages = data;
-          this.$nextTick(() => {
-            const chatBox = this.$refs.chatBox;
-            if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
-          });
-        });
-    },
-    sendMessage() {
-      const message = this.chatInput.trim();
-      if (!message) return;
+<script setup>
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
 
-      fetch(`/api/chat/${this.crewId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message })
-      }).then(() => {
-        this.chatInput = '';
-        this.fetchMessages();
+const router = useRouter();
+const crewId = ref(null);
+const messages = ref([
+  { senderId: 1, message: "안녕하세요! " },
+  { senderId: 2, message: "안녕하세요, 반갑습니다 " },
+  { senderId: 1, message: "오늘 러닝 몇 시에 시작하실래요?" },
+  { senderId: 2, message: "저는 7시쯤 괜찮을 것 같아요!" }
+]);
+const chatInput = ref('');
+const myUserId = ref(2);
+let fetchInterval = null;
+const chatBox = ref(null);
+
+function goBack() {
+  // 이전 페이지로 돌아가기
+  router.go(-1);
+}
+
+function getAvatar(senderId) {
+  const avatars = ['🐱', '🐶', '🐰', '🦊', '🐼', '🐨', '🐯', '🐸', '🦁', '🐻'];
+  const index = senderId % avatars.length;
+  return avatars[index];
+}
+
+function fetchUserId() {
+  return fetch('/api/users/me')
+    .then(res => res.json())
+    .then(user => {
+      myUserId.value = user.id;
+    });
+}
+
+function fetchMessages() {
+  fetch(`/api/chat/${crewId.value}`)
+    .then(res => res.json())
+    .then(data => {
+      messages.value = data;
+      nextTick(() => {
+        if (chatBox.value) chatBox.value.scrollTop = chatBox.value.scrollHeight;
       });
-    }
-  }
-};
+    });
+}
+
+function sendMessage() {
+  const message = chatInput.value.trim();
+  if (!message) return;
+
+  fetch(`/api/chat/${crewId.value}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message })
+  }).then(() => {
+    chatInput.value = '';
+    fetchMessages();
+  });
+}
+
+onMounted(() => {
+  crewId.value = new URLSearchParams(window.location.search).get('crewId');
+  fetchUserId().then(() => {
+    fetchMessages();
+    fetchInterval = setInterval(fetchMessages, 5000);
+  });
+});
+
+onBeforeUnmount(() => {
+  clearInterval(fetchInterval);
+});
 </script>
 
 <style scoped>

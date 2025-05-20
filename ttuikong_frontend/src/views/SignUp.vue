@@ -142,47 +142,45 @@
   </div>
 </template>
 
-<script>
-import logoSrc from '../assets/logo_orange.png'
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import logoSrc from '../assets/logo_orange.png';
 
-export default {
-  name: 'SignUp',
-  data() {
-    return {
-      logo: logoSrc,
-      formData: {
-        email: '',
-        password: '',
-        gender: '',
-        nickname: '',
-        age: null,
-        height: null,
-        weight: null
-      }
-    }
-  },
-  created() {
-    // 이전에 입력한 데이터가 있는지 확인
-    const savedData = localStorage.getItem('signupData');
-    if (savedData) {
-      try {
-        const parsedData = JSON.parse(savedData);
-        // 기존 formData에 저장된 데이터 병합
-        this.formData = { ...this.formData, ...parsedData };
-      } catch (error) {
-        console.error('Error parsing saved data:', error);
-      }
-    }
-  },
-  methods: {
-    goToNextStep() {
-      // 폼 데이터 저장
-      localStorage.setItem('signupData', JSON.stringify(this.formData));
-      
-      // 다음 단계로 이동
-      this.$router.push('/signup2');
+const router = useRouter();
+const logo = ref(logoSrc);
+
+const formData = ref({
+  email: '',
+  password: '',
+  gender: '',
+  nickname: '',
+  age: null,
+  height: null,
+  weight: null
+});
+
+onMounted(() => {
+  // 이전에 입력한 데이터가 있는지 확인
+  const savedData = localStorage.getItem('signupData');
+  if (savedData) {
+    try {
+      const parsedData = JSON.parse(savedData);
+      // 기존 formData에 저장된 데이터 병합
+      formData.value = { ...formData.value, ...parsedData };
+    } catch (error) {
+      console.error('Error parsing saved data:', error);
     }
   }
+});
+
+// 메서드
+function goToNextStep() {
+  // 폼 데이터 저장
+  localStorage.setItem('signupData', JSON.stringify(formData.value));
+  
+  // 다음 단계로 이동
+  router.push('/signup2');
 }
 </script>
 
