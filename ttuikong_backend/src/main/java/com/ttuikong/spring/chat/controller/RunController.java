@@ -61,7 +61,7 @@ public class RunController {
         }
 
         OffsetDateTime parsedStart = OffsetDateTime.parse(startTime);
-        LocalDateTime start = parsedStart.toLocalDateTime();
+        LocalDateTime start = parsedStart.toLocalDateTime().withNano(0);
         
         // 파일 이름 생성
         String timestamp = start.format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
@@ -136,8 +136,8 @@ public class RunController {
             String distance = node.get("distance").asText();
             String endTimeStr = node.get("endTime").asText();
 
-            LocalDateTime startTime = OffsetDateTime.parse(startTimeStr).toLocalDateTime();
-            LocalDateTime endTime = OffsetDateTime.parse(endTimeStr).toLocalDateTime();
+            LocalDateTime startTime = OffsetDateTime.parse(startTimeStr).toLocalDateTime().withNano(0);
+            LocalDateTime endTime = OffsetDateTime.parse(endTimeStr).toLocalDateTime().withNano(0);
             double distanceDbl = Double.valueOf(distance);
 
             long duration = Duration.between(startTime, endTime).getSeconds();

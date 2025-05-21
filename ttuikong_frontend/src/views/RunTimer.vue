@@ -555,7 +555,6 @@ const convertSvgToBlob = async () => {
 };
 
 const saveRunningData = async () => {
-  const endTime = new Date().toISOString();
   const currentToken = localStorage.getItem("jwt");
 
   await fetch("http://localhost:8080/api/runs/track-location", {
@@ -566,7 +565,7 @@ const saveRunningData = async () => {
     },
     body: JSON.stringify({
       startTime: startTime.value,
-      endTime,
+      endTime: endTime.value,
       distance: (distance.value / 1000).toFixed(2)
     })
   });
@@ -590,6 +589,7 @@ const toggleTimer = async () => {
       startTime: startTime.value,
       endTime: endTime.value,
       duration: duration.value,
+      distance: (distance.value / 1000).toFixed(2),
       status: "ended"
     });
 
@@ -774,7 +774,7 @@ body {
   border-radius: 16px;
   overflow: hidden;
   background-color: #ddd;
-  min-height: 400px;
+  min-height: 450px;
 }
 
 @media screen and (max-width: 420px) {
@@ -816,11 +816,23 @@ body {
 
 .dog-image {
   position: absolute;
-  top: 30%;
+  top: calc(15% + 40px);
   left: 53%;
   transform: translateX(-50%);
-  width: 40%;
+  width: 20%;
   z-index: 3;
+}
+
+
+@media screen and (max-width: 768px) {
+  .dog-image {
+    position: absolute;
+    top: calc(15% + 40px);
+    left: 53%;
+    transform: translateX(-50%);
+    width: 30%;
+    z-index: 3;
+  }
 }
 
 .play-button {
