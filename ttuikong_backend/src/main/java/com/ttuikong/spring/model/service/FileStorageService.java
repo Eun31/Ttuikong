@@ -67,21 +67,23 @@ public class FileStorageService {
 	}
 
 	public boolean deleteFile(String fileUrl) {
-		if (fileUrl == null || fileUrl.isEmpty()) {
-			return false;
-		}
+	    if (fileUrl == null || fileUrl.isEmpty()) {
+	        return false;
+	    }
 
-		try {
-			// URL에서 파일 경로 추출
-			// "/uploads/board/uuid.jpg" -> "board/uuid.jpg"
-			String relativePath = fileUrl.replace("/uploads/", "");
-			Path filePath = Paths.get(uploadPath).resolve(relativePath);
-
-			// 파일 삭제
-			return Files.deleteIfExists(filePath);
-		} catch (IOException e) {
-			System.err.println("파일 삭제 실패: " + e.getMessage());
-			return false;
-		}
+	    try {
+	        // URL이 "/uploads/"로 시작하는지 확인
+	        if (!fileUrl.startsWith("/uploads/")) {
+	            return false;
+	        }
+	        
+	        String filename = fileUrl.substring("/uploads/".length());
+	        Path filePath = Paths.get(uploadPath).resolve(filename);
+	        
+	        return Files.deleteIfExists(filePath);
+	    } catch (IOException e) {
+	        System.err.println("파일 삭제 실패: " + e.getMessage());
+	        return false;
+	    }
 	}
 }

@@ -3,9 +3,7 @@ package com.ttuikong.spring.controller;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,11 +16,14 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ttuikong.spring.annotation.LoginRequired;
 import com.ttuikong.spring.annotation.LoginUser;
 import com.ttuikong.spring.model.dto.Board;
 import com.ttuikong.spring.model.dto.User;
 import com.ttuikong.spring.model.service.BoardService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/board")
@@ -91,49 +92,26 @@ public class BoardController {
         }
     }
     
-    //게시글 수정
-    @PutMapping(value = "/{postId}")
+    @PutMapping("/{postId}")
     @LoginRequired
-    public ResponseEntity<?> updatePost(@PathVariable("postId") int postId, 
-    								@RequestPart Board board, 
-    								@RequestPart(value = "image", required = false) MultipartFile image,
-    								@RequestParam(value = "imageRemoved", required = false, defaultValue = "false") boolean imageRemoved,
-    								@LoginUser User loginUser){
+    public ResponseEntity<?> updatePost(@PathVariable int postId,
+                                      @RequestPart Board board,  // 직접 Board 객체로 받기
+                                      @RequestPart(required = false) MultipartFile image,
+                                      @RequestParam(defaultValue = "false") boolean imageRemoved,
+                                      @LoginUser User loginUser) {
         try {
             Board existingBoard = boardService.readBoard(postId);
-            
-            if(existingBoard == null) 
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("수정할 게시물이 존재하지 않습니다.");
-            
-            // 게시글 작성자와 로그인 사용자가 일치하는지 확인
-            if(existingBoard.getUserId() != loginUser.getId()) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body("게시글 수정 권한이 없습니다.");
-            }
-            
+            if (existingBoard == null) return ResponseEntity.notFound().build();
+            if (existingBoard.getUserId() != loginUser.getId()) return ResponseEntity.status(403).build();
+
             board.setPostId(postId);
             board.setUserId(loginUser.getId());
+
+            boolean updated = boardService.modifyBoard(board, image, imageRemoved);
+            return updated ? ResponseEntity.ok("수정 완료") : ResponseEntity.status(500).body("수정 실패");
             
-            //게시글 및 이미지 업데이트
-            boolean isUpdated = boardService.modifyBoard(board, image, imageRemoved);
-            
-            if(isUpdated) {
-                return ResponseEntity.status(HttpStatus.OK)
-                        .body("게시글이 성공적으로 수정되었습니다.");
-            }
-            else {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("게시글 수정에 실패했습니다.");
-            }
-        } 
-        catch(IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("잘못된 요청 데이터입니다.: " + e.getMessage());
-        }
-        catch(Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("게시글을 수정하는 중 오류가 발생했습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("요청 처리 실패");
         }
     }
     
