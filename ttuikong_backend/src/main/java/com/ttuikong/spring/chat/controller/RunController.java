@@ -152,25 +152,36 @@ public class RunController {
 
     @Operation(summary = "하루 러닝시간 계산")
     @PutMapping("/user/{userId}/day-time")
+    @LoginRequired
     public void updateDailyDuration(@PathVariable int userId) {
         runService.updateDailyDuration(userId);
     }
 
     @Operation(summary = "하루 러닝시간 top10 사용자의 이름과 시간 조회")
     @GetMapping("/rank")
+    @LoginRequired
     public List<Map<String, Object>> getTop10UsersByDuration() {
         return runService.getTop10UsersByDuration();
     }
 
     @Operation(summary = "크루 각 멤버의 이름과 하루 러닝 시간 조회")
     @GetMapping("/crew/{crewId}")
+    @LoginRequired
     public List<Map<String, Object>> getCrewMemberRecords(@PathVariable int crewId) {
         return runService.getCrewMemberRecords(crewId);
     }
 
     @Operation(summary = "크루가 설정한 목표에 따른 평균/총합 러닝 시간 조회")
     @GetMapping("/crew/{crewId}/time")
+    @LoginRequired
     public Map<String, Object> getCrewGoalStats(@PathVariable int crewId) {
         return runService.getCrewGoalStats(crewId);
+    }
+
+    @Operation(summary = "내 랭킹 정보 조회")
+    @GetMapping("/rank/me")
+    @LoginRequired
+    public Map<String, Object> getMyRanking(@RequestParam int userId) {
+        return runService.getMyRanking(userId);
     }
 }

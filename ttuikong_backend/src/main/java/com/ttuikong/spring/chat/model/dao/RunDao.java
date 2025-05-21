@@ -26,4 +26,6 @@ public interface RunDao {
     List<Map<String, Object>> selectCrewMemberRecords(int crewId);
 
     Map<String, Object> selectCrewGoalStats(int crewId);
+
+     Map<String, Object> selectMyRanking(int userId);
 }

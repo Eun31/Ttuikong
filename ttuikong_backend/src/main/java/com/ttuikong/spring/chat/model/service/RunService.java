@@ -21,4 +21,5 @@ public interface RunService {
 
     public Map<String, Object> getCrewGoalStats(int crewId);
 
+    public Map<String, Object> getMyRanking(int userId);
 }

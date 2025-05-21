@@ -50,4 +50,9 @@ public class RunServiceImpl implements RunService {
     public Map<String, Object> getCrewGoalStats(int crewId) {
         return runDao.selectCrewGoalStats(crewId);
     }
+
+    @Override
+    public Map<String, Object> getMyRanking(int userId) {
+        return runDao.selectMyRanking(userId);
+    }
 }

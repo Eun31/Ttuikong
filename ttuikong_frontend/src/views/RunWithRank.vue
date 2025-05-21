@@ -9,8 +9,8 @@
       <div v-for="(user, index) in rankings" :key="user.id" class="rank-item">
         <div class="rank">{{ index + 1 }}</div>
         <div class="user-info">
-          <strong>{{ user.name }}</strong>
-          <span>{{ user.distance }}km</span>
+          <strong>{{ user.nickname }}</strong>
+          <span>{{ user.duration }}분</span>
         </div>
         <div class="medal" v-if="index < 3">
           <i :class="['ri-medal-line', getMedalClass(index)]"></i>
@@ -24,16 +24,14 @@
         <div class="rank">{{ myRanking }}</div>
         <div class="user-info">
           <strong>{{ userName }}</strong>
-          <span>{{ myDistance }}km</span>
+          <span>{{ myDistance }}분</span>
         </div>
       </div>
     </div>
-
-    <!-- <button class="back-button" @click="goBack">돌아가기</button> -->
     <br>
     <br>
 
-    <!-- 추가된 네비게이션 메뉴 -->
+    <!-- 네비게이션 메뉴 -->
     <div class="run-nav">
       <button class="nav-btn" @click="navigateToTimer">개인 러닝</button>
       <button class="nav-btn active">랭킹</button>
@@ -42,63 +40,18 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-
+import { ref, onMounted } from 'vue';
 const emit = defineEmits(['navigate']);
 
-// Login 페이지 관련 상태 및 메서드
-const logo = new URL('../assets/logo_orange.png', import.meta.url).href;
-const email = ref('');
-const password = ref('');
-const router = useRouter();
+const BASE_URL = 'http://localhost:8080/api/runs';
 
-const login = async () => {
-  console.log('로그인 시도:', email.value);
+const token = ref('');
+const userId = ref(null);
+const userName = ref('');
 
-  if (email.value && password.value) {
-    try {
-      const response = await fetch('http://localhost:8080/api/users/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: email.value,
-          password: password.value
-        })
-      });
-
-      const data = await response.json();
-      localStorage.setItem('jwt', data.token);
-      console.log(data.token);
-
-      router.push('/');
-    } catch (error) {
-      console.error('로그인 오류:', error);
-    }
-  } else {
-    alert('이메일과 비밀번호를 입력해주세요.');
-  }
-};
-
-// RunWithRank 컴포넌트 상태 및 메서드
-const userName = ref('김러너');
-const myDistance = ref(45.8);
-const myRanking = ref(8);
-
-const rankings = ref([
-  { id: 1, name: '마라토너', distance: 120.5 },
-  { id: 2, name: '달리기왕', distance: 98.3 },
-  { id: 3, name: '러닝퀸', distance: 87.2 },
-  { id: 4, name: '김달림', distance: 76.1 },
-  { id: 5, name: '박조깅', distance: 68.5 },
-  { id: 6, name: '정스프린트', distance: 58.9 },
-  { id: 7, name: '최건강', distance: 52.6 },
-  { id: 8, name: '김러너', distance: 45.8 },
-  { id: 9, name: '이운동', distance: 41.2 },
-  { id: 10, name: '장마라톤', distance: 38.7 }
-]);
+const rankings = ref([]);
+const myRanking = ref(0);
+const myDistance = ref(0);
 
 const getMedalClass = (index) => {
   if (index === 0) return 'gold';
@@ -111,7 +64,87 @@ const navigateToTimer = () => {
   emit('navigate', 'RunTimer');
 };
 
+const getCurrentUser = async () => {
+  const currentToken = localStorage.getItem('jwt');
+
+  try {
+    const res = await fetch(`http://localhost:8080/api/users/me`, {
+      headers: {
+        Authorization: `Bearer ${currentToken}`
+      }
+    });
+
+    const data = await res.json();
+    const user = data.user;
+
+    token.value = currentToken;
+    userId.value = user.id;
+    userName.value = user.nickname;
+
+    localStorage.setItem('userId', user.id);
+    localStorage.setItem('nickname', user.nickname);
+
+  } catch (err) {
+    console.error('사용자 정보 요청 실패:', err);
+    alert('로그인이 필요합니다.');
+  }
+};
+
+const getTop10UsersByDuration = async () => {
+  const jwt = localStorage.getItem('jwt');
+
+  const res = await fetch(`${BASE_URL}/rank`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${jwt}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  const raw = await res.json();
+
+  return Array.isArray(raw) ? raw : raw.data || [];
+};
+
+const getMyRanking = async () => {
+  const jwt = localStorage.getItem('jwt');
+  const userId = localStorage.getItem('userId');
+
+  try {
+    const res = await fetch(`${BASE_URL}/rank/me?userId=${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${jwt}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const data = await res.json();
+
+    myRanking.value = data.ranking;
+    myDistance.value = data.total_duration;
+  } catch (err) {
+    console.error('내 랭킹 조회 실패:', err);
+    myRanking.value = '-';
+    myDistance.value = 0;
+  }
+};
+
+
+onMounted(async () => {
+  await getCurrentUser();
+  await getMyRanking();
+
+  try {
+    const data = await getTop10UsersByDuration();
+    rankings.value = data;
+
+    const me = data.find(user => user.nickname === userName.value);
+  } catch (error) {
+    console.error('랭킹 데이터 불러오기 실패:', error);
+  }
+});
 </script>
+
 
 <style scoped>
 .container {
