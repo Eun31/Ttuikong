@@ -1,6 +1,6 @@
 // components/PostCard.vue
 <template>
-  <div class="post-card" @click="$emit('click', post-id)">
+  <div class="post-card" @click="handleClick">
     <!-- 작성자 정보 -->
     <div class="user-profile">
       <img :src="post.user.avatar" alt="프로필" class="user-avatar">
@@ -47,15 +47,15 @@
           <span>{{ post.location }}</span>
         </div>
         <div class="post-stats">
-          <!-- 아이콘 대체 (텍스트 이모지 사용) -->
-          <span class="heart-icon" :class="{ 'liked': post.liked }">
-            {{ post.liked ? '❤️' : '♡' }}
-          </span>
-          <span>{{ post.likes }}</span>
-        </div>
-        <div class="stat">
-          <span class="comment-icon">💬</span>
-          <span>{{ post.comments }}</span>
+            <span class="heart-icon" :class="{ 'liked': isLiked, 'loading': likeLoading }">
+              <span>{{ isLiked ? '❤️' : '♡' }}</span>
+            </span>
+            <span>{{ likeCount }}</span>
+          <!-- 댓글 수 -->
+          <div class="stat">
+            <span class="comment-icon">💬</span>
+            <span>{{ comments.length }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -63,7 +63,8 @@
 </template>
 
 <script setup>
-import { toRefs } from 'vue';
+import { ref, onMounted, toRefs } from 'vue';
+import axios from 'axios';
 
 const props = defineProps({
   post: {
@@ -76,16 +77,114 @@ const emit = defineEmits(['click']);
 
 const { post } = toRefs(props);
 
-// 클릭 이벤트 핸들러 추가
+// 댓글 관련 상태
+const comments = ref([]);
+
+// 좋아요 관련 상태
+const isLiked = ref(false);
+const likeCount = ref(0);
+const likeLoading = ref(false);
+
+const API_URL = 'http://localhost:8080/api';
+const token = localStorage.getItem('jwt');
+
+// 헤더에 토큰 설정
+const authHeader = () => {
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
+};
+
+// 댓글 목록 가져오기
+const fetchComments = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/board/${post.value.id}/comment`);
+    comments.value = response.data;
+  } catch (err) {
+    console.error('댓글 조회 실패:', err);
+    comments.value = [];
+  }
+};
+
+// 좋아요 개수 가져오기
+const fetchLikeCount = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/board/${post.value.id}/like/count`);
+    likeCount.value = response.data || 0;
+    console.log(`게시글 ${post.value.id} 좋아요 개수:`, likeCount.value);
+  } catch (err) {
+    console.error('좋아요 개수 조회 실패:', err);
+    likeCount.value = 0;
+  }
+};
+
+// 좋아요 상태 확인
+const checkLikeStatus = async () => {
+  if (!token) {
+    isLiked.value = false;
+    return;
+  }
+  
+  try {
+    const response = await axios.get(`${API_URL}/board/${post.value.id}/like/status`, {
+      headers: authHeader()
+    });
+    isLiked.value = response.data;
+    console.log(`게시글 ${post.value.id} 좋아요 상태:`, isLiked.value);
+  } catch (err) {
+    console.error('좋아요 상태 확인 실패:', err);
+    isLiked.value = false;
+  }
+};
+
+// 좋아요 토글
+const toggleLike = async () => {
+  if (!token) {
+    alert('로그인이 필요한 기능입니다.');
+    return;
+  }
+  
+  if (likeLoading.value) return;
+  
+  likeLoading.value = true;
+  
+  try {
+    // 백엔드에서 토글 처리
+    await axios.post(`${API_URL}/board/${post.value.id}/like`, {}, {
+      headers: authHeader()
+    });
+    
+    // 토글 후 상태를 다시 확인
+    await Promise.all([
+      checkLikeStatus(),
+      fetchLikeCount()
+    ]);
+    
+    console.log(`게시글 ${post.value.id} 좋아요 토글 완료`);
+  } catch (err) {
+    console.error('좋아요 처리 중 오류:', err);
+    
+    if (err.response && err.response.status === 401) {
+      alert('로그인이 만료되었습니다. 다시 로그인해 주세요.');
+    } else {
+      alert('좋아요 처리에 실패했습니다. 다시 시도해 주세요.');
+    }
+  } finally {
+    likeLoading.value = false;
+  }
+};
+
+// 클릭 이벤트 핸들러
 const handleClick = () => {
-  // 게시글 ID를 명시적으로 전달
   emit('click', post.value.id);
 };
 
-const toggleLike = () => {
-  post.value.liked = !post.value.liked;
-  post.value.likes += post.value.liked ? 1 : -1;
-};
+// 컴포넌트 마운트 시 데이터 로드
+onMounted(async () => {
+  await Promise.all([
+    fetchComments(),
+    fetchLikeCount(),
+    checkLikeStatus()
+  ]);
+});
 </script>
 
 <style scoped>
@@ -264,23 +363,45 @@ const toggleLike = () => {
 
 .post-stats {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: 7px;
 }
 
 .stat {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
-/* 좋아요 아이콘 스타일 */
+.stat-count {
+  font-size: 12px;
+  color: var(--medium-text, #757575);
+  font-weight: 500;
+  line-height: 1;
+}
+
+/* 좋아요 버튼 스타일 */
 .like-stat {
   cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.like-stat:hover {
+  transform: scale(1.05);
+}
+
+.like-stat:active {
+  transform: scale(0.95);
 }
 
 .heart-icon {
-  font-size: 14px;
-  transition: transform 0.2s ease;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
 }
 
 .heart-icon:hover {
@@ -288,12 +409,33 @@ const toggleLike = () => {
 }
 
 .heart-icon.liked {
-  color: #e91e63;
+  animation: heartBeat 0.3s ease-in-out;
+}
+
+.heart-icon.loading {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes heartBeat {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* 댓글 아이콘 스타일 */
 .comment-icon {
-  font-size: 14px;
+  margin-left: 10px;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
 }
 
 @media (max-width: 600px) {
