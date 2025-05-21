@@ -78,6 +78,12 @@ const routes = [
     component: NewChat
   },
   {
+    path: '/chat/:crewId',
+    name: 'chat-room',
+    component: Chat,
+    props: true
+  },
+  {
     path: '/profile',
     name: 'profile',
     component: Profile

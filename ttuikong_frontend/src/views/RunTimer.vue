@@ -103,7 +103,7 @@
               </div>
             </div>
             <h3 class="sub-title">실시간 메신저</h3>
-            <button class="talk-button" @click="goToChat">▶ Talk</button>
+            <button class="talk-button" @click="goToChat(crew.id)">▶ Talk</button>
           </div>
         </transition>
       </div>
@@ -123,7 +123,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, defineEmits, nextTick } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import dogRun from '@/assets/dog_run.gif';
 import dogSit from '@/assets/dog_sit.gif';
 import html2canvas from "html2canvas";
@@ -131,6 +131,7 @@ import { Canvg } from 'canvg';
 
 const emit = defineEmits(['navigate']);
 const router = useRouter();
+const route = useRoute();
 
 const searchQuery = ref('');
 const seconds = ref(0);
@@ -684,7 +685,9 @@ const getCurrentUser = async () => {
 };
 
 const stayOnTimer = () => { };
-const goToChat = () => router.push('/chat');
+function goToChat(crewId) {
+  router.push(`/chat/${crewId}`);
+}
 const navigateToTimer = () => emit('navigate', 'RunTimer');
 const navigateToRank = () => emit('navigate', 'RunWithRank');
 

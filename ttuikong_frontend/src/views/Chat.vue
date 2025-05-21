@@ -5,23 +5,14 @@
       <h2 id="crewTitle">크루 채팅방</h2>
     </div>
     <div class="chat-box" ref="chatBox">
-      <div
-        v-for="(chat, index) in messages"
-        :key="index"
-        :class="['chat-message', chat.senderId === myUserId ? 'me' : 'other']"
-      >
+      <div v-for="(chat, index) in messages" :key="index"
+        :class="['chat-message', chat.senderId === myUserId ? 'me' : 'other']">
         <span class="avatar">{{ getAvatar(chat.senderId) }}</span>
         <div class="bubble">{{ chat.message }}</div>
       </div>
     </div>
     <div class="chat-input-area">
-      <input
-        type="text"
-        v-model="chatInput"
-        id="chatInput"
-        placeholder="메시지를 입력하세요..."
-        @keydown.enter="sendMessage"
-      />
+      <input type="text" v-model="chatInput" id="chatInput" placeholder="메시지를 입력하세요..." @keydown.enter="sendMessage" />
       <button id="sendBtn" @click="sendMessage">전송</button>
     </div>
   </div>
@@ -29,71 +20,152 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 const router = useRouter();
-const crewId = ref(null);
-const messages = ref([
-  { senderId: 1, message: "안녕하세요! " },
-  { senderId: 2, message: "안녕하세요, 반갑습니다 " },
-  { senderId: 1, message: "오늘 러닝 몇 시에 시작하실래요?" },
-  { senderId: 2, message: "저는 7시쯤 괜찮을 것 같아요!" }
-]);
+const route = useRoute();
+const crewId = ref(route.params.crewId);
+
+const messages = ref([]);
 const chatInput = ref('');
-const myUserId = ref(2);
+const myUserId = ref(1);
 let fetchInterval = null;
 const chatBox = ref(null);
 
 function goBack() {
-  // 이전 페이지로 돌아가기
   router.go(-1);
 }
 
 function getAvatar(senderId) {
   const avatars = ['🐱', '🐶', '🐰', '🦊', '🐼', '🐨', '🐯', '🐸', '🦁', '🐻'];
-  const index = senderId % avatars.length;
-  return avatars[index];
+  return avatars[senderId % avatars.length];
 }
 
-function fetchUserId() {
-  return fetch('/api/users/me')
-    .then(res => res.json())
-    .then(user => {
-      myUserId.value = user.id;
+// API 기본 URL 설정
+const API_BASE_URL = 'http://localhost:8080';
+
+async function fetchUserId() {
+  try {
+    const token = localStorage.getItem('jwt');
+    console.log('JWT Token:', token); // 디버깅용
+
+    if (!token) {
+      console.error('JWT 토큰이 없습니다.');
+      router.push('/login');
+      return;
+    }
+
+    const res = await fetch(`${API_BASE_URL}/api/users/me`, {
+      headers: { Authorization: `Bearer ${token}` }
     });
+
+    if (!res.ok) {
+      console.error('사용자 정보 조회 실패:', res.status);
+      if (res.status === 401) {
+        localStorage.removeItem('jwt');
+        router.push('/login');
+        return;
+      }
+    }
+
+    const data = await res.json();
+    myUserId.value = data.user?.id ?? data.id;
+    console.log('현재 사용자 ID:', myUserId.value);
+  } catch (error) {
+    console.error('사용자 정보 조회 중 오류:', error);
+  }
 }
 
-function fetchMessages() {
-  fetch(`/api/chat/${crewId.value}`)
-    .then(res => res.json())
-    .then(data => {
-      messages.value = data;
-      nextTick(() => {
-        if (chatBox.value) chatBox.value.scrollTop = chatBox.value.scrollHeight;
-      });
+async function fetchMessages() {
+  try {
+    const token = localStorage.getItem('jwt');
+
+    if (!token) {
+      console.error('JWT 토큰이 없습니다.');
+      router.push('/login');
+      return;
+    }
+
+    const res = await fetch(`${API_BASE_URL}/api/chat/${crewId.value}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
     });
+
+    const contentType = res.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error('JSON이 아닌 응답을 받았습니다:', contentType);
+      console.error('응답 텍스트:', await res.text());
+
+      if (res.status === 401) {
+        localStorage.removeItem('jwt');
+        router.push('/login');
+      }
+      return;
+    }
+
+    if (!res.ok) {
+      console.error('메시지 조회 실패:', res.status);
+      if (res.status === 401) {
+        localStorage.removeItem('jwt');
+        router.push('/login');
+        return;
+      }
+    }
+
+    const data = await res.json();
+    messages.value = data;
+
+    nextTick(() => {
+      if (chatBox.value) chatBox.value.scrollTop = chatBox.value.scrollHeight;
+    });
+  } catch (error) {
+    console.error('메시지 조회 중 오류:', error);
+  }
 }
 
 function sendMessage() {
   const message = chatInput.value.trim();
   if (!message) return;
 
-  fetch(`/api/chat/${crewId.value}`, {
+  const token = localStorage.getItem('jwt');
+
+  if (!token) {
+    console.error('JWT 토큰이 없습니다.');
+    router.push('/login');
+    return;
+  }
+
+  fetch(`${API_BASE_URL}/api/chat/${crewId.value}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
     body: JSON.stringify({ message })
-  }).then(() => {
+  }).then(async (res) => {
+    if (!res.ok) {
+      console.error('메시지 전송 실패:', res.status);
+      if (res.status === 401) {
+        localStorage.removeItem('jwt');
+        router.push('/login');
+        return;
+      }
+    }
+
     chatInput.value = '';
-    fetchMessages();
+    await fetchMessages();
+  }).catch(error => {
+    console.error('메시지 전송 중 오류:', error);
   });
 }
 
-onMounted(() => {
-  crewId.value = new URLSearchParams(window.location.search).get('crewId');
-  fetchUserId().then(() => {
-    fetchMessages();
-    fetchInterval = setInterval(fetchMessages, 5000);
-  });
+onMounted(async () => {
+  console.log("현재 crewId:", crewId.value);
+  await fetchUserId();
+  await fetchMessages();
+  fetchInterval = setInterval(fetchMessages, 5000);
 });
 
 onBeforeUnmount(() => {
@@ -119,7 +191,7 @@ onBeforeUnmount(() => {
 body {
   background-color: var(--main-bg-color);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-image: 
+  background-image:
     radial-gradient(circle at 50% 50%, rgba(238, 189, 144, 0.15) 10%, transparent 10.5%),
     radial-gradient(circle at 70% 20%, rgba(238, 189, 144, 0.15) 15%, transparent 15.5%),
     radial-gradient(circle at 20% 80%, rgba(238, 189, 144, 0.15) 8%, transparent 8.5%);
@@ -170,7 +242,7 @@ body {
   left: 0;
   right: 0;
   height: 8px;
-  background-image: 
+  background-image:
     linear-gradient(45deg, transparent 50%, var(--header-bg-color) 50%),
     linear-gradient(-45deg, transparent 50%, var(--header-bg-color) 50%);
   background-size: 16px 16px;
@@ -187,7 +259,8 @@ body {
   justify-content: center;
 }
 
-.chat-header h2:before, .chat-header h2:after {
+.chat-header h2:before,
+.chat-header h2:after {
   content: '🏃‍➡️';
   margin: 0 10px;
   font-size: 1.2rem;
@@ -211,7 +284,7 @@ body {
   left: 0;
   right: 0;
   height: 8px;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.05), transparent);
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.05), transparent);
   z-index: 1;
 }
 
@@ -226,6 +299,7 @@ body {
   position: relative;
   animation: fadeIn 0.3s ease-out;
 }
+
 .back-button {
   position: absolute;
   left: 16px;
@@ -247,8 +321,15 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .chat-message.me {
@@ -355,7 +436,7 @@ body {
   left: 0;
   right: 0;
   height: 6px;
-  background: linear-gradient(to top, rgba(0,0,0,0.05), transparent);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.05), transparent);
 }
 
 #chatInput {
@@ -368,7 +449,7 @@ body {
   margin-right: 10px;
   transition: all 0.3s;
   background-color: #fffbf9;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
 }
 
 #chatInput:focus {
@@ -408,12 +489,10 @@ body {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    120deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
+  background: linear-gradient(120deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent);
   transition: all 0.6s;
 }
 
@@ -432,7 +511,7 @@ body {
   box-shadow: 0 2px 4px rgba(255, 139, 44, 0.884);
 }
 
-/* 미디어 쿼리 - 모바일 화면 대응 */
+/* 모바일 화면 대응 */
 @media (max-width: 640px) {
   .chat-container {
     margin: 0;
@@ -441,17 +520,17 @@ body {
     border-left: none;
     border-right: none;
   }
-  
+
   .chat-header:after {
     display: none;
   }
-  
+
   .chat-message {
     max-width: 85%;
   }
 }
 
-/* 추가적인 귀여운 요소들 */
+/* 꾸밈 요소 */
 .chat-container:after {
   content: '🍀';
   position: absolute;
@@ -471,7 +550,7 @@ body {
 }
 
 .chat-box::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0.03);
+  background: rgba(0, 0, 0, 0.03);
   border-radius: 4px;
 }
 
