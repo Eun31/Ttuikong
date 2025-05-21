@@ -110,9 +110,9 @@
     </div>
 
     <!-- 거리 및 정보 -->
-    <div class="section">
+    <!-- <div class="section">
       <div id="info">{{ infoText }}</div>
-    </div>
+    </div> -->
     <!-- 추가된 네비게이션 메뉴 -->
     <div class="run-nav">
       <button class="nav-btn active" @click="stayOnTimer">개인 러닝</button>
