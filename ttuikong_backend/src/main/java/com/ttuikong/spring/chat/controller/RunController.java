@@ -49,18 +49,20 @@ public class RunController {
 
     @Operation(summary = "러닝 후 이미지 자동 업로드")
     @PostMapping("/upload-map-image")
+    @LoginRequired
     public ResponseEntity<?> uploadMapImage(
             @RequestParam("image") MultipartFile image,
             @RequestParam String startTime,
             @RequestParam String endTime,
             @Parameter(hidden = true) @LoginUser User loginUser) throws IOException {
 
+        if (loginUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "로그인 필요"));
+        }
+
         OffsetDateTime parsedStart = OffsetDateTime.parse(startTime);
-        // OffsetDateTime parsedEnd = OffsetDateTime.parse(endTime);
-
         LocalDateTime start = parsedStart.toLocalDateTime();
-        // LocalDateTime end = parsedEnd.toLocalDateTime();
-
+        
         // 파일 이름 생성
         String timestamp = start.format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         String filename = loginUser.getId() + "_" + timestamp + ".png";
@@ -72,7 +74,7 @@ public class RunController {
 
         // DB 저장
         String imageUrl = "/uploads/maps/" + filename;
-        runService.updateImageUrl(loginUser.getId(), startTime, imageUrl);
+        runService.updateImageUrl(loginUser.getId(), start, imageUrl);
 
         return ResponseEntity.ok(Map.of(
                 "message", "업로드 성공",

@@ -1,17 +1,21 @@
 // views/RunTimer.vue
 <template>
   <div>
-    <!-- 지도 위치용 hidden map -->
-    <div id="map"></div>
 
     <div class="timer-card">
       <div class="play-area">
         <div class="dog-zone">
-          <!-- 타이머 -->
-          <h2>현재 러닝 시간</h2>
-          <div class="time">{{ formattedTime }}</div>
-          <!-- 강아지 이미지 -->
-          <img class="dog-image" :src="isRunning ? dogRunImg : dogSitImg" alt="강아지 상태" />
+          <div id="map-wrapper">
+            <div id="map"></div>
+            <svg id="route-overlay">
+              <polyline id="running-path" fill="none" stroke="red" stroke-width="4" />
+            </svg>
+            <!-- 타이머 -->
+            <h2 class="time-head">현재 러닝 시간</h2>
+            <div class="time">{{ formattedTime }}</div>
+            <!-- 강아지 이미지 -->
+            <img class="dog-image" :src="isRunning ? dogRunImg : dogSitImg" alt="강아지 상태" />
+          </div>
         </div>
       </div>
       <!-- 플레이 버튼 -->
@@ -118,11 +122,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, defineEmits } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, defineEmits, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import dogRun from '@/assets/dog_run.gif';
 import dogSit from '@/assets/dog_sit.gif';
 import html2canvas from "html2canvas";
+import { Canvg } from 'canvg';
 
 const emit = defineEmits(['navigate']);
 const router = useRouter();
@@ -131,6 +136,7 @@ const searchQuery = ref('');
 const seconds = ref(0);
 const timer = ref(null);
 const isRunning = ref(false);
+const status = ref('ended');
 const map = ref(null);
 const kakaoMapLoaded = ref(false);
 const infoText = ref('러닝을 시작하려면 ▶를 누르세요');
@@ -138,6 +144,8 @@ const positions = ref([]);
 const distance = ref(0);
 const expandedCrews = ref([]);
 const startTime = ref('');
+const endTime = ref(null);
+const duration = ref(0);
 const token = ref(localStorage.getItem("jwt"));
 const userId = ref(Number(localStorage.getItem("userId")));
 const showCrewForm = ref(false);
@@ -335,7 +343,6 @@ const loadKakaoMapScript = () => {
       script.id = "kakao-map-sdk";
       script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&autoload=false`;
       script.async = true;
-      // script.crossOrigin = "anonymous";
       script.onload = () => {
         if (window.kakao && window.kakao.maps) {
           window.kakao.maps.load(() => {
@@ -362,7 +369,6 @@ const waitForKakao = () => {
     setTimeout(() => waitForKakao(), 100);
   }
 };
-
 
 const initMap = () => {
   const mapContainer = document.getElementById('map');
@@ -392,31 +398,159 @@ const initMap = () => {
   }
 };
 
-const updateLocation = () => {
-  if (!kakaoMapLoaded.value) return;
-
+/* 지도 표시 */
+function updateLocation() {
   if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition((pos) => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-      const newPos = new window.kakao.maps.LatLng(lat, lng);
+    navigator.geolocation.getCurrentPosition(position => {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      console.log(`현재 위치: ${lat}, ${lng}`);
+    }, error => {
+      console.error("위치 추적 실패:", error);
+    });
+  } else {
+    console.error("이 브라우저는 geolocation을 지원하지 않습니다.");
+  }
+}
 
-      if (positions.value.length > 0) {
-        const lastPos = positions.value[positions.value.length - 1];
-        const polyline = new window.kakao.maps.Polyline({
-          path: [lastPos, newPos],
-          strokeWeight: 5,
-          strokeColor: '#db4040',
-          strokeOpacity: 0.7,
-          strokeStyle: 'solid'
+const drawPolylineOnSVG = () => {
+  if (!map.value || positions.value.length === 0) return;
+
+  const svg = document.getElementById("route-overlay");
+  const polyline = document.getElementById("running-path");
+  const projection = map.value.getProjection();
+
+  const path = positions.value.map(latlng => {
+    const point = projection.containerPointFromCoords(latlng);
+    return `${point.x},${point.y}`;
+  }).join(" ");
+
+  polyline.setAttribute("points", path);
+};
+
+
+const uploadMapImage = async () => {
+  try {
+    drawPolylineOnSVG();
+
+    const mapContainer = document.getElementById("map-wrapper");
+    const svgElement = document.getElementById("route-overlay");
+
+    if (!mapContainer || !svgElement) {
+      console.error("필요한 요소를 찾을 수 없습니다.");
+      return;
+    }
+
+    await nextTick();
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const canvas = await html2canvas(mapContainer, {
+      backgroundColor: null,
+      useCORS: false,
+      allowTaint: false,
+      scale: 1,
+      logging: false,
+      width: mapContainer.offsetWidth,
+      height: mapContainer.offsetHeight,
+      foreignObjectRendering: false,
+      ignoreElements: function (element) {
+        return (
+          element.tagName === 'IFRAME' ||
+          element.classList.contains('dog-image') ||
+          element.classList.contains('time') ||
+          element.classList.contains('time-head')
+        );
+      }
+    });
+
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png', 0.8));
+
+    if (!blob) {
+      console.error("canvas.toBlob 실패");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", blob);
+    formData.append("startTime", startTime.value);
+    formData.append("endTime", new Date().toISOString());
+
+    const res = await fetch("http://localhost:8080/api/runs/upload-map-image", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token.value}` },
+      body: formData
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      console.error("업로드 실패:", err);
+    } else {
+      console.log("러닝 경로 이미지 업로드 완료");
+    }
+
+  } catch (error) {
+    console.error("맵 이미지 업로드 중 오류:", error);
+    try {
+      const alternativeBlob = await convertSvgToBlob();
+      if (alternativeBlob) {
+        const formData = new FormData();
+        formData.append("image", alternativeBlob);
+        formData.append("startTime", startTime.value);
+        formData.append("endTime", new Date().toISOString());
+
+        const res = await fetch("http://localhost:8080/api/runs/upload-map-image", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token.value}` },
+          body: formData
         });
 
-        distance.value += polyline.getLength();
-        infoText.value = `거리: ${(distance.value / 1000).toFixed(2)}km`;
+        if (res.ok) {
+          console.log("대체 방법으로 업로드 완료");
+        }
       }
+    } catch (altError) {
+      console.error("대체 방법도 실패:", altError);
+    }
+  }
+};
 
-      positions.value.push(newPos);
+const convertSvgToBlob = async () => {
+  try {
+    const svgElement = document.getElementById("route-overlay");
+    if (!svgElement) return null;
+
+    const svgData = new XMLSerializer().serializeToString(svgElement);
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+
+    const url = URL.createObjectURL(svgBlob);
+    const img = new Image();
+
+    return new Promise((resolve) => {
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = 400;
+        canvas.height = 400;
+
+        ctx.drawImage(img, 0, 0);
+
+        canvas.toBlob((blob) => {
+          URL.revokeObjectURL(url);
+          resolve(blob);
+        }, 'image/png');
+      };
+
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(null);
+      };
+
+      img.src = url;
     });
+  } catch (error) {
+    console.error("SVG 변환 실패:", error);
+    return null;
   }
 };
 
@@ -440,66 +574,81 @@ const saveRunningData = async () => {
   infoText.value = `러닝 완료! ${(distance.value / 1000).toFixed(2)}km를 ${formattedTime.value} 동안 달렸습니다.`;
 };
 
-const uploadMapImage = async () => {
-  const currentToken = localStorage.getItem("jwt");
-  const mapContainer = document.getElementById("map");
-  const canvas = await html2canvas(mapContainer, {
-    useCORS: true
-  });
-  const blob = await new Promise(resolve => canvas.toBlob(resolve));
-  if (!blob) {
-    console.error("canvas.toBlob 실패");
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append("image", blob);
-  formData.append("startTime", startTime.value);
-  formData.append("endTime", new Date().toISOString());
-
-  await fetch("http://localhost:8080/api/runs/upload-map-image", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${currentToken}`
-    },
-    body: formData
-  });
-};
-
-
 /* 타이머 기능 */
 const toggleTimer = async () => {
-  if (isRunning.value) {
-    clearInterval(timer.value);
-    await saveRunningData();
-    await uploadMapImage();
-  } else {
-    startTime.value = new Date().toISOString();
-    const currentToken = localStorage.getItem("jwt");
+  const currentToken = localStorage.getItem("jwt");
 
-    const jsonData = JSON.stringify({
+  if (isRunning.value) {
+    // 러닝 종료
+    clearInterval(timer.value);
+
+    endTime.value = new Date().toISOString();
+    duration.value = seconds.value;
+
+    // 1. 러닝 종료 데이터 전송
+    const endJsonData = JSON.stringify({
+      startTime: startTime.value,
+      endTime: endTime.value,
+      duration: duration.value,
+      status: "ended"
+    });
+
+    console.log("종료 시 전송 데이터:", endJsonData);
+
+    try {
+      await fetch("http://localhost:8080/api/runs/running-status", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${currentToken}`
+        },
+        body: endJsonData
+      });
+
+      // 2. 저장 및 지도 업로드 실행
+      await saveRunningData();
+      await uploadMapImage();
+
+      infoText.value = "러닝이 종료되었습니다.";
+    } catch (error) {
+      console.error("러닝 종료 요청 중 에러 발생:", error);
+    }
+  } else {
+    // 러닝 시작
+    startTime.value = new Date().toISOString();
+
+    const startJsonData = JSON.stringify({
       startTime: startTime.value,
       status: "running"
     });
-    console.log("보내는 JSON 데이터:", jsonData);
 
-    await fetch("http://localhost:8080/api/runs/running-status", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${currentToken}`
-      },
-      body: jsonData
-    });
+    console.log("시작 시 전송 데이터:", startJsonData);
 
-    timer.value = setInterval(() => {
-      seconds.value++;
-      if (kakaoMapLoaded.value) updateLocation();
-    }, 1000);
-    infoText.value = '달리는 중...';
+    try {
+      await fetch("http://localhost:8080/api/runs/running-status", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${currentToken}`
+        },
+        body: startJsonData
+      });
+
+      timer.value = setInterval(() => {
+        seconds.value++;
+        if (kakaoMapLoaded.value) updateLocation();
+      }, 1000);
+
+      infoText.value = "달리는 중...";
+    } catch (error) {
+      console.error("러닝 시작 요청 중 에러 발생:", error);
+    }
   }
+
+  // 상태 전환
   isRunning.value = !isRunning.value;
 };
+
 
 
 /* 유저 불러오기 */
@@ -565,7 +714,6 @@ const dogSitImg = dogSit;
   background-color: #FFF8F2;
 }
 
-#map,
 .timer-card,
 .section>#info {
   position: fixed;
@@ -581,19 +729,6 @@ body {
   max-width: 390px;
 }
 
-#map {
-  width: 100%;
-  height: 400px;
-  margin-bottom: 10px;
-  opacity: 0;
-  pointer-events: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: -1;
-}
-
-
 .timer-card {
   color: orange;
   background-color: #FFE3D6;
@@ -606,7 +741,6 @@ body {
   font-family: sans-serif;
   position: relative;
   overflow: hidden;
-  max-width: 557px;
   margin: 0 auto;
 }
 
@@ -622,31 +756,71 @@ body {
 .play-area {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: flex-end;
-  gap: 10px;
   background: linear-gradient(135deg, #FFF5E1 60%, #FFD1A1 100%);
-  padding: 10px;
   box-shadow: 0 6px 20px rgba(255, 112, 67, 0.15);
   position: relative;
-  min-width: 300px;
-  background-image: url('@/assets/dog_bg.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  width: 100%;
+  padding: 0;
+  gap: 0;
+  align-items: stretch;
+}
+
+
+#map-wrapper {
+  position: relative;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: #ddd;
+  min-height: 400px;
+}
+
+@media screen and (max-width: 420px) {
+  #map-wrapper {
+    min-height: 200px;
+  }
+}
+
+
+#map,
+#route-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .dog-zone {
-  position: relative;
-  width: 70%;
+  width: 100%;
 }
 
+.time {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+}
+
+.time-head {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+}
+
+
 .dog-image {
-  width: 50%;
-  object-fit: contain;
-  margin-top: -26px;
-  margin-left: 25px;
-  filter: drop-shadow(0 4px 10px rgba(255, 160, 67, 0.15));
+  position: absolute;
+  top: 30%;
+  left: 53%;
+  transform: translateX(-50%);
+  width: 40%;
+  z-index: 3;
 }
 
 .play-button {

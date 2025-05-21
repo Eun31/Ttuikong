@@ -16,7 +16,7 @@ public class RunServiceImpl implements RunService {
     private RunDao runDao;
 
     @Override
-    public void updateImageUrl(int userId, String startTime, String imageUrl) {
+    public void updateImageUrl(int userId, LocalDateTime startTime, String imageUrl) {
         runDao.updateImageUrl(userId, startTime, imageUrl);
     }
 
