@@ -6,7 +6,7 @@ import java.util.Map;
 
 
 public interface RunService {
-    public void updateImageUrl(int userId, String startTime, String imageUrl);
+    public void updateImageUrl(int userId, LocalDateTime startTime, String imageUrl);
 
     public void insertRunningStatus(int userId, LocalDateTime startTime, String status);
 
@@ -21,4 +21,5 @@ public interface RunService {
 
     public Map<String, Object> getCrewGoalStats(int crewId);
 
+    public Map<String, Object> getMyRanking(int userId);
 }
