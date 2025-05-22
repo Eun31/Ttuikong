@@ -94,4 +94,13 @@
 			typeHandler="com.ttuikong.spring.typehandler.RoutePointsTypeHandler" />
 		<result property="createdAt" column="created_at" />
 	</resultMap>
+
+	<!-- 최근 루트 아이디 조회 -->
+	<select id="selectLatestRouteId" parameterType="int" resultType="int">
+		SELECT id
+		FROM Route
+		WHERE user_id = #{userId}
+		ORDER BY created_at DESC
+		LIMIT 1
+	</select>
 </mapper>

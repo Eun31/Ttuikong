@@ -153,9 +153,30 @@ public class RunController {
     @Operation(summary = "하루 러닝시간 계산")
     @PutMapping("/user/{userId}/day-time")
     @LoginRequired
-    public void updateDailyDuration(@PathVariable int userId) {
-        runService.updateDailyDuration(userId);
+    public ResponseEntity<?> updateDailyDuration(
+            @PathVariable int userId,
+            HttpServletRequest request
+        ) {
+        try {
+            String rawJson = new BufferedReader(new InputStreamReader(request.getInputStream()))
+                    .lines().collect(Collectors.joining());
+
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode node = mapper.readTree(rawJson);
+
+            int routeId = node.get("routeId").asInt();
+            double distance = node.get("distance").asDouble();
+            double calories = node.get("calories").asDouble();
+            String mood = node.get("mood").asText();
+
+            runService.updateDailyDuration(userId, routeId, distance, calories, mood);
+            return ResponseEntity.ok().body(Map.of("message", "성공"));
+        } 
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
     }
+
 
     @Operation(summary = "하루 러닝시간 top10 사용자의 이름과 시간 조회")
     @GetMapping("/rank")

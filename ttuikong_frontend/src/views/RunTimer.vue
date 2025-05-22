@@ -1,5 +1,17 @@
 <template>
   <div>
+    <!-- 러닝 종료 시 mood 선택 -->
+    <div v-if="showMoodModal" class="modal-overlay">
+      <div class="modal-box">
+        <h3>러닝은 어땠나요?</h3>
+        <div class="mood-options">
+          <button v-for="mood in moodOptions" :key="mood.label" class="mood-btn" @click="selectMood(mood.label)">
+            <span class="emoji">{{ mood.emoji }}</span>
+            <span class="label">{{ mood.label }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
 
     <div class="timer-card">
       <div class="play-area">
@@ -171,6 +183,18 @@ const newCrew = ref({
   startDate: '',
   endDate: ''
 });
+const moodOptions = [
+  { label: '기쁨', emoji: '😊' },
+  { label: '뿌듯함', emoji: '💪' },
+  { label: '아쉬움', emoji: '😕' },
+  { label: '화남', emoji: '😠' },
+  { label: '슬픔', emoji: '😢' },
+  { label: '쏘쏘', emoji: '😐' }
+];
+const calories = ref(0);
+
+const selectedMood = ref(null);
+const showMoodModal = ref(false);
 
 /* 크루 생성 */
 const toggleCrewForm = () => {
@@ -707,6 +731,9 @@ const toggleTimer = async () => {
       await uploadMapImage();
 
       infoText.value = "러닝이 종료되었습니다.";
+
+      // 하루 러닝 시간 계산 후 업데이트
+      showMoodModal.value = true;
     } catch (error) {
       console.error("러닝 종료 요청 중 에러 발생:", error);
     }
@@ -793,6 +820,82 @@ const getCurrentUser = async () => {
   } catch (err) {
     console.error("사용자 정보 요청 실패:", err);
     alert("로그인이 필요합니다.");
+  }
+};
+
+/* 기타 기능 구현 */
+const selectMood = async (mood) => {
+  selectedMood.value = mood;
+  showMoodModal.value = false;
+
+  const routeId = await getRouteId();
+  await fetchLatestRoute(routeId);
+  await calDailyRun(routeId);
+};
+
+const fetchLatestRoute = async (routeId) => {
+  try {
+    const res = await fetch(`http://localhost:8080/api/my/route/${routeId}`, {
+      headers: {
+        Authorization: `Bearer ${token.value}`
+      }
+    });
+
+    const data = await res.json();
+    distance.value = data.distance;
+    if (data.calories == null)
+      data.calories = 0;
+    calories.value = data.calories;
+
+    console.log("가장 최근 러닝 기록 불러오기 성공:", data);
+  } catch (err) {
+    console.error("최신 러닝 정보 조회 실패:", err);
+  }
+};
+
+const getRouteId = async () => {
+  try {
+    const res = await fetch(`http://localhost:8080/api/my/route/latest-route-id`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token.value}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    const data = await res.json();
+    console.log("route id 불러오기", data);
+    return data.routeId;
+  } catch (err) {
+    console.error("route id 불러오기 실패:", err);
+    return null;
+  }
+};
+
+const calDailyRun = async (routeId) => {
+  if (!token.value || !userId.value) {
+    alert("로그인이 필요합니다.");
+    return;
+  }
+
+  try {
+    const res = await fetch(`http://localhost:8080/api/runs/user/${userId.value}/day-time`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token.value}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        routeId,
+        distance: distance.value,
+        calories: calories.value,
+        mood: selectedMood.value
+      })
+    });
+
+    const data = await res.json();
+    console.log("하루 러닝 시간 업데이트", data);
+  } catch (err) {
+    console.error("하루 러닝 시간 계산 업데이트 중 오류:", err);
   }
 };
 
@@ -1290,5 +1393,56 @@ textarea {
 .submit-button:hover {
   background: #FF7E47;
   transform: scale(1.02);
+}
+
+/* mood */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-box {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.mood-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.mood-btn {
+  background: #f9f9f9;
+  border: 2px solid #eee;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mood-btn:hover {
+  background: #ffe4b5;
+}
+
+.emoji {
+  font-size: 1.5rem;
+  display: block;
 }
 </style>

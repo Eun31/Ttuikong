@@ -16,4 +16,5 @@ public interface RouteDao {
 
 	int updateRouteName(int routeId, String name);
 
+	Integer selectLatestRouteId(int userId);
 }

@@ -19,7 +19,11 @@ public interface RunDao {
                              
     void updateRunRecord(int userId, LocalDateTime startTime, LocalDateTime endTime, double distance, long duration);
 
-    void updateDailyDuration(int userId);
+    void updateDailyDuration(@Param("userId") int userId,
+                         @Param("routeId") int routeId,
+                         @Param("distance") double distance,
+                         @Param("calories") double calories,
+                         @Param("mood") String mood);
 
     List<Map<String, Object>> selectTop10UsersByDuration();
 

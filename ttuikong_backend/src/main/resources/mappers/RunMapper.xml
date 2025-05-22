@@ -29,17 +29,26 @@
   </update>
 
     <!-- 1. 하루동안 duration을 누적한 값 업데이트 -->
-    <update id="updateDailyDuration">
-        UPDATE daily_record
-        SET duration = (
-            SELECT IFNULL(SUM(duration), 0)
-            FROM route
-            WHERE user_id = #{userId}
-              AND DATE(created_at) = CURRENT_DATE
-        )
-        WHERE user_id = #{userId}
-          AND date = CURRENT_DATE;
-    </update>
+    <insert id="updateDailyDuration">
+      INSERT INTO daily_record (user_id, route_id, date, duration, distance, calories, mood)
+      VALUES (
+          #{userId},
+          #{routeId},
+          CURRENT_DATE,
+          (SELECT IFNULL(SUM(duration), 0)
+          FROM route
+          WHERE user_id = #{userId} AND DATE(created_at) = CURRENT_DATE),
+          #{distance},
+          #{calories},
+          #{mood}
+      )
+      ON DUPLICATE KEY UPDATE
+          duration = VALUES(duration),
+          distance = VALUES(distance),
+          calories = VALUES(calories),
+          mood = VALUES(mood);
+  </insert>
+
 
     <!-- 2. duration이 긴 top 10 사용자의 nickname, duration -->
     <select id="selectTop10UsersByDuration" resultType="map">

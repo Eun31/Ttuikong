@@ -138,3 +138,5 @@ CREATE TABLE Chat (
     FOREIGN KEY (sender_id) REFERENCES User(id) ON DELETE CASCADE
 );
  ALTER TABLE route ADD CONSTRAINT uq_user_start UNIQUE (user_id, start_time);
+ ALTER TABLE daily_record ADD UNIQUE KEY uniq_user_date (user_id, date);
+
