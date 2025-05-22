@@ -57,7 +57,7 @@
           <div class="form-group">
             <label>목표 유형</label>
             <select v-model="newCrew.goalType">
-              <option value="SUM">총 시간</option>
+              <option value="SUM">총합 시간</option>
               <option value="AVERAGE">평균 시간</option>
             </select>
           </div>
@@ -83,7 +83,7 @@
           <h4>{{ crew.roomName }}</h4>
           <button class="join-btn" @click.stop="joinCrew(crew)">가입하기</button>
         </div>
-        <p class="crew-meta"> 목표: {{ crew.goalType }} : {{ crew.goalTime }}</p>
+        <p class="crew-meta"> 목표: {{ crew.goalType == 'SUM' ? '총합' : '평균' }} / {{ formatDuration(crew.goalTime) }}</p>
         <p class="crew-meta"> 참여 인원: {{crewMembers.find(c => c.crewId === crew.id)?.members.length || 0}}명</p>
       </div>
       <div class="group-search">
@@ -103,14 +103,22 @@
         </div>
         <transition name="fade">
           <div v-show="expandedCrews.includes(crew.id)" class="crew-detail">
-            <p>📍 목표: <strong>{{ crew.goalType }} : {{ crew.goalTime }}</strong></p>
+            <p>📍 목표: <strong>{{ crew.goalType == 'SUM' ? '총합' : '평균' }} / {{ formatDuration(crew.goalTime) }}</strong>
+            </p>
             <!-- <p>🏅 목표 달성률: {{ crew.participationRate }}%</p> -->
             <h3 class="sub-title">크루 멤버</h3>
-            <div class="user-list">
+            <div v-if="crewMembersMap[crew.id] == null" class="user-list">
               <div v-for="member in crewMembers.find(c => c.crewId === crew.id)?.members || []" :key="member.id"
                 class="user-card">
                 <strong>{{ member.nickname }}</strong>
-                <!-- <span>{{ member.status }}</span> -->
+                <span>{{ formatDuration(member.duration) }}</span>
+              </div>
+            </div>
+            <div v-else class="user-list">
+              <div v-for="member in crewMembersMap[crew.id] || []" :key="crew.id + '-' + member.nickname"
+                class="user-card">
+                <strong>{{ member.nickname }}</strong>
+                <span>{{ formatDuration(member.duration) }}</span>
               </div>
             </div>
             <h3 class="sub-title">실시간 메신저</h3>
@@ -133,7 +141,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, defineEmits, nextTick } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, defineEmits, nextTick, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import dogRun from '@/assets/dog_run.gif';
 import dogSit from '@/assets/dog_sit.gif';
@@ -376,10 +384,11 @@ const fetchCrewsAndMembers = async () => {
   }
 };
 
-const toggleCrew = (id) => {
+const toggleCrew = async (id) => {
   if (expandedCrews.value.includes(id)) {
     expandedCrews.value = expandedCrews.value.filter(cid => cid !== id);
   } else {
+    await getCrewRun(id);
     expandedCrews.value.push(id);
   }
 };
@@ -823,7 +832,7 @@ const getCurrentUser = async () => {
   }
 };
 
-/* 기타 기능 구현 */
+/* daily record에 업데이트 */
 const selectMood = async (mood) => {
   selectedMood.value = mood;
   showMoodModal.value = false;
@@ -899,16 +908,51 @@ const calDailyRun = async (routeId) => {
   }
 };
 
+/* 목표 관련 */
+const formatDuration = (min) => {
+  if (!min) return "0분";
+  const hr = Math.floor(min / 60);
+  const m = min % 60;
+  return `${hr}시간 ${m.toFixed(0)}분`;
+};
+
+const crewMembersMap = ref({});
+const getCrewRun = async (crewId) => {
+  try {
+    const res = await fetch(`http://localhost:8080/api/runs/crew/${crewId}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token.value}`
+      }
+    });
+
+    if (!res.ok) throw new Error("서버 응답 오류");
+
+    const data = await res.json();
+    console.log("크루 멤버 러닝 시간:", data);
+
+    data.forEach(member => {
+      if (member.duration == null) member.duration = 0;
+    });
+
+    // 여기서 객체에 직접 세팅
+    crewMembersMap.value[crewId] = data;
+
+  } catch (err) {
+    console.error("getCrewRun 오류:", err);
+  }
+};
+
+
 const stayOnTimer = () => { };
 
 function goToChat(crewId) {
   router.push(`/chat/${crewId}`);
 }
 
-const navigateToTimer = () => emit('navigate', 'RunTimer');
 const navigateToRank = () => emit('navigate', 'RunWithRank');
 
-onMounted(() => {
+onMounted(async () => {
   getCurrentUser();
   loadKakaoMapScript();
   fetchCrewsAndMembers();

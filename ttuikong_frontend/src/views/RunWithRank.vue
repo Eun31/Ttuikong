@@ -10,7 +10,7 @@
         <div class="rank">{{ index + 1 }}</div>
         <div class="user-info">
           <strong>{{ user.nickname }}</strong>
-          <span>{{ user.duration }}분</span>
+          <span>{{ formatDuration(user.duration) }}</span>
         </div>
         <div class="medal" v-if="index < 3">
           <i :class="['ri-medal-line', getMedalClass(index)]"></i>
@@ -52,6 +52,13 @@ const userName = ref('');
 const rankings = ref([]);
 const myRanking = ref('-');
 const myDistance = ref(0);
+
+const formatDuration = (min) => {
+  if (!min) return "0분";
+  const hr = Math.floor(min / 60);
+  const m = min % 60;
+  return `${hr}시간 ${m.toFixed(0)}분`;
+};
 
 const getMedalClass = (index) => {
   if (index === 0) return 'gold';
