@@ -148,4 +148,8 @@ public class RouteServiceImpl implements RouteService {
             return 0;
         }
     }
+
+    public Integer getLatestRouteIdByUser(int userId) {
+        return routeDao.selectLatestRouteId(userId);
+    }
 }

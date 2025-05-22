@@ -16,7 +16,7 @@ public class RunServiceImpl implements RunService {
     private RunDao runDao;
 
     @Override
-    public void updateImageUrl(int userId, String startTime, String imageUrl) {
+    public void updateImageUrl(int userId, LocalDateTime startTime, String imageUrl) {
         runDao.updateImageUrl(userId, startTime, imageUrl);
     }
 
@@ -32,9 +32,10 @@ public class RunServiceImpl implements RunService {
     }
 
     @Override
-    public void updateDailyDuration(int userId) {
-        runDao.updateDailyDuration(userId);
+    public void updateDailyDuration(int userId, int routeId, double distance, double calories, String mood) {
+        runDao.updateDailyDuration(userId, routeId, distance, calories, mood);
     }
+
 
     @Override
     public List<Map<String, Object>> getTop10UsersByDuration() {
@@ -49,5 +50,10 @@ public class RunServiceImpl implements RunService {
     @Override
     public Map<String, Object> getCrewGoalStats(int crewId) {
         return runDao.selectCrewGoalStats(crewId);
+    }
+
+    @Override
+    public Map<String, Object> getMyRanking(int userId) {
+        return runDao.selectMyRanking(userId);
     }
 }

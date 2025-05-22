@@ -21,6 +21,8 @@ import com.ttuikong.spring.model.dto.Route;
 import com.ttuikong.spring.model.dto.User;
 import com.ttuikong.spring.model.service.RouteService;
 
+import io.swagger.v3.oas.annotations.Operation;
+
 @RestController
 @RequestMapping("/api/my/route")
 public class RouteController {
@@ -166,4 +168,17 @@ public class RouteController {
                 .body("루트 이름 수정 중 오류가 발생했습니다.");
         }
 	}
+
+	@Operation(summary = "가장 최근 routeId 반환")
+	@GetMapping("/latest-route-id")
+	@LoginRequired
+	public ResponseEntity<?> getLatestRouteId(@LoginUser User loginUser) {
+		Integer routeId = routeService.getLatestRouteIdByUser(loginUser.getId());
+		if (routeId != null) {
+			return ResponseEntity.ok(Map.of("routeId", routeId));
+		} else {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "저장된 러닝 정보가 없습니다."));
+		}
+	}
+
 }

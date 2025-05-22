@@ -16,4 +16,6 @@ public interface RouteService {
 
 	boolean updateRouteName(int routeId, String newName);
 
+	Integer getLatestRouteIdByUser(int userId);
+
 }

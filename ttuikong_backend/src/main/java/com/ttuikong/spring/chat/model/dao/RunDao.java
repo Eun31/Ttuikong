@@ -9,7 +9,9 @@ import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface RunDao {
-    public void updateImageUrl(int userId, String startTime, String imageUrl);
+    void updateImageUrl(@Param("userId") int userId,
+                    @Param("startTime") LocalDateTime startTime,
+                    @Param("imageUrl") String imageUrl);
 
     void insertRunningStatus(@Param("userId") int userId,
                              @Param("startTime") LocalDateTime startTime,
@@ -17,11 +19,17 @@ public interface RunDao {
                              
     void updateRunRecord(int userId, LocalDateTime startTime, LocalDateTime endTime, double distance, long duration);
 
-    void updateDailyDuration(int userId);
+    void updateDailyDuration(@Param("userId") int userId,
+                         @Param("routeId") int routeId,
+                         @Param("distance") double distance,
+                         @Param("calories") double calories,
+                         @Param("mood") String mood);
 
     List<Map<String, Object>> selectTop10UsersByDuration();
 
     List<Map<String, Object>> selectCrewMemberRecords(int crewId);
 
     Map<String, Object> selectCrewGoalStats(int crewId);
+
+     Map<String, Object> selectMyRanking(int userId);
 }

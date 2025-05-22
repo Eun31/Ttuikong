@@ -1,4 +1,4 @@
--- drop database if exists ttuikong_db;
+drop database if exists ttuikong_db;
 create database ttuikong_db;
 USE ttuikong_db;
 
@@ -23,13 +23,13 @@ CREATE TABLE User (
 CREATE TABLE Route (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    route_name VARCHAR(100) NOT NULL,
-    start_time DATETIME NOT NULL,
-    end_time DATETIME NOT NULL,
-    duration BIGINT NOT NULL,
-    distance DOUBLE NOT NULL,
+    route_name VARCHAR(100) DEFAULT '기본 이름',
+    start_time DATETIME,
+    end_time DATETIME,
+    duration BIGINT,
+    distance DOUBLE,
 	calories DOUBLE,
-    points TEXT NOT NULL,  -- JSON 형식의 경로 포인트 데이터
+    points TEXT,  -- JSON 형식의 경로 포인트 데이터
     status ENUM('running', 'ended') DEFAULT NULL,
     image_url VARCHAR(255) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -137,4 +137,6 @@ CREATE TABLE Chat (
     FOREIGN KEY (crew_id) REFERENCES Crew(id) ON DELETE CASCADE,
     FOREIGN KEY (sender_id) REFERENCES User(id) ON DELETE CASCADE
 );
+ ALTER TABLE route ADD CONSTRAINT uq_user_start UNIQUE (user_id, start_time);
+ ALTER TABLE daily_record ADD UNIQUE KEY uniq_user_date (user_id, date);
 

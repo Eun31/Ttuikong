@@ -34,8 +34,6 @@ import com.ttuikong.spring.annotation.LoginUser;
 import com.ttuikong.spring.chat.model.service.RunService;
 import com.ttuikong.spring.model.dto.Route;
 import com.ttuikong.spring.model.dto.User;
-import com.ttuikong.spring.chat.model.dto.RunningStatus;
-import com.ttuikong.spring.chat.model.dto.TrackLocation;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -51,19 +49,20 @@ public class RunController {
 
     @Operation(summary = "러닝 후 이미지 자동 업로드")
     @PostMapping("/upload-map-image")
+    @LoginRequired
     public ResponseEntity<?> uploadMapImage(
             @RequestParam("image") MultipartFile image,
             @RequestParam String startTime,
             @RequestParam String endTime,
             @Parameter(hidden = true) @LoginUser User loginUser) throws IOException {
 
-        // Z(UTC) 포함된 ISO 포맷 처리
+        if (loginUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "로그인 필요"));
+        }
+
         OffsetDateTime parsedStart = OffsetDateTime.parse(startTime);
-        // OffsetDateTime parsedEnd = OffsetDateTime.parse(endTime);
-
-        LocalDateTime start = parsedStart.toLocalDateTime();
-        // LocalDateTime end = parsedEnd.toLocalDateTime();
-
+        LocalDateTime start = parsedStart.toLocalDateTime().withNano(0);
+        
         // 파일 이름 생성
         String timestamp = start.format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         String filename = loginUser.getId() + "_" + timestamp + ".png";
@@ -75,7 +74,7 @@ public class RunController {
 
         // DB 저장
         String imageUrl = "/uploads/maps/" + filename;
-        runService.updateImageUrl(loginUser.getId(), startTime, imageUrl);
+        runService.updateImageUrl(loginUser.getId(), start, imageUrl);
 
         return ResponseEntity.ok(Map.of(
                 "message", "업로드 성공",
@@ -98,7 +97,7 @@ public class RunController {
                                 .lines()
                                 .collect(Collectors.joining());
 
-            System.out.println("📥 받은 raw JSON: " + rawJson);
+            // System.out.println("받은 JSON: " + rawJson);
 
             JsonNode node = mapper.readTree(rawJson);
             String startTimeStr = node.get("startTime").asText();
@@ -117,49 +116,93 @@ public class RunController {
     @Operation(summary = "러닝 후 시간과 거리 데이터 저장")
     @PostMapping("/track-location")
     @LoginRequired
-    public ResponseEntity<?> trackRunning(@RequestBody TrackLocation body,
+    public ResponseEntity<?> trackRunning(HttpServletRequest request,
             @Parameter(hidden = true) @LoginUser User loginUser) {
-       
+        
         if (loginUser == null) {
-            System.out.println("❌ loginUser is null");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "로그인 필요"));
         }
 
-        System.out.println("📥 [trackRunning] startTime: " + body.getStartTime());
-        System.out.println("📥 [trackRunning] endTime: " + body.getEndTime());
-        System.out.println("📥 [trackRunning] distance: " + body.getDistance());
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            String rawJson = new BufferedReader(new InputStreamReader(request.getInputStream()))
+                                .lines()
+                                .collect(Collectors.joining());
 
-        LocalDateTime start = OffsetDateTime.parse(body.getStartTime()).toLocalDateTime();
-        LocalDateTime end = OffsetDateTime.parse(body.getEndTime()).toLocalDateTime();
-        double distance = body.getDistance();
+            System.out.println("받은 JSON: " + rawJson);
 
-        long duration = Duration.between(start, end).getSeconds();
-        runService.updateRunRecord(loginUser.getId(), start, end, distance, duration);
+            JsonNode node = mapper.readTree(rawJson);
+            String startTimeStr = node.get("startTime").asText();
+            String distance = node.get("distance").asText();
+            String endTimeStr = node.get("endTime").asText();
 
-        return ResponseEntity.ok(Map.of("message", "러닝 기록 저장 완료"));
+            LocalDateTime startTime = OffsetDateTime.parse(startTimeStr).toLocalDateTime().withNano(0);
+            LocalDateTime endTime = OffsetDateTime.parse(endTimeStr).toLocalDateTime().withNano(0);
+            double distanceDbl = Double.valueOf(distance);
+
+            long duration = Duration.between(startTime, endTime).getSeconds();
+            runService.updateRunRecord(loginUser.getId(), startTime, endTime, distanceDbl, duration);
+
+            return ResponseEntity.ok(Map.of("message", "러닝 기록 저장 완료"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Map.of("error", "서버 에러: " + e.getMessage()));
+        }
     }
 
     @Operation(summary = "하루 러닝시간 계산")
     @PutMapping("/user/{userId}/day-time")
-    public void updateDailyDuration(@PathVariable int userId) {
-        runService.updateDailyDuration(userId);
+    @LoginRequired
+    public ResponseEntity<?> updateDailyDuration(
+            @PathVariable int userId,
+            HttpServletRequest request
+        ) {
+        try {
+            String rawJson = new BufferedReader(new InputStreamReader(request.getInputStream()))
+                    .lines().collect(Collectors.joining());
+
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode node = mapper.readTree(rawJson);
+
+            int routeId = node.get("routeId").asInt();
+            double distance = node.get("distance").asDouble();
+            double calories = node.get("calories").asDouble();
+            String mood = node.get("mood").asText();
+
+            runService.updateDailyDuration(userId, routeId, distance, calories, mood);
+            return ResponseEntity.ok().body(Map.of("message", "성공"));
+        } 
+        catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
     }
+
 
     @Operation(summary = "하루 러닝시간 top10 사용자의 이름과 시간 조회")
     @GetMapping("/rank")
+    @LoginRequired
     public List<Map<String, Object>> getTop10UsersByDuration() {
         return runService.getTop10UsersByDuration();
     }
 
     @Operation(summary = "크루 각 멤버의 이름과 하루 러닝 시간 조회")
     @GetMapping("/crew/{crewId}")
+    @LoginRequired
     public List<Map<String, Object>> getCrewMemberRecords(@PathVariable int crewId) {
         return runService.getCrewMemberRecords(crewId);
     }
 
     @Operation(summary = "크루가 설정한 목표에 따른 평균/총합 러닝 시간 조회")
     @GetMapping("/crew/{crewId}/time")
+    @LoginRequired
     public Map<String, Object> getCrewGoalStats(@PathVariable int crewId) {
         return runService.getCrewGoalStats(crewId);
+    }
+
+    @Operation(summary = "내 랭킹 정보 조회")
+    @GetMapping("/rank/me")
+    @LoginRequired
+    public Map<String, Object> getMyRanking(@RequestParam int userId) {
+        return runService.getMyRanking(userId);
     }
 }
