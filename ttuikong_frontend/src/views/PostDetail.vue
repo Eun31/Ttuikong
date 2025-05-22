@@ -1,6 +1,5 @@
 <template>
   <div class="container">
-    <!-- 로딩 인디케이터 -->
     <div v-if="loading" class="loading-container">
       <div class="spinner"></div>
       <p>게시글을 불러오는 중...</p>
@@ -13,9 +12,7 @@
     </div>
 
     <div v-else>
-      <!-- 게시글 카드 -->
       <div class="post-card">
-        <!-- 작성자 정보 -->
         <div class="user-profile">
           <img :src="getProfileImage()" alt="프로필" class="user-avatar">
           <div class="user-details">
@@ -27,40 +24,24 @@
             </div>
             <div class="post-time">{{ formatDate(post.createdAt || post.created_at) }}</div>
           </div>
-          <!-- 모든 사용자에게 옵션 메뉴 표시하되, 내용을 구분 -->
-          <div class="post-options">
+          <div v-if="isAuthor" class="post-options">
             <button class="post-options-btn" @click="toggleOptions">
             </button>
             <div class="options-menu" :class="{ show: showOptions }">
-              <!-- 작성자일 때만 수정/삭제 표시 -->
-              <div v-if="isAuthor" class="option-item edit-option" @click="editPost">
-                <span>✏️</span>
+              <div class="option-item edit-option" @click="editPost">
                 <span>수정하기</span>
               </div>
-              <div v-if="isAuthor" class="option-item delete-option" @click="deletePost">
-                <span>🗑️</span>
+              <div class="option-item delete-option" @click="deletePost">
                 <span>삭제하기</span>
-              </div>
-              <!-- 작성자가 아닐 때는 신고 버튼만 표시 -->
-              <div v-if="!isAuthor && token" class="option-item report-option" @click="reportPost">
-                <span>🚨</span>
-                <span>신고하기</span>
-              </div>
-              <!-- 로그인하지 않은 경우 -->
-              <div v-if="!token" class="option-item login-option" @click="goToLogin">
-                <span>🔑</span>
-                <span>로그인 필요</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 게시글 내용 -->
         <div class="post-content">
           <h2 class="post-title">{{ post.title }}</h2>
           <div class="post-body">{{ post.content }}</div>
           
-          <!-- 수정된 이미지 부분 -->
           <div v-if="validImageUrl" class="post-image">
             <img 
               :src="validImageUrl" 

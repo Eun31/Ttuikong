@@ -85,35 +85,7 @@
           </div>
         </div>
       </div>
-      
-      <!-- 위치 선택 -->
-      <div class="form-group">
-        <div class="form-label">위치</div>
-        <div class="location-input" @click="toggleLocationSearch">
-          <i class="ri-map-pin-line"></i>
-          <span>{{ locationDisplay }}</span>
-        </div>
-        
-        <div class="location-results" :class="{ show: showLocationSearch }">
-          <div class="input-wrapper">
-            <input 
-              type="text" 
-              v-model="locationKeyword" 
-              placeholder="위치 검색..." 
-              @input="searchLocation"
-            >
-          </div>
-          <div 
-            v-for="(location, index) in locationResults" 
-            :key="index"
-            class="location-item" 
-            @click="selectLocation(location)"
-          >
-            {{ location }}
-          </div>
-        </div>
-      </div>
-      
+
       <!-- 태그 입력 -->
       <div class="form-group">
         <div class="form-label">태그</div>
@@ -150,7 +122,6 @@
         </div>
       </div>
       
-      <!-- 완료 버튼 (하단에 위치) -->
       <div class="form-actions">
         <button 
           class="btn btn-primary submit-btn" 
@@ -183,9 +154,6 @@ const content = ref('');
 const imageFile = ref(null);
 const imagePreviewUrl = ref('');
 const selectedCategory = ref('자유');
-const location = ref('');
-const locationKeyword = ref('');
-const showLocationSearch = ref(false);
 const tagInput = ref('');
 const tags = ref([]);
 const isSubmitting = ref(false);
@@ -205,15 +173,6 @@ const categories = [
   { value: '노래추천', label: '노래추천' },
   { value: '건강식품', label: '건강식품' }
 ];
-
-// 위치 검색 결과 (실제 구현에서는 API 호출 결과로 대체)
-const locationResults = ref([
-  '한강공원 여의도',
-  '강남구 역삼동',
-  '서울 마포구 홍대입구',
-  '서울특별시 성북구 안암동'
-]);
-
 // Computed 속성
 const isEditMode = computed(() => {
   return !!route.params.id;
@@ -227,16 +186,11 @@ const canAddTag = computed(() => {
   return tagInput.value.trim() && tags.value.length < 5;
 });
 
-const locationDisplay = computed(() => {
-  return location.value || '위치 추가';
-});
-
 const hasUnsavedChanges = computed(() => {
   return title.value.trim() || 
          content.value.trim() || 
          tags.value.length > 0 || 
-         imageFile.value !== null ||
-         location.value !== '';
+         imageFile.value !== null
 });
 
 // 편집 모드일 때 기존 게시글 데이터 로드
@@ -253,7 +207,6 @@ async function loadPostData() {
     title.value = post.title || '';
     content.value = post.content || '';
     selectedCategory.value = post.category || '자유';
-    location.value = post.location || '';
     
     // 이미지 처리
     if (post.imageUrl || post.image_url) {
@@ -353,64 +306,24 @@ function selectCategory(category) {
   selectedCategory.value = category;
 }
 
-function toggleLocationSearch() {
-  showLocationSearch.value = !showLocationSearch.value;
-  if (showLocationSearch.value) {
-    nextTick(() => {
-      const input = document.querySelector('.location-results input');
-      if (input) input.focus();
-    });
-  }
-}
-
-function searchLocation() {
-  // 실제 구현에서는 API를 통한 위치 검색 기능 구현
-  // 현재는 예시 데이터로 필터링만 진행
-  if (locationKeyword.value.trim() === '') {
-    locationResults.value = [
-      '한강공원 여의도',
-      '강남구 역삼동',
-      '서울 마포구 홍대입구',
-      '서울특별시 성북구 안암동'
-    ];
-  } else {
-    const keyword = locationKeyword.value.toLowerCase();
-    locationResults.value = [
-      '한강공원 여의도',
-      '강남구 역삼동',
-      '서울 마포구 홍대입구',
-      '서울특별시 성북구 안암동'
-    ].filter(loc => loc.toLowerCase().includes(keyword));
-  }
-}
-
-function selectLocation(loc) {
-  location.value = loc;
-  showLocationSearch.value = false;
-}
-
 function addTag() {
   const tagText = tagInput.value.trim();
   
   if (!tagText) return;
   
-  // 최대 5개 태그 제한
   if (tags.value.length >= 5) {
     alert('태그는 최대 5개까지만 추가할 수 있습니다.');
     return;
   }
   
-  // 중복 태그 확인
   if (tags.value.includes(tagText)) {
     alert('이미 추가된 태그입니다.');
     return;
   }
-  
-  // 태그 추가
+
   tags.value.push(tagText);
   tagInput.value = '';
-  
-  // 태그 입력 필드에 포커스
+
   nextTick(() => {
     const input = document.querySelector('.tag-input');
     if (input) input.focus();
@@ -440,10 +353,6 @@ async function submitPost() {
       content: content.value.trim(),
       category: selectedCategory.value
     };
-    
-    if (location.value) {
-      boardData.location = location.value;
-    }
     
     if (tags.value.length > 0) {
       boardData.tags = tags.value;
@@ -820,67 +729,6 @@ onMounted(async () => {
   color: white;
   border-color: var(--primary-color);
   font-weight: 500;
-}
-
-/* 위치 선택 */
-.location-input {
-  display: flex;
-  align-items: center;
-  margin-top: 12px;
-  padding: 10px 16px;
-  background-color: #f5f5f5;
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
-  color: var(--medium-text);
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.location-input:hover {
-  background-color: rgba(255, 87, 34, 0.05);
-  border-color: var(--primary-light);
-}
-
-.location-input i {
-  margin-right: 10px;
-  color: var(--primary-color);
-  font-size: 18px;
-}
-
-/* 위치 검색 결과 */
-.location-results {
-  margin-top: 12px;
-  border-radius: var(--border-radius);
-  overflow: hidden;
-  box-shadow: var(--shadow-md);
-  display: none;
-  background-color: white;
-}
-
-.location-results.show {
-  display: block;
-}
-
-.location-results .input-wrapper {
-  border-radius: 0;
-  border-left: none;
-  border-right: none;
-  border-top: none;
-}
-
-.location-item {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border-color);
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.location-item:last-child {
-  border-bottom: none;
-}
-
-.location-item:hover {
-  background-color: rgba(255, 87, 34, 0.05);
 }
 
 /* 태그 입력 */

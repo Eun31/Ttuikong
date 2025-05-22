@@ -90,16 +90,13 @@ const posts = ref([]);
 const loading = ref(true);
 const error = ref('');
 
-// 이미지 URL을 완전한 URL로 변환하는 함수
 function getFullImageUrl(imageUrl) {
   if (!imageUrl) return null;
-  
-  // 이미 완전한 URL인 경우 (http로 시작하는 경우)
+
   if (imageUrl.startsWith('http')) {
     return imageUrl;
   }
   
-  // 상대 경로인 경우 백엔드 서버 URL을 앞에 붙임
   return `http://localhost:8080${imageUrl}`;
 }
 
@@ -113,16 +110,9 @@ function fetchPosts() {
       if (Array.isArray(response.data)) {
         console.log('백엔드에서 가져온 데이터:', response.data);
         
-        // 백엔드 데이터를 프론트엔드 형식으로 변환
         const transformedPosts = response.data.map(item => {
-          // 이미지 URL 처리
           const originalImageUrl = item.imageUrl;
           const fullImageUrl = getFullImageUrl(originalImageUrl);
-          
-          console.log(`게시글 ID ${item.postId} 이미지 URL 변환:`, {
-            원본: originalImageUrl,
-            변환후: fullImageUrl
-          });
           
           return {
             id: item.postId,
@@ -136,7 +126,7 @@ function fetchPosts() {
             },
             title: item.title || '',
             description: item.content || '',
-            image: fullImageUrl, // 변환된 전체 URL 사용
+            image: fullImageUrl,
             tags: [],
             location: '',
             likes: 0,
@@ -147,9 +137,7 @@ function fetchPosts() {
         });
         
         posts.value = transformedPosts;
-        console.log('변환된 게시글 데이터:', transformedPosts);
       } else {
-        console.log('백엔드에서 배열이 아닌 응답:', response.data);
         posts.value = [];
       }
     })
@@ -204,26 +192,15 @@ const totalPages = computed(() => {
 function viewPostDetail(postId) {
    console.log('클릭한 게시글 ID:', postId, typeof postId);
   
-  // ID가 유효하지 않은 경우 처리
   if (postId === undefined || postId === null) {
     console.error('유효하지 않은 게시글 ID');
     return;
   }
   
-  // ID가 0인 경우 처리 (필요시)
-  if (postId === 0) {
-    console.warn('ID가 0인 게시글. 다른 값으로 대체합니다.');
-    postId = 3; // 또는 다른 적절한 값
-  }
-  
   try {
-    // 라우터 이동 전 파라미터 확인
-    console.log('라우터 이동 파라미터:', { name: 'post-detail', params: { id: postId } });
-    
-    // 라우터 이동
     router.push({ 
       name: 'post-detail', 
-      params: { id: postId }  // 명시적으로 문자열로 변환
+      params: { id: postId }
     });
   } catch (error) {
     console.error('라우터 이동 중 오류:', error);
@@ -245,11 +222,11 @@ function goToWritePage() {
 }
 
 onMounted(() => {
-  // FontAwesome 로드
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css';
-  document.head.appendChild(link);
+  // // FontAwesome 로드
+  // const link = document.createElement('link');
+  // link.rel = 'stylesheet';
+  // link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css';
+  // document.head.appendChild(link);
   
   // 백엔드에서 데이터 가져오기
   fetchPosts();

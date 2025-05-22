@@ -1,160 +1,193 @@
 <template>
   <div class="profile-container">
-    <!-- 상단 유저 정보 카드 -->
-    <div class="user-profile-card">
-      <div class="profile-header">
-        <div class="profile-avatar">
-          <img :src="defaultAvatar" alt="프로필 이미지" class="avatar-img">
-          <div class="level-badge">Lv.{{ calculateLevel() }}</div>
-        </div>
-        <div class="profile-basic-info">
-          <h2 class="user-nickname">{{ profileUser.nickname }}</h2>
-          <p class="user-desc">{{ getActivityLevel() }}</p>
+    <div v-if="loading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>프로필을 불러오는 중...</p>
+    </div>
 
-          <!-- 내 프로필일 경우 편집 버튼 표시 -->
-          <div v-if="isMyProfile" class="edit-profile-btn" @click="editProfile">
-            프로필 수정
+    <div v-else-if="error" class="error-container">
+      <p>{{ error }}</p>
+      <button @click="loadProfileData" class="retry-btn">다시 시도</button>
+    </div>
+
+    <div v-else>
+      <div class="user-profile-card">
+        <div class="profile-header">
+          <div class="profile-avatar">
+            <img :src="defaultAvatar" class="avatar-img">
           </div>
+          <div class="profile-basic-info">
+            <h2 class="user-nickname">{{ profileUser.nickname }}</h2>
+            <p class="user-desc">{{ getActivityLevel() }}</p>
 
-          <!-- 다른 사람 프로필일 경우 팔로우 버튼 표시 -->
-          <button v-else :class="['follow-btn', { 'following': isFollowing }]" @click="toggleFollowUser">
-            {{ isFollowing ? '팔로잉' : '팔로우' }}
-          </button>
-        </div>
-      </div>
-
-      <!-- 팔로우 정보 -->
-      <div class="follow-stats">
-        <div class="follow-stat-item">
-          <span class="follow-count">{{ stats.totalRuns }}</span>
-          <span class="follow-label">러닝</span>
-        </div>
-        <div class="follow-stat-item" @click="activeTab = 2">
-          <span class="follow-count">{{ followers.length }}</span>
-          <span class="follow-label">팔로워</span>
-        </div>
-        <div class="follow-stat-item" @click="activeTab = 3">
-          <span class="follow-count">{{ following.length }}</span>
-          <span class="follow-label">팔로잉</span>
-        </div>
-      </div>
-
-      <!-- 상세 정보 - 내 프로필일 때만 모든 정보 표시 -->
-      <div class="detailed-info">
-        <div class="info-row" v-if="isMyProfile || profileUser.age">
-          <span class="info-label">나이</span>
-          <span class="info-value">{{ profileUser.age }}세</span>
-        </div>
-        <div class="info-row" v-if="isMyProfile || profileUser.gender">
-          <span class="info-label">성별</span>
-          <span class="info-value">{{ profileUser.gender }}</span>
-        </div>
-        <div class="info-row" v-if="isMyProfile">
-          <span class="info-label">키 / 몸무게</span>
-          <span class="info-value">{{ profileUser.height }}cm / {{ profileUser.weight }}kg</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">목표 활동성</span>
-          <span class="info-value-goal">{{ getActivityGoal() }}</span>
-        </div>
-        <div class="info-row total-distance">
-          <span class="info-label">총 달린 거리</span>
-          <span class="info-value-highlight">{{ formatDistance(profileUser.total_distance) }}</span>
-        </div>
-        <div class="info-row avg-distance">
-          <span class="info-label">평균 달린 거리</span>
-          <span class="info-value">{{ formatDistance(profileUser.avg_distance) }}</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- 탭 메뉴 - 내 프로필과 다른 사람 프로필에 따라 다르게 표시 -->
-    <div class="tab-container">
-      <div v-for="(tab, index) in isMyProfile ? myProfileTabs : otherProfileTabs" :key="index"
-        :class="['tab-item', { active: activeTab === index }]" @click="activeTab = index">
-        {{ tab }}
-      </div>
-    </div>
-
-    <!-- 탭 콘텐츠 영역 -->
-    <div class="tab-content">
-      <!-- 게시글 탭 -->
-      <div v-if="activeTab === 0" class="posts tab-panel">
-        <div v-if="userPosts.length === 0" class="empty-state">
-          <p v-if="isMyProfile">아직 작성한 게시글이 없어요 😊</p>
-          <p v-else>{{ profileUser.nickname }}님이 작성한 게시글이 없어요</p>
-          <button v-if="isMyProfile" class="action-btn" @click="goToNewPost">첫 게시글 작성하기</button>
-        </div>
-        <post-card v-for="post in userPosts" :key="post.id" :post="post" @like="toggleLike" @comment="goToComments" />
-      </div>
-
-      <!-- 좋아요한 글 탭 (내 프로필일 때만) -->
-      <div v-else-if="activeTab === 1 && isMyProfile" class="liked-posts tab-panel">
-        <div v-if="likedPosts.length === 0" class="empty-state">
-          <p>아직 좋아요한 게시글이 없어요 💖</p>
-          <button class="action-btn" @click="goToBoard">게시판 둘러보기</button>
-        </div>
-        <post-card v-for="post in likedPosts" :key="post.id" :post="post" @like="toggleLike" @comment="goToComments" />
-      </div>
-
-      <!-- 팔로워 탭 -->
-      <div v-else-if="activeTab === 2" class="followers-panel tab-panel">
-        <div v-if="followers.length === 0" class="empty-state">
-          <p v-if="isMyProfile">아직 팔로워가 없어요 👀</p>
-          <p v-else>{{ profileUser.nickname }}님의 팔로워가 없어요</p>
-          <button v-if="isMyProfile" class="action-btn" @click="goToDiscover">다른 러너 찾아보기</button>
-        </div>
-        <div v-else class="user-list">
-          <div v-for="follower in followers" :key="follower.id" class="user-item">
-            <img :src="defaultAvatar" alt="프로필" class="user-item-avatar">
-            <div class="user-item-info">
-              <span class="user-item-name">{{ follower.nickname }}</span>
-              <span class="user-item-desc">{{ follower.activityLevel }}</span>
+            <div v-if="isMyProfile" class="edit-profile-btn" @click="editProfile">
+              프로필 수정
             </div>
-            <button v-if="myId !== follower.id" :class="['follow-btn', { 'following': isUserFollowing(follower.id) }]"
-              @click="toggleFollow(follower.id)">
-              {{ isUserFollowing(follower.id) ? '팔로잉' : '팔로우' }}
+
+            <button v-else 
+                    :class="['follow-btn', { 'following': isFollowing }]" 
+                    @click="toggleFollowUser"
+                    :disabled="followLoading">
+              {{ followLoading ? '처리중...' : (isFollowing ? '팔로잉' : '팔로우') }}
             </button>
           </div>
         </div>
-      </div>
 
-      <!-- 팔로잉 탭 -->
-      <div v-else-if="activeTab === 3" class="following-panel tab-panel">
-        <div v-if="following.length === 0" class="empty-state">
-          <p v-if="isMyProfile">아직 팔로우 중인 러너가 없어요 🏃‍♀️</p>
-          <p v-else>{{ profileUser.nickname }}님이 팔로우 중인 러너가 없어요</p>
-          <button v-if="isMyProfile" class="action-btn" @click="goToDiscover">러너 찾아보기</button>
+        <div class="follow-stats">
+          <div class="follow-stat-item">
+            <span class="follow-count">{{ stats.totalRuns }}</span>
+            <span class="follow-label">러닝</span>
+          </div>
+          <div class="follow-stat-item" @click="activeTab = isMyProfile ? 2 : 1">
+            <span class="follow-count">{{ stats.followerCount }}</span>
+            <span class="follow-label">팔로워</span>
+          </div>
+          <div class="follow-stat-item" @click="activeTab = isMyProfile ? 3 : 2">
+            <span class="follow-count">{{ stats.followingCount }}</span>
+            <span class="follow-label">팔로잉</span>
+          </div>
         </div>
-        <div v-else class="user-list">
-          <div v-for="follow in following" :key="follow.id" class="user-item">
-            <img :src="defaultAvatar" alt="프로필" class="user-item-avatar">
-            <div class="user-item-info">
-              <span class="user-item-name">{{ follow.nickname }}</span>
-              <span class="user-item-desc">{{ follow.activityLevel }}</span>
-            </div>
-            <button v-if="myId !== follow.id" :class="['follow-btn', 'following']" @click="toggleFollow(follow.id)">
-              팔로잉
-            </button>
+
+        <div class="detailed-info">
+          <div class="info-row" v-if="isMyProfile || profileUser.age">
+            <span class="info-label">나이</span>
+            <span class="info-value">{{ profileUser.age }}세</span>
+          </div>
+          <div class="info-row" v-if="isMyProfile || profileUser.gender">
+            <span class="info-label">성별</span>
+            <span class="info-value">{{ profileUser.gender }}</span>
+          </div>
+          <div class="info-row" v-if="isMyProfile && profileUser.height && profileUser.weight">
+            <span class="info-label">키 / 몸무게</span>
+            <span class="info-value">{{ profileUser.height }}cm / {{ profileUser.weight }}kg</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">목표 활동성</span>
+            <span class="info-value-goal">{{ getActivityGoal() }}</span>
+          </div>
+          <div class="info-row total-distance">
+            <span class="info-label">총 달린 거리</span>
+            <span class="info-value-highlight">{{ formatDistance(profileUser.totalDistance) }}</span>
+          </div>
+          <div class="info-row avg-distance">
+            <span class="info-label">평균 달린 거리</span>
+            <span class="info-value">{{ formatDistance(profileUser.avgDistance) }}</span>
           </div>
         </div>
       </div>
 
-      <!-- 피드 탭 (내 프로필일 때만) -->
-      <div v-else-if="activeTab === 4 && isMyProfile" class="feed-panel tab-panel">
-        <div v-if="feedPosts.length === 0" class="empty-state">
-          <p>팔로우 중인 러너들의 게시글이 없어요 📝</p>
-          <button class="action-btn" @click="goToDiscover">러너 찾아보기</button>
+      <div class="tab-container">
+        <div v-for="(tab, index) in currentTabs" 
+             :key="index"
+             :class="['tab-item', { active: activeTab === index }]" 
+             @click="changeTab(index)">
+          {{ tab }}
         </div>
-        <post-card v-for="post in feedPosts" :key="post.id" :post="post" @like="toggleLike" @comment="goToComments" />
+      </div>
+
+      <div class="tab-content">
+        <div v-if="activeTab === 0" class="posts tab-panel">
+          <div v-if="postsLoading" class="loading-posts">
+            <div class="loading-spinner small"></div>
+            <p>게시글을 불러오는 중...</p>
+          </div>
+          <div v-else-if="userPosts.length === 0" class="empty-state">
+            <p v-if="isMyProfile">아직 작성한 게시글이 없어요 😊</p>
+            <p v-else>{{ profileUser.nickname }}님이 작성한 게시글이 없어요</p>
+            <button v-if="isMyProfile" class="action-btn" @click="goToNewPost">첫 게시글 작성하기</button>
+          </div>
+          <post-card v-else
+                     v-for="post in userPosts" 
+                     :key="post.id" 
+                     :post="post" 
+                     @click="goToPostDetail(post.id)" />
+        </div>
+
+        <div v-else-if="activeTab === 1 && isMyProfile" class="liked-posts tab-panel">
+          <div v-if="likedPostsLoading" class="loading-posts">
+            <div class="loading-spinner small"></div>
+            <p>좋아요한 게시글을 불러오는 중...</p>
+          </div>
+          <div v-else-if="likedPosts.length === 0" class="empty-state">
+            <p>아직 좋아요한 게시글이 없어요 💖</p>
+            <button class="action-btn" @click="goToBoard">게시판 둘러보기</button>
+          </div>
+          <post-card v-else
+                     v-for="post in likedPosts" 
+                     :key="post.id" 
+                     :post="post" 
+                     @click="goToPostDetail(post.id)" />
+        </div>
+
+        <div v-else-if="(isMyProfile && activeTab === 2) || (!isMyProfile && activeTab === 1)" class="followers-panel tab-panel">
+          <div v-if="followersLoading" class="loading-posts">
+            <div class="loading-spinner small"></div>
+            <p>팔로워 목록을 불러오는 중...</p>
+          </div>
+          <div v-else-if="followers.length === 0" class="empty-state">
+            <p v-if="isMyProfile">아직 팔로워가 없어요 👀</p>
+            <p v-else>{{ profileUser.nickname }}님의 팔로워가 없어요</p>
+            <button v-if="isMyProfile" class="action-btn" @click="goToDiscover">다른 러너 찾아보기</button>
+          </div>
+          <div v-else class="user-list">
+            <div v-for="follower in followers" :key="follower.id" class="user-item">
+              <div class="user-clickable-area" @click.stop="goToUserProfile(follower.id)">
+                <img :src="defaultAvatar" class="user-item-avatar">
+                <div class="user-item-info">
+                  <span class="user-item-name">{{ follower.nickname }}</span>
+                  <span class="user-item-desc">{{ follower.activityLevel }}</span>
+                </div>
+              </div>
+              <button v-if="currentUserId !== follower.id" 
+                      :class="['follow-btn', { 'following': isUserFollowing(follower.id) }]"
+                      @click.stop="toggleFollow(follower.id)"
+                      :disabled="follower.loading">
+                {{ follower.loading ? '처리중...' : (isUserFollowing(follower.id) ? '팔로잉' : '팔로우') }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div v-else-if="(isMyProfile && activeTab === 3) || (!isMyProfile && activeTab === 2)" class="following-panel tab-panel">
+          <div v-if="followingLoading" class="loading-posts">
+            <div class="loading-spinner small"></div>
+            <p>팔로잉 목록을 불러오는 중...</p>
+          </div>
+          <div v-else-if="following.length === 0" class="empty-state">
+            <p v-if="isMyProfile">아직 팔로우 중인 러너가 없어요 🏃‍♀️</p>
+            <p v-else>{{ profileUser.nickname }}님이 팔로우 중인 러너가 없어요</p>
+            <button v-if="isMyProfile" class="action-btn" @click="goToDiscover">러너 찾아보기</button>
+          </div>
+          <div v-else class="user-list">
+            <div v-for="follow in following" :key="follow.id" class="user-item">
+              <div class="user-clickable-area" @click.stop="goToUserProfile(follow.id)">
+                <img :src="defaultAvatar" class="user-item-avatar">
+                <div class="user-item-info">
+                  <span class="user-item-name">{{ follow.nickname }}</span>
+                  <span class="user-item-desc">{{ follow.activityLevel }}</span>
+                </div>
+              </div>
+              <button v-if="currentUserId !== follow.id" 
+                      :class="['follow-btn', 'following']" 
+                      @click.stop="toggleFollow(follow.id)"
+                      :disabled="follow.loading">
+                {{ follow.loading ? '처리중...' : '팔로잉' }}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
+
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import axios from 'axios';
 import profileImg from '../assets/profile.png';
+import PostCard from '../components/PostCard.vue';
+
 
 const props = defineProps({
   userId: {
@@ -165,215 +198,725 @@ const props = defineProps({
 
 const router = useRouter();
 
-const defaultAvatar = profileImg;
-const myId = 1; // 실제 로그인 사용자 ID
-const activeTab = ref(0);
+// API 설정
+const API_URL = 'http://localhost:8080/api';
 
-const myProfileTabs = ['내 게시글', '좋아요한 글', '팔로워', '팔로잉', '피드'];
-const otherProfileTabs = ['게시글', '팔로워', '팔로잉'];
-
-const stats = reactive({
-  totalRuns: 42
+// 인증 헤더 생성
+const authHeader = computed(() => {
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
 });
 
+// 인증 토큰 및 기본값
+const token = localStorage.getItem('jwt');
+const defaultAvatar = profileImg;
+const currentUserId = ref(null);
+const activeTab = ref(0);
+const loading = ref(true);
+const error = ref(null);
+const postsLoading = ref(false);
+const likedPostsLoading = ref(false);
+const followersLoading = ref(false);
+const followingLoading = ref(false);
+const followLoading = ref(false);
+
+// 데이터
 const profileUser = reactive({
-  id: myId,
-  email: 'user@example.com',
-  nickname: '러닝마니아',
-  gender: '남성',
-  age: 28,
-  height: 175.0,
-  weight: 68.5,
-  activity_level: '신나는 강아지',
-  activity_goal: '힘찬 질주 말',
-  avg_distance: 5.2,
-  total_distance: 324.8,
+  id: null,
+  email: '',
+  nickname: '',
+  gender: '',
+  age: null,
+  height: null,
+  weight: null,
+  activityLevel: '',
+  activityGoal: '',
+  avgDistance: 0,
+  totalDistance: 0,
+  profileImage: 'profileImage',
   role: 'USER'
 });
 
-const isFollowing = ref(false);
-
-const userPosts = ref([
-  {
-    id: 1,
-    author: '러닝마니아',
-    authorAvatar: profileImg,
-    content: '오늘도 힘차게 5km 뛰었습니다! 날씨가 좋아서 기분도 좋고 컨디션도 최고였어요 😊',
-    time: '3시간 전',
-    likes: 24,
-    comments: 5,
-    liked: false
-  },
-  {
-    id: 2,
-    author: '러닝마니아',
-    authorAvatar: profileImg,
-    content: '혼자 뛰기 심심해서 러닝 메이트 구합니다. 한강 잠실 쪽에서 주 3회 뛰어요!',
-    time: '어제',
-    likes: 15,
-    comments: 8,
-    liked: false
-  }
-]);
-const likedPosts = ref([
-  {
-    id: 3,
-    author: '마라톤왕',
-    authorAvatar: profileImg,
-    content: '처음으로 하프 마라톤 완주했습니다! 21km 완주 인증! 다음 목표는 풀 마라톤 도전!',
-    time: '1일 전',
-    likes: 76,
-    comments: 12,
-    liked: true
-  }
-]);
-const feedPosts = ref([
-  {
-    id: 4,
-    author: '달림이',
-    authorAvatar: profileImg,
-    content: '오늘 새벽 러닝 완료! 아침 공기가 상쾌해서 5km가 금방 지나갔네요.',
-    time: '2시간 전',
-    likes: 32,
-    comments: 3,
-    liked: true
-  },
-  {
-    id: 5,
-    author: '조깅중독',
-    authorAvatar: profileImg,
-    content: '비 오는 날씨에 러닝하는 맛이란.. 적당히 맞는 빗방울과 함께하는 7km 완료!',
-    time: '어제',
-    likes: 28,
-    comments: 6,
-    liked: false
-  }
-]);
-const followers = ref([
-  { id: 101, nickname: '달림이', activityLevel: '신나는 강아지', avatar: profileImg },
-  { id: 102, nickname: '조깅중독', activityLevel: '힘찬 질주 말', avatar: profileImg }
-]);
-const following = ref([
-  { id: 201, nickname: '마라톤왕', activityLevel: '전광석화 치타', avatar: profileImg },
-  { id: 101, nickname: '달림이', activityLevel: '신나는 강아지', avatar: profileImg }
-]);
-const otherUsers = ref([
-  {
-    id: 201,
-    nickname: '마라톤왕',
-    gender: '남성',
-    age: 35,
-    activity_level: '전광석화 치타',
-    activity_goal: '전광석화 치타',
-    avg_distance: 12.5,
-    total_distance: 1248.7
-  }
-]);
-
-const isMyProfile = computed(() => {
-  return !props.userId || parseInt(props.userId) === myId;
+const stats = reactive({
+  totalRuns: 0,
+  followerCount: 0,
+  followingCount: 0
 });
 
-const loadProfileData = () => {
-  if (props.userId && parseInt(props.userId) !== myId) {
-    const otherUser = otherUsers.value.find(u => u.id === parseInt(props.userId));
-    if (otherUser) {
-      Object.assign(profileUser, otherUser);
-      isFollowing.value = following.value.some(f => f.id === otherUser.id);
-      userPosts.value = feedPosts.value.filter(p => p.author === otherUser.nickname);
-      activeTab.value = 0;
-    } else {
-      router.push('/404');
+const isFollowing = ref(false);
+const userPosts = ref([]);
+const likedPosts = ref([]);
+const feedPosts = ref([]);
+const followers = ref([]);
+const following = ref([]);
+
+// 탭 설정
+const myProfileTabs = ['내 게시글', '좋아요한 글', '팔로워', '팔로잉'];
+const otherProfileTabs = ['게시글', '팔로워', '팔로잉'];
+
+const currentTabs = computed(() => {
+  return isMyProfile.value ? myProfileTabs : otherProfileTabs;
+});
+
+const isMyProfile = computed(() => {
+  return !props.userId || parseInt(props.userId) === currentUserId.value;
+});
+
+// 에러 처리 함수
+const handleApiError = (err) => {
+  console.error('API Error:', err);
+
+  if (err.response) {
+    const { status, data } = err.response;
+    
+    switch (status) {
+      case 400:
+        return data.message || '잘못된 요청입니다.';
+      case 401:
+        return '인증이 필요합니다. 다시 로그인해주세요.';
+      case 403:
+        return '접근 권한이 없습니다.';
+      case 404:
+        return '요청한 정보를 찾을 수 없습니다.';
+      case 409:
+        return data.message || '이미 존재하는 데이터입니다.';
+      case 422:
+        return data.message || '입력 데이터가 올바르지 않습니다.';
+      case 500:
+        return '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+      default:
+        return data.message || '알 수 없는 오류가 발생했습니다.';
     }
-  } else {
-    Object.assign(profileUser, {
-      id: myId,
-      email: 'user@example.com',
-      nickname: '러닝마니아',
-      gender: '남성',
-      age: 28,
-      height: 175.0,
-      weight: 68.5,
-      activity_level: '신나는 강아지',
-      activity_goal: '힘찬 질주 말',
-      avg_distance: 5.2,
-      total_distance: 324.8,
-      role: 'USER'
+  }
+
+  if (err.request) {
+    return '네트워크 연결을 확인해주세요.';
+  }
+
+  return err.message || '알 수 없는 오류가 발생했습니다.';
+};
+
+const getCurrentUser = async () => {
+  if (!token) {
+    console.log('로그인되지 않은 사용자입니다.');
+    return null;
+  }
+  
+  try {
+    const response = await axios.get(`${API_URL}/users/me`, {
+      headers: authHeader.value
     });
-    userPosts.value = userPosts.value;
+    
+    console.log('API 응답 원본:', response.data);
+    
+    const userData = response.data.user;
+    
+    currentUserId.value = userData.id;
+    
+    console.log('로그인 사용자 정보 로드 완료:', {
+      id: currentUserId.value,
+      nickname: userData.nickname,
+      원본_응답: response.data,
+      사용된_유저데이터: userData
+    });
+    
+    return userData;
+  } catch (err) {
+    console.error('현재 사용자 정보 조회 실패:', err);
+    
+    if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+      console.log('토큰이 만료되었거나 유효하지 않음');
+      localStorage.removeItem('jwt');
+      currentUserId.value = null;
+    }
+    
+    throw err;
   }
 };
 
-const calculateLevel = () => {
-  const d = profileUser.total_distance;
-  if (d < 50) return 1;
-  if (d < 100) return 2;
-  if (d < 200) return 3;
-  if (d < 300) return 4;
-  if (d < 500) return 5;
-  return Math.floor(d / 100) + 1;
+const getProfile = async (userId) => {
+
+  const response = await axios.get(`${API_URL}/users/${userId}/profile`, {
+    headers: authHeader.value
+  });
+  return response.data;
 };
 
-const getActivityLevel = () => profileUser.activity_level;
-const getActivityGoal = () => profileUser.activity_goal;
+const getFollowers = async (userId) => {
+  if (!token || currentUserId.value !== userId) {
+    return [];
+  }
+  
+  const response = await axios.get(`${API_URL}/users/${userId}/followers`, {
+    headers: authHeader.value
+  });
+  
+  const followerIds = response.data;
+  const followerUsers = [];
+  
+  for (const followerId of followerIds) {
+    try {
+      const userResponse = await axios.get(`${API_URL}/users/${followerId}/profile`, {
+        headers: authHeader.value
+      });
+      followerUsers.push({
+        id: followerId,
+        nickname: userResponse.data.nickname,
+        activityLevel: userResponse.data.activityLevel
+      });
+    } catch (err) {
+      console.warn(`팔로워 ${followerId} 정보 조회 실패:`, err);
+    }
+  }
+  
+  return followerUsers;
+};
+
+const getFollowing = async (userId) => {
+  if (!token || currentUserId.value !== userId) {
+    return [];
+  }
+  
+  const response = await axios.get(`${API_URL}/users/${userId}/followings`, {
+    headers: authHeader.value
+  });
+  
+  const followingIds = response.data;
+  const followingUsers = [];
+  
+  for (const followingId of followingIds) {
+    try {
+      const userResponse = await axios.get(`${API_URL}/users/${followingId}/profile`, {
+        headers: authHeader.value
+      });
+      followingUsers.push({
+        id: followingId,
+        nickname: userResponse.data.nickname,
+        activityLevel: userResponse.data.activityLevel
+      });
+    } catch (err) {
+      console.warn(`팔로잉 ${followingId} 정보 조회 실패:`, err);
+    }
+  }
+  
+  return followingUsers;
+};
+
+const followUser = async (targetId) => {
+  if (!token) {
+    alert('로그인이 필요한 기능입니다.');
+    throw new Error('로그인이 필요합니다.');
+  }
+  
+  const response = await axios.post(`${API_URL}/users/${currentUserId.value}/follow/${targetId}`, {}, {
+    headers: authHeader.value
+  });
+  return response.data;
+};
+
+const unfollowUser = async (targetId) => {
+  if (!token) {
+    alert('로그인이 필요한 기능입니다.');
+    throw new Error('로그인이 필요합니다.');
+  }
+  
+  const response = await axios.delete(`${API_URL}/users/${currentUserId.value}/follow/${targetId}`, {
+    headers: authHeader.value
+  });
+  return response.data;
+};
+
+const getUserPosts = async (userId) => {
+  try {
+    const response = await axios.get(`${API_URL}/board/user/${userId}`, {
+      headers: authHeader.value
+    });
+    console.log('사용자 게시글 조회 결과:', response.data);
+    
+    if (typeof response.data === 'string') {
+      console.log('게시글이 없음:', response.data);
+      return [];
+    }
+
+    if (!Array.isArray(response.data)) {
+      console.log('예상과 다른 응답 형태:', response.data);
+      return [];
+    }
+    
+    const postsWithUserInfo = response.data.map(post => ({
+      ...post,
+      id:post.postId,
+      user: {
+        id: post.userId,
+        name: post.userNickname,
+        avatar: defaultAvatar
+      }
+    }));
+    
+    return postsWithUserInfo;
+  } catch (err) {
+    console.error('사용자 게시글 조회 실패:', err);
+    return [];
+  }
+};
+
+const getLikedPosts = async () => {
+  if (!token) return [];
+  
+  try {
+    // 1. 사용자가 좋아요한 게시글 ID 목록 가져오기
+    const likedResponse = await axios.get(`${API_URL}/board/user/${currentUserId.value}/likes`, {
+      headers: authHeader.value
+    });
+    
+    const likedBoardIds = likedResponse.data || [];
+    console.log('좋아요한 게시글 데이터:', likedBoardIds);
+    
+    // 2. 각 게시글 상세 정보 가져오기
+    const likedPosts = [];
+    for (const likeData of likedBoardIds) {
+      try {
+        // postId 필드에서 실제 게시글 ID 추출
+        const actualPostId = likeData.postId;
+        console.log('게시글 ID 추출:', actualPostId);
+        
+        const postResponse = await axios.get(`${API_URL}/board/${actualPostId}`, {
+          headers: authHeader.value
+        });
+        
+        if (postResponse.data) {
+          likedPosts.push({
+            ...postResponse.data,
+            id: postResponse.data.postId,
+            liked: true,
+            user: {
+              id: postResponse.data.userId,
+              name: postResponse.data.userNickname,
+              avatar: defaultAvatar
+            }
+          });
+        }
+      } catch (err) {
+        console.warn(`게시글 ${likeData.postId} 조회 실패:`, err);
+      }
+    }
+    
+    console.log('좋아요한 게시글 목록:', likedPosts);
+    return likedPosts;
+  } catch (err) {
+    console.error('좋아요한 게시글 조회 실패:', err);
+    return [];
+  }
+};
+
+const getFollowStatus = async (targetId) => {
+  if (!token) return { isFollowing: false };
+  
+  try {
+    const followingList = await getFollowing(currentUserId.value);
+    const isFollowing = followingList.some(user => user.id === targetId);
+    return { isFollowing };
+  } catch (err) {
+    console.warn('팔로우 상태 확인 실패:', err);
+    return { isFollowing: false };
+  }
+};
+
+const loadProfileData = async () => {
+  try {
+    loading.value = true;
+    error.value = null;
+
+    // 현재 사용자 정보 가져오기 
+    if (token) {
+      try {
+        await getCurrentUser();
+      } catch (err) {
+        console.warn('현재 사용자 정보 조회 실패, 비로그인 상태로 처리');
+      }
+    }
+    
+    let targetUserId;
+    if (props.userId) {
+      targetUserId = parseInt(props.userId);
+      
+      // 다른 사용자 프로필 조회
+      try {
+        const profileData = await getProfile(targetUserId);
+        Object.assign(profileUser, profileData);
+        
+        // 팔로우 상태 확인
+        if (currentUserId.value) {
+          const followStatus = await getFollowStatus(targetUserId);
+          isFollowing.value = followStatus.isFollowing;
+        }
+
+        stats.followerCount = 0;
+        stats.followingCount = 0;
+        stats.totalRuns = 0;
+        
+        await loadTabData(0);
+        
+      } catch (err) {
+        console.error('다른 사용자 프로필 조회 실패:', err);
+        if (err.response?.status === 403 || err.response?.status === 404) {
+          error.value = '존재하지 않는 사용자이거나 프로필 조회 권한이 없습니다.';
+        } else {
+          error.value = handleApiError(err);
+        }
+        return;
+      }
+    } else {
+      if (!currentUserId.value) {
+        error.value = '로그인이 필요합니다.';
+        return;
+      }
+      targetUserId = currentUserId.value;
+
+      const profileData = await getProfile(targetUserId);
+      Object.assign(profileUser, profileData);
+
+      const [followersData, followingData] = await Promise.all([
+        getFollowers(targetUserId),
+        getFollowing(targetUserId)
+      ]);
+      
+      followers.value = followersData.map(user => ({ ...user, loading: false }));
+      following.value = followingData.map(user => ({ ...user, loading: false }));
+      
+      stats.followerCount = followersData.length;
+      stats.followingCount = followingData.length;
+      stats.totalRuns = 0; 
+
+      await loadTabData(0);
+    }
+
+  } catch (err) {
+    console.error('프로필 데이터 로드 실패:', err);
+    error.value = handleApiError(err);
+  } finally {
+    loading.value = false;
+  }
+};
+
+const loadTabData = async (tabIndex) => {
+  const targetUserId = profileUser.id;
+
+  try {
+    if (tabIndex === 0) {
+      // 게시글 탭
+      postsLoading.value = true;
+      const postsData = await getUserPosts(targetUserId);
+      userPosts.value = postsData;
+    } else if (tabIndex === 1 && isMyProfile.value) {
+      // 좋아요한 글 탭
+      likedPostsLoading.value = true;
+      const likedData = await getLikedPosts();
+      likedPosts.value = likedData;
+    } else if (tabIndex === 2) {
+      // 팔로워 탭 - 이미 데이터가 있으면 로딩하지 않음
+      if (followers.value.length === 0) {
+        followersLoading.value = true;
+        const followersData = await getFollowers(targetUserId);
+        followers.value = followersData.map(user => ({ ...user, loading: false }));
+      }
+    } else if (tabIndex === 3) {
+      // 팔로잉 탭 - 이미 데이터가 있으면 로딩하지 않음
+      if (following.value.length === 0) {
+        followingLoading.value = true;
+        const followingData = await getFollowing(targetUserId);
+        following.value = followingData.map(user => ({ ...user, loading: false }));
+      }
+    } 
+  } catch (err) {
+    console.error('탭 데이터 로드 실패:', err);
+  } finally {
+    postsLoading.value = false;
+    likedPostsLoading.value = false;
+    followersLoading.value = false;
+    followingLoading.value = false;
+  }
+};
+
+const changeTab = (index) => {
+  activeTab.value = index;
+  loadTabData(index);
+};
+
+const getActivityLevel = () => profileUser.activityLevel;
+const getActivityGoal = () => profileUser.activityGoal;
 const formatDistance = (distance) => distance ? distance.toFixed(1) + 'km' : '0km';
 
 const editProfile = () => router.push('/profile/edit');
 const goToNewPost = () => router.push('/board/write');
 const goToBoard = () => router.push('/board');
 const goToDiscover = () => router.push('/discover');
-const goToComments = (postId) => router.push(`/board/${postId}`);
 
-const toggleLike = (postId) => {
-  const update = (arr) => {
-    const post = arr.find(p => p.id === postId);
-    if (post) {
-      post.liked = !post.liked;
-      post.likes += post.liked ? 1 : -1;
+const goToPostDetail = (postId) => {
+  router.push(`/board/${postId}`);
+};
+
+const goToUserProfile = (userId) => {
+  if (userId === currentUserId.value) {
+    router.push('/profile');
+  } else {
+    router.push(`/profile/${userId}`);
+  }
+};
+
+// 팔로우 토글 (메인 프로필)
+const toggleFollowUser = async () => {
+  if (!token) {
+    alert('로그인이 필요한 기능입니다.');
+    router.push('/login');
+    return;
+  }
+  
+  try {
+    followLoading.value = true;
+    
+    if (isFollowing.value) {
+      await unfollowUser(profileUser.id);
+      isFollowing.value = false;
+      stats.followerCount--;
+    } else {
+      await followUser(profileUser.id);
+      isFollowing.value = true;
+      stats.followerCount++;
     }
-  };
-  update(userPosts.value);
-  update(likedPosts.value);
-  update(feedPosts.value);
-};
-
-const toggleFollowUser = () => {
-  isFollowing.value = !isFollowing.value;
-  if (isFollowing.value) {
-    following.value.push({
-      id: profileUser.id,
-      nickname: profileUser.nickname,
-      activityLevel: profileUser.activity_level,
-      avatar: profileImg
-    });
-  } else {
-    following.value = following.value.filter(f => f.id !== profileUser.id);
+  } catch (err) {
+    console.error('팔로우 처리 실패:', err);
+    
+    if (err.response && err.response.status === 401) {
+      alert('로그인이 만료되었습니다. 다시 로그인해 주세요.');
+      localStorage.removeItem('jwt');
+      router.push('/login');
+    } else if (err.response && err.response.status === 403) {
+      alert('접근 권한이 없습니다.');
+    } else {
+      alert('팔로우 처리에 실패했습니다. 다시 시도해 주세요.');
+    }
+  } finally {
+    followLoading.value = false;
   }
 };
 
-const isUserFollowing = (userId) => following.value.some(f => f.id === userId);
-const toggleFollow = (userId) => {
-  if (isUserFollowing(userId)) {
-    following.value = following.value.filter(f => f.id !== userId);
-  } else {
-    const u = followers.value.find(f => f.id === userId);
-    if (u) following.value.push(u);
+// 팔로우 상태 확인
+const isUserFollowing = (userId) => {
+  return following.value.some(f => f.id === userId);
+};
+
+// 팔로우 토글 (목록에서)
+const toggleFollow = async (userId) => {
+  if (!token) {
+    alert('로그인이 필요한 기능입니다.');
+    router.push('/login');
+    return;
+  }
+  
+  try {
+    // 로딩 상태 설정
+    const followerUser = followers.value.find(f => f.id === userId);
+    const followingUser = following.value.find(f => f.id === userId);
+    
+    if (followerUser) followerUser.loading = true;
+    if (followingUser) followingUser.loading = true;
+
+    if (isUserFollowing(userId)) {
+      await unfollowUser(userId);
+      following.value = following.value.filter(f => f.id !== userId);
+      stats.followingCount--;
+    } else {
+      await followUser(userId);
+      if (followerUser) {
+        following.value.push({ ...followerUser, loading: false });
+        stats.followingCount++;
+      }
+    }
+  } catch (err) {
+    console.error('팔로우 처리 실패:', err);
+    
+    if (err.response && err.response.status === 401) {
+      alert('로그인이 만료되었습니다. 다시 로그인해 주세요.');
+      localStorage.removeItem('jwt');
+      router.push('/login');
+    } else if (err.response && err.response.status === 403) {
+      alert('접근 권한이 없습니다.');
+    } else {
+      alert('팔로우 처리에 실패했습니다. 다시 시도해 주세요.');
+    }
+  } finally {
+    // 로딩 상태 해제
+    const followerUser = followers.value.find(f => f.id === userId);
+    const followingUser = following.value.find(f => f.id === userId);
+    
+    if (followerUser) followerUser.loading = false;
+    if (followingUser) followingUser.loading = false;
   }
 };
 
-watch(() => props.userId, loadProfileData);
-onMounted(loadProfileData);
+
+watch(() => props.userId, (newUserId, oldUserId) => {
+  resetComponentState();
+  loadProfileData();
+}, { immediate: false });
+
+
+watch(() => router.currentRoute.value.fullPath, (newPath, oldPath) => {
+  if (newPath.startsWith('/profile') && newPath !== oldPath) {
+    console.log('프로필 경로 변경 감지 - 상태 초기화 및 데이터 로드');
+    resetComponentState();
+    loadProfileData();
+  }
+}, { immediate: false });
+
+// 컴포넌트 상태 초기화 함수
+const resetComponentState = () => {
+  loading.value = true;
+  error.value = null;
+  postsLoading.value = false;
+  likedPostsLoading.value = false;
+  followersLoading.value = false;
+  followingLoading.value = false;
+  followLoading.value = false;
+  
+  // 탭 초기화
+  activeTab.value = 0;
+  
+  // 데이터 초기화
+  Object.assign(profileUser, {
+    id: null,
+    email: '',
+    nickname: '',
+    gender: '',
+    age: null,
+    height: null,
+    weight: null,
+    activityLevel: '',
+    activityGoal: '',
+    avgDistance: 0,
+    totalDistance: 0,
+    profileImage: 'profileImage',
+    role: 'USER'
+  });
+  
+  Object.assign(stats, {
+    totalRuns: 0,
+    followerCount: 0,
+    followingCount: 0
+  });
+  
+  isFollowing.value = false;
+  userPosts.value = [];
+  likedPosts.value = [];
+  feedPosts.value = [];
+  followers.value = [];
+  following.value = [];
+  
+  console.log('=== 컴포넌트 상태 초기화 완료 ===');
+};
+
+onMounted(async () => {
+  console.log('=== ProfilePage 컴포넌트 마운트 ===');
+  console.log('UserId 파라미터:', props.userId);
+  console.log('사용 가능한 토큰:', !!token);
+  console.log('토큰 값 (일부):', token ? token.substring(0, 20) + '...' : 'null');
+  console.log('goToUserProfile 함수 정의됨:', typeof goToUserProfile);
+  
+  await loadProfileData();
+});
 </script>
 
 <style scoped>
-/* 기본 프로필 컨테이너 스타일 */
+/* 로딩 컨테이너 */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  padding: 40px 20px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #FF7E36;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+.loading-spinner.small {
+  width: 20px;
+  height: 20px;
+  border-width: 2px;
+  margin-bottom: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-posts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 16px;
+}
+
+.loading-posts p {
+  color: #666;
+  margin: 0;
+}
+
+/* 에러 컨테이너 */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  padding: 40px 20px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  margin: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.error-container p {
+  color: #666;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.retry-btn {
+  background-color: #FF7E36;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.retry-btn:hover {
+  background-color: #EF6926;
+}
+
 .profile-container {
   background-color: #FFF8F2;
   min-height: 100vh;
   padding-bottom: 60px;
   font-family: 'Noto Sans KR', sans-serif;
   padding-top: 20px;
-  /* 상단에 여백 추가 */
 }
 
 /* 사용자 프로필 카드 스타일 */
@@ -706,6 +1249,22 @@ onMounted(loadProfileData);
 
 .user-item:last-child {
   border-bottom: none;
+}
+
+.user-clickable-area {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  padding: 4px;
+  border-radius: 8px;
+  margin: -4px;
+  min-height: 48px;
+}
+
+.user-clickable-area:hover {
+  background-color: #f8f9fa;
 }
 
 .user-item-avatar {

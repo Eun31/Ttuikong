@@ -99,6 +99,12 @@ const routes = [
     name: 'profile-edit',
     component: ProfileEdit
   },
+  {
+    path:'/profile/:userId',
+    name:'user-profile',
+    component: Profile,
+    props: true
+  },
   // 러닝 관련 라우트
   {
     path: '/run',

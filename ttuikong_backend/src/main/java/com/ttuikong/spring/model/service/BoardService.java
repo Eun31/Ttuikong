@@ -23,4 +23,7 @@ public interface BoardService {
     // 게시글 삭제
     boolean removeBoard(int boardId);
 
+    //사용자별 게시글 조회
+	List<Board> readBoardByUserId(int userId);
+
 }

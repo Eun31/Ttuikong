@@ -135,49 +135,11 @@ const checkLikeStatus = async () => {
   }
 };
 
-// 좋아요 토글
-const toggleLike = async () => {
-  if (!token) {
-    alert('로그인이 필요한 기능입니다.');
-    return;
-  }
-  
-  if (likeLoading.value) return;
-  
-  likeLoading.value = true;
-  
-  try {
-    // 백엔드에서 토글 처리
-    await axios.post(`${API_URL}/board/${post.value.id}/like`, {}, {
-      headers: authHeader()
-    });
-    
-    // 토글 후 상태를 다시 확인
-    await Promise.all([
-      checkLikeStatus(),
-      fetchLikeCount()
-    ]);
-    
-    console.log(`게시글 ${post.value.id} 좋아요 토글 완료`);
-  } catch (err) {
-    console.error('좋아요 처리 중 오류:', err);
-    
-    if (err.response && err.response.status === 401) {
-      alert('로그인이 만료되었습니다. 다시 로그인해 주세요.');
-    } else {
-      alert('좋아요 처리에 실패했습니다. 다시 시도해 주세요.');
-    }
-  } finally {
-    likeLoading.value = false;
-  }
-};
-
 // 클릭 이벤트 핸들러
 const handleClick = () => {
   emit('click', post.value.id);
 };
 
-// 컴포넌트 마운트 시 데이터 로드
 onMounted(async () => {
   await Promise.all([
     fetchComments(),
@@ -188,7 +150,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* 게시글 카드 */
 .post-card {
   background-color: var(--card-color, white);
   border-radius: var(--border-radius, 16px);
@@ -217,7 +178,6 @@ onMounted(async () => {
   box-shadow: var(--shadow-lg, 0 4px 12px rgba(0, 0, 0, 0.1));
 }
 
-/* 사용자 정보 */
 .user-profile {
   display: flex;
   align-items: center;
@@ -255,7 +215,6 @@ onMounted(async () => {
   color: var(--medium-text, #757575);
 }
 
-/* 게시글 내용 */
 .post-content {
   padding: 16px;
 }
