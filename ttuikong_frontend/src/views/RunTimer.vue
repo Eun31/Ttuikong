@@ -103,9 +103,15 @@
         </div>
         <transition name="fade">
           <div v-show="expandedCrews.includes(crew.id)" class="crew-detail">
-            <p>📍 목표: <strong>{{ crew.goalType == 'SUM' ? '총합' : '평균' }} / {{ formatDuration(crew.goalTime) }}</strong>
-            </p>
-            <!-- <p>🏅 목표 달성률: {{ crew.participationRate }}%</p> -->
+            <p><strong>📍 목표:</strong></p>
+            <p>{{ crew.goalType == 'SUM' ? '총합' : '평균' }} / {{ formatDuration(crew.goalTime) }}</p>
+            <p><strong>📍 시간 현황:</strong></p>
+            <p>{{ crew.goalType == 'SUM' ? formatDuration(crewStatus.totalDuration) :
+              formatDuration(crewStatus.averageDuration) }}</p>
+            <p><strong>🏅 목표 달성률: </strong></p>
+            <p>{{ crew.goalType == 'SUM' ? Percentage(crew.goalTime, crewStatus.totalDuration) :
+              Percentage(crew.goalTime, crewStatus.averageDuration) }}</p>
+            <hr style="border: none; border-top: 2px dashed tan; margin: 24px 0;">
             <h3 class="sub-title">크루 멤버</h3>
             <div v-if="crewMembersMap[crew.id] == null" class="user-list">
               <div v-for="member in crewMembers.find(c => c.crewId === crew.id)?.members || []" :key="member.id"
@@ -121,8 +127,7 @@
                 <span>{{ formatDuration(member.duration) }}</span>
               </div>
             </div>
-            <h3 class="sub-title">실시간 메신저</h3>
-            <button class="talk-button" @click="goToChat(crew.id)">▶ Talk</button>
+            <button class="talk-button" @click="goToChat(crew.id)">▶ 실시간 메신저</button>
           </div>
         </transition>
       </div>
@@ -200,9 +205,10 @@ const moodOptions = [
   { label: '쏘쏘', emoji: '😐' }
 ];
 const calories = ref(0);
-
 const selectedMood = ref(null);
 const showMoodModal = ref(false);
+const crewMembersMap = ref({});
+const crewStatus = ref({});
 
 /* 크루 생성 */
 const toggleCrewForm = () => {
@@ -389,6 +395,7 @@ const toggleCrew = async (id) => {
     expandedCrews.value = expandedCrews.value.filter(cid => cid !== id);
   } else {
     await getCrewRun(id);
+    await getCrewGoal(id);
     expandedCrews.value.push(id);
   }
 };
@@ -916,7 +923,14 @@ const formatDuration = (min) => {
   return `${hr}시간 ${m.toFixed(0)}분`;
 };
 
-const crewMembersMap = ref({});
+const Percentage = (goal, now) => {
+  if (!(goal || now)) return "0%";
+  if (goal <= now)
+    return `목표를 이미 달성했습니다.`;
+  const per = (goal - now) / goal * 100;
+  return `${per.toFixed(2)}%`;
+};
+
 const getCrewRun = async (crewId) => {
   try {
     const res = await fetch(`http://localhost:8080/api/runs/crew/${crewId}`, {
@@ -940,6 +954,28 @@ const getCrewRun = async (crewId) => {
 
   } catch (err) {
     console.error("getCrewRun 오류:", err);
+  }
+};
+
+/* 목표 관련 2 */
+const getCrewGoal = async (crewId) => {
+  try {
+    const res = await fetch(`http://localhost:8080/api/runs/crew/${crewId}/time`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token.value}`
+      }
+    });
+
+    if (!res.ok) throw new Error("서버 응답 오류");
+
+    const data = await res.json();
+    console.log("크루 시간 현황:", data);
+
+    crewStatus.value = data;
+
+  } catch (err) {
+    console.error("크루 시간 현황:", err);
   }
 };
 
@@ -1135,71 +1171,6 @@ body {
   margin: 16px 0 10px;
 }
 
-.crew-card {
-  background: #FFF8F2;
-  border: 2px solid #FFE3D6;
-  border-radius: 16px;
-  padding: 14px 18px;
-  margin-bottom: 14px;
-  box-shadow: 0 4px 8px rgba(255, 126, 71, 0.1);
-  transition: transform 0.2s ease;
-}
-
-.crew-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 12px rgba(255, 126, 71, 0.2);
-}
-
-.crew-header {
-  display: flex;
-  justify-content: space-between;
-  font-size: 16px;
-  font-weight: 600;
-  color: #FF7043;
-}
-
-.crew-detail {
-  background: #FFF3ED;
-  margin-top: 12px;
-  border-radius: 8px;
-  padding: 12px;
-  font-size: 14px;
-  color: #444;
-}
-
-.sub-title {
-  margin-top: 12px;
-  font-size: 16px;
-  font-weight: bold;
-  color: #333;
-}
-
-.user-list {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  padding-top: 10px;
-}
-
-.user-card {
-  background: white;
-  border-radius: 12px;
-  padding: 10px;
-  text-align: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.talk-button {
-  margin-top: 10px;
-  background: #FF7043;
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 999px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
 .join-btn {
   background: linear-gradient(135deg, #FF9F69, #FF7043);
   color: white;
@@ -1207,7 +1178,7 @@ body {
   border: none;
   border-radius: 999px;
   font-weight: 600;
-  font-size: 17px;
+  font-size: 15px;
   box-shadow: 0 3px 5px rgba(255, 112, 67, 0.2);
   transition: all 0.3s ease;
 }
@@ -1216,23 +1187,6 @@ body {
   background: #FF8A65;
   transform: scale(1.05);
 }
-
-.quit-btn,
-.delete-btn {
-  color: #FF7043;
-  padding: 8px 20px;
-  border: none;
-  border-radius: 999px;
-  font-weight: 600;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-.quit-btn:hover,
-.delete-btn:hover {
-  transform: scale(1.05);
-}
-
 
 /* 추가된 네비게이션 스타일 */
 .run-nav {
@@ -1488,5 +1442,148 @@ textarea {
 .emoji {
   font-size: 1.5rem;
   display: block;
+}
+
+/* 내 크루 목록 CSS */
+.crew-card {
+  background: #fff7ee;
+  border-radius: 18px;
+  box-shadow: 0 2px 12px rgba(255, 181, 91, 0.08);
+  margin-bottom: 20px;
+  padding: 20px 18px 10px 18px;
+  transition: box-shadow 0.2s;
+  cursor: pointer;
+  border: 1.5px solid #ffe0b2;
+}
+
+.crew-card:hover {
+  box-shadow: 0 4px 24px rgba(255, 181, 91, 0.17);
+}
+
+.crew-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.crew-header h4 {
+  font-size: 1.13em;
+  color: #f57c00;
+  margin: 0;
+  font-weight: bold;
+  letter-spacing: -1px;
+}
+
+.crew-header span {
+  font-size: 0.95em;
+  color: #b26a00;
+  font-weight: 500;
+}
+
+.quit-btn,
+.delete-btn {
+  background: #ffe0b2;
+  color: #f57c00;
+  border: none;
+  border-radius: 12px;
+  padding: 4px 12px;
+  margin-left: 8px;
+  font-size: 0.93em;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.quit-btn:hover,
+.delete-btn:hover {
+  background: #ffd180;
+}
+
+.crew-detail {
+  margin-top: 12px;
+  font-size: 1em;
+  color: #5d4037;
+  background: #fffbe7;
+  border-radius: 12px;
+  padding: 16px 12px 8px 12px;
+  border: 1px dashed #ffd180;
+}
+
+.crew-detail p {
+  margin: 3px 0 7px 0;
+  font-size: 1em;
+}
+
+.crew-detail strong {
+  color: #ff9800;
+}
+
+.sub-title {
+  font-size: 1.03em;
+  font-weight: bold;
+  color: #f57c00;
+  margin: 16px 0 8px 0;
+  letter-spacing: -0.5px;
+}
+
+.user-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.user-card {
+  flex: 0 0 auto;
+  background: #fff;
+  border-radius: 9px;
+  border: 1px solid #ffe0b2;
+  padding: 7px 13px 5px 13px;
+  font-size: 0.98em;
+  color: #a05a00;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 74px;
+  box-shadow: 0 1px 4px rgba(255, 181, 91, 0.08);
+}
+
+.user-card strong {
+  font-size: 1em;
+  color: #f57c00;
+}
+
+.user-card span {
+  font-size: 0.96em;
+  color: #6d4c1c;
+  margin-top: 2px;
+}
+
+.talk-button {
+  background: linear-gradient(90deg, #ffb74d 0%, #ff9800 100%);
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 16px;
+  padding: 9px 28px;
+  font-size: 1.06em;
+  margin-top: 10px;
+  box-shadow: 0 2px 8px rgba(255, 181, 91, 0.13);
+  cursor: pointer;
+  transition: background 0.18s;
+}
+
+.talk-button:hover {
+  background: linear-gradient(90deg, #ff9800 0%, #ffb74d 100%);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
