@@ -1,6 +1,5 @@
 <template>
   <div class="container">
-    <!-- 로딩 인디케이터 -->
     <div v-if="loading" class="loading-container">
       <div class="spinner"></div>
       <p>게시글을 불러오는 중...</p>
@@ -13,9 +12,7 @@
     </div>
 
     <div v-else>
-      <!-- 게시글 카드 -->
       <div class="post-card">
-        <!-- 작성자 정보 -->
         <div class="user-profile">
           <img :src="getProfileImage()" alt="프로필" class="user-avatar">
           <div class="user-details">
@@ -27,41 +24,24 @@
             </div>
             <div class="post-time">{{ formatDate(post.createdAt || post.created_at) }}</div>
           </div>
-          <!-- 모든 사용자에게 옵션 메뉴 표시하되, 내용을 구분 -->
-          <div class="post-options">
+          <div v-if="isAuthor" class="post-options">
             <button class="post-options-btn" @click="toggleOptions">
-              <!-- 점 세 개 표시는 CSS로 처리 -->
             </button>
             <div class="options-menu" :class="{ show: showOptions }">
-              <!-- 작성자일 때만 수정/삭제 표시 -->
-              <div v-if="isAuthor" class="option-item edit-option" @click="editPost">
-                <i class="ri-edit-line"></i>
+              <div class="option-item edit-option" @click="editPost">
                 <span>수정하기</span>
               </div>
-              <div v-if="isAuthor" class="option-item delete-option" @click="deletePost">
-                <i class="ri-delete-bin-line"></i>
+              <div class="option-item delete-option" @click="deletePost">
                 <span>삭제하기</span>
-              </div>
-              <!-- 작성자가 아닐 때는 신고 버튼만 표시 -->
-              <div v-if="!isAuthor && token" class="option-item report-option" @click="reportPost">
-                <i class="ri-flag-line"></i>
-                <span>신고하기</span>
-              </div>
-              <!-- 로그인하지 않은 경우 -->
-              <div v-if="!token" class="option-item login-option" @click="goToLogin">
-                <i class="ri-login-box-line"></i>
-                <span>로그인 필요</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 게시글 내용 -->
         <div class="post-content">
           <h2 class="post-title">{{ post.title }}</h2>
           <div class="post-body">{{ post.content }}</div>
           
-          <!-- 수정된 이미지 부분 -->
           <div v-if="validImageUrl" class="post-image">
             <img 
               :src="validImageUrl" 
@@ -80,12 +60,57 @@
           </div>
 
           <div class="post-actions">
-            <button class="action-btn share-action" @click="sharePost">
-              <span class="action-icon">
-                <i class="ri-share-forward-line"></i>
-              </span>
-              <span>공유하기</span>
+            <!-- 좋아요 버튼 (하트만) -->
+            <button 
+              class="heart-btn" 
+              :class="{ liked: isLiked, disabled: !token }"
+              @click="toggleLike"
+              :disabled="likeLoading"
+            >
+              <span v-if="likeLoading" class="spinning">🔄</span>
+              <span v-else-if="isLiked" class="heart-emoji liked">❤️</span>
+              <span v-else class="heart-emoji">♡</span>
             </button>
+            
+            <!-- 좋아요 문구 -->
+            <div class="like-text-container">
+              <span class="like-status-text clickable" @click="openLikeUsersModal" >
+                {{ likeCount }}명이 이 게시글을 좋아합니다
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 좋아요 사용자 모달 -->
+      <div v-if="showLikeUsersModal" class="modal-overlay" @click="closeLikeUsersModal">
+        <div class="like-users-modal" @click.stop>
+          <div class="modal-header">
+            <h3>좋아요한 사용자</h3>
+            <button @click="closeLikeUsersModal" class="modal-close-btn">✕</button>
+          </div>
+          
+          <div class="modal-content">
+            <div v-if="loadingLikeUsers" class="modal-loading">
+              <div class="spinner"></div>
+              <p>사용자 목록을 불러오는 중...</p>
+            </div>
+            
+            <div v-else-if="likeUsers.length === 0" class="modal-empty">
+              <div class="empty-icon">💔</div>
+              <p>좋아요한 사용자 정보를 불러올 수 없습니다.</p>
+            </div>
+            
+            <div v-else class="like-users-grid">
+              <div v-for="user in likeUsers" :key="user.id" class="like-user-card">
+                <img :src="getProfileImage()" alt="프로필" class="user-card-avatar">
+                <div class="user-card-info">
+                  <div class="user-card-name">{{ user.nickname || user.email || '익명' }}</div>
+                  <div class="user-card-level">{{ user.level || '일반 사용자' }}</div>
+                </div>
+                <div class="user-card-heart">❤️</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -117,10 +142,9 @@
                   class="submit-comment-btn"
                 >
                   <span v-if="submittingComment">
-                    <i class="ri-loader-line spinning"></i>
+                    <span class="spinning">🔄</span>
                   </span>
                   <span v-else>
-                    <i class="ri-send-plane-line"></i>
                   </span>
                   등록
                 </button>
@@ -167,11 +191,11 @@
                       :class="{ show: comment.showOptions }"
                     >
                       <div class="comment-option-item" @click="startEditComment(comment)">
-                        <i class="ri-edit-line"></i>
+                        <span>✏️</span>
                         <span>수정</span>
                       </div>
                       <div class="comment-option-item delete" @click="deleteComment(comment.id)">
-                        <i class="ri-delete-bin-line"></i>
+                        <span>🗑️</span>
                         <span>삭제</span>
                       </div>
                     </div>
@@ -232,6 +256,14 @@ const error = ref(null);
 const post = ref({});
 const showOptions = ref(false);
 
+// 좋아요 관련 데이터
+const isLiked = ref(false);
+const likeCount = ref(0);
+const likeLoading = ref(false);
+const showLikeUsersModal = ref(false)
+const likeUsers = ref([]);
+const loadingLikeUsers = ref(false);
+
 // 댓글 관련 데이터
 const comments = ref([]);
 const newComment = ref('');
@@ -286,13 +318,11 @@ const validImageUrl = computed(() => {
   return imageUrl;
 });
 
-// 이미지 에러 처리 (추가된 부분)
 const handleImageError = (event) => {
   console.warn('이미지 로드 실패:', event.target.src);
   event.target.style.display = 'none';
 };
 
-// 이미지 URL을 완전한 URL로 변환하는 함수 (기존 함수는 유지)
 function getFullImageUrl(imageUrl) {
   if (!imageUrl) return '';
   
@@ -305,20 +335,111 @@ function getFullImageUrl(imageUrl) {
   return `http://localhost:8080${imageUrl}`;
 }
 
-// 라우트 파라미터 변경 감지 (뒤로 가기 등으로 다른 게시글로 이동할 때)
-watch(() => route.params.id, (newId) => {
-  console.log('라우트 ID 변경 감지:', newId);
-  postId.value = parseInt(newId, 10);
-  
-  // ID가 유효하면 게시글 다시 로드
-  if (isValidPostId.value) {
-    fetchPostDetail();
-    fetchComments();
-  } else {
-    error.value = '유효하지 않은 게시글 ID입니다.';
-    loading.value = false;
+// 좋아요 토글 함수 (백엔드 API에 맞춰 수정)
+async function toggleLike() {
+  if (!token) {
+    alert('로그인이 필요한 기능입니다.');
+    return;
   }
-});
+  
+  if (likeLoading.value) return;
+  
+  likeLoading.value = true;
+  
+  try {
+    await axios.post(`${API_URL}/board/${postId.value}/like`, {}, {
+      headers: authHeader.value
+    });
+    
+    // 토글 후 상태를 다시 확인
+    await Promise.all([
+      checkLikeStatus(),
+      fetchLikeCount()
+    ]);
+    
+    console.log('좋아요 토글 완료');
+  } catch (err) {
+    console.error('좋아요 처리 중 오류가 발생했습니다:', err);
+    
+    if (err.response && err.response.status === 401) {
+      alert('로그인이 만료되었습니다. 다시 로그인해 주세요.');
+      localStorage.removeItem('jwt');
+      router.push('/login');
+    } else {
+      alert('좋아요 처리에 실패했습니다. 다시 시도해 주세요.');
+    }
+  } finally {
+    likeLoading.value = false;
+  }
+}
+
+// 좋아요 상태 확인 함수 (백엔드 API에 맞춰 수정)
+async function checkLikeStatus() {
+  if (!token) {
+    console.log('로그인되지 않은 사용자입니다.');
+    isLiked.value = false;
+    return;
+  }
+  
+  try {
+    const response = await axios.get(`${API_URL}/board/${postId.value}/like/status`, {
+      headers: authHeader.value
+    });
+    
+    // 백엔드에서 Boolean 값을 직접 반환
+    isLiked.value = response.data;
+    console.log('좋아요 상태 확인 완료:', isLiked.value);
+  } catch (err) {
+    console.error('좋아요 상태 확인 중 오류가 발생했습니다:', err);
+    isLiked.value = false;
+  }
+}
+
+// 좋아요 개수 가져오기 함수 (백엔드 API에 맞춰 수정)
+async function fetchLikeCount() {
+  try {
+    const response = await axios.get(`${API_URL}/board/${postId.value}/like/count`);
+    // 백엔드에서 Integer 값을 직접 반환
+    likeCount.value = response.data || 0;
+    console.log('좋아요 개수 로드 완료:', likeCount.value);
+  } catch (err) {
+    console.error('좋아요 개수를 불러오는 중 오류가 발생했습니다:', err);
+    likeCount.value = 0;
+  }
+}
+
+// 좋아요한 사용자 목록 가져오기 함수
+async function fetchLikeUsers() {
+  try {
+    const response = await axios.get(`${API_URL}/board/${postId.value}/like/users`);
+    return response.data || [];
+  } catch (err) {
+    console.error('좋아요한 사용자 목록을 불러오는 중 오류가 발생했습니다:', err);
+    return [];
+  }
+}
+
+async function openLikeUsersModal() {
+  if (likeCount.value === 0) return;
+  
+  showLikeUsersModal.value = true;
+  loadingLikeUsers.value = true;
+  
+  try {
+    const users = await fetchLikeUsers();
+    likeUsers.value = users;
+  } catch (err) {
+    console.error('좋아요한 사용자 목록 표시 중 오류:', err);
+    likeUsers.value = [];
+  } finally {
+    loadingLikeUsers.value = false;
+  }
+}
+
+function closeLikeUsersModal() {
+  showLikeUsersModal.value = false;
+  likeUsers.value = [];
+}
 
 // 로그인 사용자 정보 가져오기
 async function fetchCurrentUser() {
@@ -444,7 +565,6 @@ async function fetchComments() {
     console.log('댓글 목록 로드 완료:', comments.value);
   } catch (err) {
     console.error('댓글을 불러오는 중 오류가 발생했습니다:', err);
-    // 댓글 로드 실패는 게시글 표시에 영향을 주지 않음
   } finally {
     loadingComments.value = false;
   }
@@ -694,6 +814,10 @@ onMounted(async () => {
   
   // 댓글 목록 가져오기
   await fetchComments();
+  
+  // 좋아요 관련 데이터 가져오기
+  await fetchLikeCount();
+  await checkLikeStatus();
 });
 </script>
 
@@ -983,9 +1107,12 @@ onMounted(async () => {
   background-color: rgba(255, 87, 34, 0.05);
 }
 
-.option-item i {
+.option-item span:first-child {
   font-size: 16px;
-  color: var(--medium-text);
+}
+
+.comment-option-item span:first-child {
+  font-size: 14px;
 }
 
 .edit-option:hover {
@@ -1086,6 +1213,7 @@ onMounted(async () => {
 
 .post-actions {
   display: flex;
+  gap: 12px;
   border-top: 1px solid var(--border-color);
   padding-top: 16px;
   margin-top: 20px;
@@ -1113,8 +1241,78 @@ onMounted(async () => {
   box-shadow: 0 4px 12px rgba(255, 87, 34, 0.2);
 }
 
+.action-btn.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.action-btn.disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* 좋아요 버튼 스타일 */
+.like-action.liked {
+  background: linear-gradient(135deg, rgba(255, 87, 34, 0.2) 0%, rgba(255, 87, 34, 0.15) 100%);
+  border-color: var(--primary-color);
+  color: #d63031;
+}
+
+.like-action.liked .action-icon {
+  color: #d63031;
+}
+
+.like-action.liked:hover {
+  background: linear-gradient(135deg, rgba(255, 87, 34, 0.3) 0%, rgba(255, 87, 34, 0.2) 100%);
+  box-shadow: 0 4px 16px rgba(255, 87, 34, 0.3);
+}
+
 .action-icon {
   font-size: 18px;
+  transition: all 0.2s ease;
+}
+
+/* 하트 이모지 스타일 */
+.heart-emoji {
+  font-size: 18px;
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.heart-emoji:hover {
+  transform: scale(1.2);
+}
+
+.heart-emoji.liked {
+  animation: heartBeat 0.3s ease-in-out;
+}
+
+@keyframes heartBeat {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 좋아요 개수 클릭 가능한 텍스트 스타일 */
+.like-count-text.clickable {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 0.2s ease;
+}
+
+.like-count-text.clickable:hover {
+  text-decoration-color: currentColor;
 }
 
 /* 댓글 섹션 스타일 */
@@ -1163,11 +1361,12 @@ onMounted(async () => {
 
 .comment-input-container {
   flex: 1;
+  position: relative;
 }
 
 .comment-input-row {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   align-items: flex-end;
 }
 
@@ -1175,18 +1374,21 @@ onMounted(async () => {
   flex: 1;
   min-height: 40px;
   max-height: 120px;
-  padding: 10px 14px;
+  padding: 10px 14px 10px 14px;
+  padding-right: 80px; /* 버튼 공간 확보 */
   border: 1px solid var(--border-color);
   border-radius: 20px;
   resize: none;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 12px;
   line-height: 1.4;
   background: white;
   transition: all 0.2s ease;
-  overflow: hidden; /* 스크롤바 제거 */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
+  overflow: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .comment-input:focus {
@@ -1206,22 +1408,25 @@ onMounted(async () => {
 }
 
 .submit-comment-btn {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 10px 16px;
+  gap: 4px;
+  padding: 8px 12px;
   background: var(--primary-color);
   color: white;
   border: none;
-  border-radius: 20px;
-  font-size: 13px;
+  border-radius: 16px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
-  min-width: 70px;
-  height: 40px;
+  min-width: 60px;
+  height: 32px;
 }
 
 .submit-comment-btn:hover:not(:disabled) {
@@ -1234,15 +1439,6 @@ onMounted(async () => {
   background: #ccc;
   cursor: not-allowed;
   transform: none;
-}
-
-.spinning {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }
 
 /* 로그인 프롬프트 */
@@ -1549,5 +1745,554 @@ onMounted(async () => {
 .retry-btn:hover, .back-btn:hover {
   background: var(--primary-color);
   color: white;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 480px) {
+  .comment-input {
+    padding-right: 70px; /* 모바일에서 버튼 공간 조정 */
+  }
+  
+  .submit-comment-btn {
+    min-width: 55px;
+    padding: 6px 10px;
+    font-size: 11px;
+    gap: 2px;
+  }
+  
+  .btn-text {
+    display: none; /* 모바일에서 텍스트 숨김 */
+  }
+}
+
+@media (max-width: 360px) {
+  .comment-input {
+    padding-right: 50px; /* 더 작은 화면에서 조정 */
+  }
+  
+  .submit-comment-btn {
+    min-width: 40px;
+    padding: 6px 8px;
+  }
+}
+
+/* 좋아요 사용자 목록 섹션 */
+.like-users-section {
+  background-color: var(--card-color);
+  border-radius: 16px;
+  margin-top: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 87, 34, 0.08);
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.like-users-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  background: linear-gradient(135deg, rgba(255, 87, 34, 0.02) 0%, transparent 100%);
+}
+
+.like-users-header h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--dark-text);
+}
+
+.close-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: rgba(255, 87, 34, 0.1);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--primary-color);
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: rgba(255, 87, 34, 0.2);
+  transform: scale(1.1);
+}
+
+.like-users-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 30px 20px;
+  color: var(--medium-text);
+}
+
+.no-like-users {
+  text-align: center;
+  padding: 30px 20px;
+  color: var(--medium-text);
+}
+
+.no-like-users p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.like-users-list {
+  padding: 16px 20px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.like-user-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  transition: background-color 0.2s ease;
+}
+
+.like-user-item:last-child {
+  border-bottom: none;
+}
+
+.like-user-item:hover {
+  background-color: rgba(255, 87, 34, 0.02);
+  border-radius: 8px;
+  margin: 0 -8px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.like-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 87, 34, 0.15);
+  flex-shrink: 0;
+}
+
+.like-user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.like-user-name {
+  font-weight: 600;
+  color: var(--dark-text);
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.like-user-level {
+  font-size: 12px;
+  color: var(--medium-text);
+}
+
+/* 반응형 */
+@media (max-width: 480px) {
+  .like-users-header {
+    padding: 14px 16px;
+  }
+  
+  .like-users-header h4 {
+    font-size: 15px;
+  }
+  
+  .like-users-list {
+    padding: 12px 16px;
+  }
+  
+  .like-user-item {
+    padding: 10px 0;
+  }
+  
+  .like-user-avatar {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .like-user-name {
+    font-size: 13px;
+  }
+  
+  .like-user-level {
+    font-size: 11px;
+  }
+}
+
+/* 좋아요 버튼과 텍스트 스타일 */
+.post-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 16px;
+  margin-top: 20px;
+}
+
+/* 하트 버튼 스타일 */
+.heart-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #ffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.heart-btn:hover {
+  background: linear-gradient(135deg, rgba(255, 87, 34, 0.15) 0%, rgba(255, 87, 34, 0.1) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 87, 34, 0.2);
+}
+
+.heart-btn.liked {
+  background: #ffff;
+  border-color: var(--primary-color);
+}
+
+.heart-btn.liked:hover {
+  background: linear-gradient(135deg, rgba(255, 87, 34, 0.3) 0%, rgba(255, 87, 34, 0.2) 100%);
+  box-shadow: 0 4px 16px rgba(255, 87, 34, 0.3);
+}
+
+.heart-btn.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.heart-btn.disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* 하트 이모지 스타일 */
+.heart-emoji {
+  font-size: 20px;
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.heart-emoji:hover {
+  transform: scale(1.1);
+}
+
+.heart-emoji.liked {
+  animation: heartBeat 0.3s ease-in-out;
+}
+
+@keyframes heartBeat {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* 좋아요 텍스트 컨테이너 */
+.like-text-container {
+  flex: 1;
+}
+
+/* 좋아요 상태 텍스트 */
+.like-status-text {
+  font-size: 14px;
+  color: var(--medium-text);
+  transition: all 0.2s ease;
+  user-select: none;
+  display: inline-block;
+}
+
+.like-status-text.clickable {
+  cursor: pointer;
+}
+
+.like-status-text.clickable:hover {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+
+/* 모달 오버레이 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 좋아요 사용자 모달 */
+.like-users-modal {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  overflow: hidden;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 모달 헤더 */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color);
+  background: linear-gradient(135deg, rgba(255, 87, 34, 0.05) 0%, transparent 100%);
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--dark-text);
+}
+
+.modal-close-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(255, 87, 34, 0.1);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: var(--primary-color);
+  transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+  background: rgba(255, 87, 34, 0.2);
+  transform: scale(1.1);
+}
+
+/* 모달 컨텐츠 */
+.modal-content {
+  padding: 20px 24px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.modal-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: var(--medium-text);
+}
+
+.modal-loading .spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 87, 34, 0.1);
+  border-left-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+.modal-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--medium-text);
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.modal-empty p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* 사용자 카드 그리드 */
+.like-users-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.like-user-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255, 87, 34, 0.02);
+  border: 1px solid rgba(255, 87, 34, 0.1);
+  transition: all 0.2s ease;
+}
+
+.like-user-card:hover {
+  background: rgba(255, 87, 34, 0.05);
+  border-color: rgba(255, 87, 34, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 87, 34, 0.1);
+}
+
+.user-card-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 87, 34, 0.15);
+  flex-shrink: 0;
+}
+
+.user-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-card-name {
+  font-weight: 600;
+  color: var(--dark-text);
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.user-card-level {
+  font-size: 12px;
+  color: var(--medium-text);
+}
+
+.user-card-heart {
+  font-size: 16px;
+  opacity: 0.6;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  font-size: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 반응형 */
+@media (max-width: 480px) {
+  .post-actions {
+    gap: 12px;
+  }
+  
+  .heart-btn {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .heart-emoji {
+    font-size: 18px;
+  }
+  
+  .like-status-text {
+    font-size: 13px;
+  }
+  
+  .modal-overlay {
+    padding: 16px;
+  }
+  
+  .like-users-modal {
+    border-radius: 16px;
+  }
+  
+  .modal-header {
+    padding: 16px 20px;
+  }
+  
+  .modal-header h3 {
+    font-size: 16px;
+  }
+  
+  .modal-content {
+    padding: 16px 20px;
+  }
+  
+  .like-user-card {
+    padding: 10px;
+  }
+  
+  .user-card-avatar {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .user-card-name {
+    font-size: 13px;
+  }
+  
+  .user-card-level {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 360px) {
+  .heart-btn {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .heart-emoji {
+    font-size: 16px;
+  }
+  
+  .like-status-text {
+    font-size: 12px;
+  }
 }
 </style>

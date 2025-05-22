@@ -77,11 +77,6 @@ public class CommentController {
             
             List<Comment> commentList = commentService.getCommentList(postId);
             
-            if (commentList.isEmpty()) {
-                return ResponseEntity.ok()
-                    .body("해당 게시글에 댓글이 존재하지 않습니다.");
-            }
-            
             return ResponseEntity.ok(commentList);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

@@ -161,4 +161,9 @@ public class BoardServiceImpl implements BoardService {
 	        return false;
 	    }
 	}
+
+	@Override
+	public List<Board> readBoardByUserId(int userId) {
+		return boardDao.selectByUserId(userId);
+	}
 }

@@ -138,9 +138,7 @@ public class UserController {
 	@GetMapping("/{userId}/profile")
 	@LoginRequired
 	public ResponseEntity<User> getUserById(@PathVariable int userId, @LoginUser User loginUser) {
-		if (loginUser.getId() != userId) {
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		}
+
 		User user = userService.getUserById(userId);
 		if (user != null) {
 			return new ResponseEntity<>(user, HttpStatus.OK);
@@ -176,12 +174,6 @@ public class UserController {
 	@LoginRequired
 	public ResponseEntity<List<Integer>> getFollowingById(@PathVariable int userId,
 			@Parameter(hidden = true) @LoginUser User loginUser) {
-		if (loginUser.getId() != userId) {
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		}
-		if (userService.getUserById(userId) == null) {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
 		List<Integer> followings = userFollowService.getFollowings(userId);
 		return new ResponseEntity<>(followings, HttpStatus.OK);
 	}
@@ -191,9 +183,7 @@ public class UserController {
 	@LoginRequired
 	public ResponseEntity<List<Integer>> getFollowersById(@PathVariable int userId,
 			@Parameter(hidden = true) @LoginUser User loginUser) {
-		if (loginUser.getId() != userId) {
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		}
+
 		if (userService.getUserById(userId) == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}

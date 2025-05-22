@@ -11,8 +11,10 @@ public class Comment {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String userNickname;
+    private int commentCount;
     
-    // 기본 생성자
+
+	// 기본 생성자
     public Comment() {
     }
 
@@ -84,6 +86,14 @@ public class Comment {
     
     public void setUserNickname(String userNickname) {
     	this.userNickname = userNickname;
+    }
+    
+    public int getCommentCount() {
+    	return commentCount;
+    }
+    
+    public void setCommentCount(int commentCount) {
+    	this.commentCount = commentCount;
     }
     
     @Override

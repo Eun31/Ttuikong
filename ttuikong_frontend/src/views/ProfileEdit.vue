@@ -10,75 +10,131 @@
       <div class="spacer"></div>
     </div>
 
-    <div class="profile-form-card">
-      <!-- 프로필 이미지 수정 -->
-      <div class="profile-image-section">
-        <div class="profile-image-container">
-          <img :src="profileImage || defaultProfileImage" alt="프로필 이미지" class="profile-image">
-          <div class="profile-level">Lv.{{ userProfile.level }}</div>
-        </div>
-        <button class="edit-image-btn" @click="triggerImageUpload">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M12 15.5H7.5C6.10444 15.5 5.40665 15.5 4.83886 15.6722C3.56045 16.06 2.56004 17.0605 2.17224 18.3389C2 18.9067 2 19.6044 2 21M19 21V15M16 18H22M14.5 7.5C14.5 9.98528 12.4853 12 10 12C7.51472 12 5.5 9.98528 5.5 7.5C5.5 5.01472 7.51472 3 10 3C12.4853 3 14.5 5.01472 14.5 7.5Z"
-              stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-          사진 변경
-        </button>
-        <input type="file" ref="fileInput" @change="handleImageUpload" accept="image/*" style="display: none;">
-      </div>
+    <div v-if="isLoading" class="loading-container">
+      <div class="spinner"></div>
+      <p>프로필 정보를 불러오는 중...</p>
+    </div>
 
-      <!-- 프로필 폼 -->
+    <div v-else-if="error" class="error-container">
+      <p class="error-message">{{ error }}</p>
+      <button @click="fetchProfile" class="retry-button">다시 시도</button>
+    </div>
+
+    <div v-else class="profile-form-card">
       <form @submit.prevent="saveProfile" class="profile-form">
         <div class="form-group">
           <label for="nickname">닉네임</label>
-          <input type="text" id="nickname" v-model="userProfile.nickname" class="form-input" placeholder="닉네임을 입력하세요"
-            maxlength="10">
-          <div class="input-counter">{{ userProfile.nickname.length }}/10</div>
+          <input 
+            type="text" 
+            id="nickname" 
+            v-model="userProfile.nickname" 
+            class="form-input" 
+            placeholder="닉네임을 입력하세요"
+            maxlength="10"
+            :class="{ 'error': validationErrors.nickname }"
+            @input="validateField('nickname')"
+            required
+          >
+          <div class="input-counter">{{ userProfile.nickname?.length || 0 }}/10</div>
+          <div v-if="validationErrors.nickname" class="error-text">{{ validationErrors.nickname }}</div>
         </div>
 
         <div class="form-group">
-          <label for="description">한줄 소개</label>
-          <input type="text" id="description" v-model="userProfile.description" class="form-input"
-            placeholder="프로필 소개를 입력하세요" maxlength="30">
-          <div class="input-counter">{{ userProfile.description.length }}/30</div>
+          <label for="password">비밀번호</label>
+          <input 
+            type="password" 
+            id="password" 
+            v-model="userProfile.password" 
+            class="form-input"
+            placeholder="새 비밀번호를 입력하세요 (변경하지 않으려면 비워두세요)" 
+            :class="{ 'error': validationErrors.password }"
+            @input="validateField('password')"
+          >
+          <div v-if="validationErrors.password" class="error-text">{{ validationErrors.password }}</div>
         </div>
 
         <div class="form-row">
           <div class="form-group half">
             <label for="age">나이</label>
-            <input type="number" id="age" v-model="userProfile.age" class="form-input" placeholder="나이" min="1"
-              max="120">
+            <input 
+              type="number" 
+              id="age" 
+              v-model.number="userProfile.age" 
+              class="form-input" 
+              placeholder="나이" 
+              min="1"
+              max="120"
+              :class="{ 'error': validationErrors.age }"
+            >
+            <div v-if="validationErrors.age" class="error-text">{{ validationErrors.age }}</div>
           </div>
           <div class="form-group half">
-            <label for="gender">성별</label>
-            <select id="gender" v-model="userProfile.gender" class="form-select">
-              <option value="">선택 안함</option>
-              <option value="남성">남성</option>
-              <option value="여성">여성</option>
-            </select>
+            <label>성별</label>
+            <div class="gender-selector">
+              <label class="gender-option" :class="{ 'selected': userProfile.gender === '남성' }">
+                <input type="radio" v-model="userProfile.gender" value="MALE">
+                <span class="gender-icon male"></span>
+                <span>남성</span>
+              </label>
+              <label class="gender-option" :class="{ 'selected': userProfile.gender === '여성' }">
+                <input type="radio" v-model="userProfile.gender" value="FEMALE">
+                <span class="gender-icon female"></span>
+                <span>여성</span>
+              </label>
+            </div>
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group half">
             <label for="height">키 (cm)</label>
-            <input type="number" id="height" v-model="userProfile.height" class="form-input" placeholder="키" min="100"
-              max="250" step="0.1">
+            <input 
+              type="number" 
+              id="height" 
+              v-model.number="userProfile.height" 
+              class="form-input" 
+              placeholder="키" 
+              min="100"
+              max="250" 
+              step="0.1"
+            >
           </div>
           <div class="form-group half">
             <label for="weight">몸무게 (kg)</label>
-            <input type="number" id="weight" v-model="userProfile.weight" class="form-input" placeholder="몸무게" min="30"
-              max="200" step="0.1">
+            <input 
+              type="number" 
+              id="weight" 
+              v-model.number="userProfile.weight" 
+              class="form-input" 
+              placeholder="몸무게" 
+              min="30"
+              max="200" 
+              step="0.1"
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>현재 활동 레벨</label>
+          <div class="activity-options">
+            <div v-for="(activity, index) in activityLevelOptions" :key="index"
+              :class="['activity-option', { active: userProfile.activityLevel === activity.value }]"
+              @click="selectActivityLevel(activity.value)">
+              <div class="activity-icon">{{ activity.icon }}</div>
+              <div class="activity-info">
+                <div class="activity-name">{{ activity.name }}</div>
+                <div class="activity-desc">{{ activity.description }}</div>
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="form-group">
           <label>목표 활동성</label>
           <div class="activity-options">
-            <div v-for="(activity, index) in activityOptions" :key="index"
+            <div v-for="(activity, index) in activityGoalOptions" :key="index"
               :class="['activity-option', { active: userProfile.activityGoal === activity.value }]"
-              @click="selectActivity(activity.value)">
+              @click="selectActivityGoal(activity.value)">
               <div class="activity-icon">{{ activity.icon }}</div>
               <div class="activity-info">
                 <div class="activity-name">{{ activity.name }}</div>
@@ -89,44 +145,99 @@
         </div>
 
         <div class="save-button-container">
-          <button type="submit" class="save-button" :disabled="isSubmitting">
+          <button type="submit" class="save-button" :disabled="isSubmitting || !isFormValid">
             <span v-if="isSubmitting">저장 중...</span>
             <span v-else>저장하기</span>
           </button>
         </div>
       </form>
+    </div>
 
+    <!-- 성공 토스트 -->
+    <div v-if="showSuccessToast" class="toast success-toast">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+      </svg>
+      프로필이 성공적으로 업데이트되었습니다!
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted, nextTick } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import axios from 'axios';
 import defaultProfileImg from '@/assets/profile.png';
 
 const router = useRouter();
+const route = useRoute();
 
-const defaultProfileImage = defaultProfileImg;
-const profileImage = ref(null);
-const isSubmitting = ref(false);
-const fileInput = ref(null);
-
-const userProfile = ref({
-  id: 1,
-  nickname: '러닝마니아',
-  description: '신나는 강아지',
-  age: 28,
-  gender: '남성',
-  height: 175.0,
-  weight: 68.5,
-  level: 5,
-  activityGoal: '힘찬 질주 말',
-  totalDistance: 324.8,
-  avgDistance: 5.2
+// API 기본 설정
+const API_BASE_URL = 'http://localhost:8080/api';
+const token = localStorage.getItem('jwt');
+const authHeader = computed(() => {
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
 });
 
-const activityOptions = [
+const isLoading = ref(true);
+const isSubmitting = ref(false);
+const error = ref(null);
+const showSuccessToast = ref(false);
+const validationErrors = ref({});
+const currentUserId = ref(null);
+
+const userProfile = ref({
+  id: null,
+  nickname: '',
+  password: '',
+  gender: '',
+  age: null,
+  height: null,
+  weight: null,
+  activityLevel: '',
+  activityGoal: ''
+});
+
+const activityLevelOptions = [
+{
+    value: '느긋한 코알라',
+    name: '느긋한 코알라',
+    icon: '🐨',
+    description: '운동을 시작하려고 하는 단계'
+  },
+  {
+    value: '산책하는 거북이',
+    name: '산책하는 거북이',
+    icon: '🐢',
+    description: '가끔 가벼운 운동을 하는 수준'
+  },
+  {
+    value: '신나는 강아지',
+    name: '신나는 강아지',
+    icon: '🐶',
+    description: '규칙적으로 운동하는 습관이 있는 수준'
+  },
+  {
+    value: '힘찬 질주 말',
+    name: '힘찬 질주 말',
+    icon: '🐎',
+    description: '적극적으로 운동하며 체력이 좋은 수준'
+  },
+  {
+    value: '전광석화 치타',
+    name: '전광석화 치타',
+    icon: '🐆',
+    description: '고강도 운동을 즐기는 운동 마니아 수준'
+  }
+];
+
+const activityGoalOptions = [
+{
+    value: '느긋한 코알라',
+    name: '느긋한 코알라',
+    icon: '🐨',
+    description: '주 1회 가벼운 산책이나 조깅'
+  },
   {
     value: '느긋한 거북이',
     name: '느긋한 거북이',
@@ -137,54 +248,270 @@ const activityOptions = [
     value: '신나는 강아지',
     name: '신나는 강아지',
     icon: '🐶',
-    description: '주 3-4회 조깅'
+    description: '주 3-4회 규칙적인 조깅'
   },
   {
     value: '힘찬 질주 말',
     name: '힘찬 질주 말',
     icon: '🐎',
-    description: '주 5회 이상 조깅'
+    description: '주 5회 이상 적극적인 조깅'
   },
   {
     value: '전광석화 치타',
     name: '전광석화 치타',
     icon: '🐆',
-    description: '마라톤 준비 중'
+    description: '마라톤 준비 및 고강도 트레이닝'
   }
 ];
+
+const isFormValid = computed(() => {
+  const hasValidNickname = userProfile.value.nickname && 
+                          userProfile.value.nickname.trim().length > 0 && 
+                          userProfile.value.nickname.length <= 10;
+  
+  const hasValidAge = !userProfile.value.age || 
+                     (userProfile.value.age >= 1 && userProfile.value.age <= 120);
+
+  const hasValidPassword = !userProfile.value.password || 
+                          !userProfile.value.password.trim() ||
+                          (userProfile.value.password.length >= 6 && userProfile.value.password.length <= 20);
+
+  const hasNoErrors = Object.keys(validationErrors.value).length === 0;
+  
+  return hasValidNickname && hasValidAge && hasValidPassword && hasNoErrors;
+});
+
+const handleApiError = (err) => {
+  console.error('API Error:', err);
+
+  if (err.response) {
+    const { status, data } = err.response;
+    
+    switch (status) {
+      case 400:
+        return data.message || '잘못된 요청입니다.';
+      case 401:
+        return '인증이 필요합니다. 다시 로그인해주세요.';
+      case 403:
+        return '접근 권한이 없습니다.';
+      case 404:
+        return '요청한 정보를 찾을 수 없습니다.';
+      case 409:
+        return data.message || '이미 존재하는 데이터입니다.';
+      case 422:
+        return data.message || '입력 데이터가 올바르지 않습니다.';
+      case 500:
+        return '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+      default:
+        return data.message || '알 수 없는 오류가 발생했습니다.';
+    }
+  }
+
+  if (err.request) {
+    return '네트워크 연결을 확인해주세요.';
+  }
+
+  return err.message || '알 수 없는 오류가 발생했습니다.';
+};
+
+// 현재 사용자 정보 가져오기
+const getCurrentUser = async () => {
+  if (!token) {
+    throw new Error('로그인이 필요합니다.');
+  }
+  
+  try {
+    const response = await axios.get(`${API_BASE_URL}/users/me`, {
+      headers: authHeader.value
+    });
+    
+    const userData = response.data.user;
+    currentUserId.value = userData.id;
+    
+    return userData;
+  } catch (err) {
+    console.error('현재 사용자 정보 조회 실패:', err);
+    
+    if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+      localStorage.removeItem('jwt');
+      router.push('/login');
+    }
+    
+    throw err;
+  }
+};
+
+// 프로필 정보 가져오기
+const fetchProfile = async () => {
+  try {
+    isLoading.value = true;
+    error.value = null;
+    if (!token) {
+      error.value = '로그인이 필요합니다.';
+      router.push('/login');
+      return;
+    }
+
+    await getCurrentUser();
+    
+    // 본인 프로필만 수정 가능
+    const response = await axios.get(`${API_BASE_URL}/users/${currentUserId.value}/profile`, {
+      headers: authHeader.value
+    });
+    
+    const data = response.data;
+    
+    console.log('프로필 데이터 로드:', data);
+    
+    userProfile.value = {
+      id: data.id,
+      nickname: data.nickname || '',
+      password: '',
+      age: data.age || null,
+      gender: data.gender,
+      height: data.height || null,
+      weight: data.weight || null,
+      activityLevel: data.activityLevel || '',
+      activityGoal: data.activityGoal || ''
+    };
+    
+    await nextTick();
+    
+  } catch (err) {
+    console.error('프로필 불러오기 실패:', err);
+    error.value = handleApiError(err);
+    
+    if (err.response?.status === 401) {
+      router.push('/login');
+    }
+  } finally {
+    isLoading.value = false;
+  }
+};
+
 
 const goBack = () => {
   router.push('/profile');
 };
 
-const triggerImageUpload = () => {
-  fileInput.value?.click();
-};
+const saveProfile = async () => {
+  if (!validateForm()) {
+    return;
+  }
 
-const handleImageUpload = (event) => {
-  const file = event.target.files[0];
-  if (file && file.type.match('image.*')) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      profileImage.value = e.target.result;
+  try {
+    isSubmitting.value = true;
+    
+    const updateData = {
+      id: currentUserId.value,
+      nickname: userProfile.value.nickname,
+      gender: userProfile.value.gender,
+      age: userProfile.value.age,
+      height: userProfile.value.height,
+      weight: userProfile.value.weight,
+      activityLevel: userProfile.value.activityLevel,
+      activityGoal: userProfile.value.activityGoal
     };
-    reader.readAsDataURL(file);
+
+    if (userProfile.value.password && userProfile.value.password.trim()) {
+      updateData.password = userProfile.value.password;
+    }
+    
+    await axios.put(`${API_BASE_URL}/users/${currentUserId.value}/profile`, updateData, {
+      headers: authHeader.value
+    });
+    
+    showSuccessToast.value = true;
+    
+    setTimeout(() => {
+      showSuccessToast.value = false;
+      router.push('/profile');
+    }, 2000);
+    
+  } catch (err) {
+    console.error('프로필 저장 실패:', err);
+    
+    if (err.response?.status === 401) {
+      alert('로그인이 만료되었습니다. 다시 로그인해 주세요.');
+      localStorage.removeItem('jwt');
+      router.push('/login');
+    } else {
+      alert(handleApiError(err));
+    }
+  } finally {
+    isSubmitting.value = false;
   }
 };
 
-const selectActivity = (activityValue) => {
+const validateForm = () => {
+  const newErrors = {};
+  
+  if (!userProfile.value.nickname || userProfile.value.nickname.trim().length === 0) {
+    newErrors.nickname = '닉네임을 입력해주세요.';
+  } else if (userProfile.value.nickname.length > 10) {
+    newErrors.nickname = '닉네임은 10자 이하로 입력해주세요.';
+  }
+  
+  if (userProfile.value.age && (userProfile.value.age < 1 || userProfile.value.age > 120)) {
+    newErrors.age = '올바른 나이를 입력해주세요.';
+  }
+  
+  if (userProfile.value.password && userProfile.value.password.trim()) {
+    if (userProfile.value.password.length < 6) {
+      newErrors.password = '비밀번호는 6자 이상이어야 합니다.';
+    } else if (userProfile.value.password.length > 20) {
+      newErrors.password = '비밀번호는 20자 이하여야 합니다.';
+    }
+  }
+  
+  validationErrors.value = newErrors;
+  return Object.keys(newErrors).length === 0;
+};
+
+const validateField = (fieldName) => {
+  const newErrors = { ...validationErrors.value };
+  
+  if (fieldName === 'nickname') {
+    delete newErrors.nickname;
+    if (!userProfile.value.nickname || userProfile.value.nickname.trim().length === 0) {
+      newErrors.nickname = '닉네임을 입력해주세요.';
+    } else if (userProfile.value.nickname.length > 10) {
+      newErrors.nickname = '닉네임은 10자 이하로 입력해주세요.';
+    }
+  }
+  
+  if (fieldName === 'age') {
+    delete newErrors.age;
+    if (userProfile.value.age && (userProfile.value.age < 1 || userProfile.value.age > 120)) {
+      newErrors.age = '올바른 나이를 입력해주세요.';
+    }
+  }
+  
+  if (fieldName === 'password') {
+    delete newErrors.password;
+    if (userProfile.value.password && userProfile.value.password.trim()) {
+      if (userProfile.value.password.length < 6) {
+        newErrors.password = '비밀번호는 6자 이상이어야 합니다.';
+      } else if (userProfile.value.password.length > 20) {
+        newErrors.password = '비밀번호는 20자 이하여야 합니다.';
+      }
+    }
+  }
+  
+  validationErrors.value = newErrors;
+};
+
+const selectActivityLevel = (activityValue) => {
+  userProfile.value.activityLevel = activityValue;
+};
+
+const selectActivityGoal = (activityValue) => {
   userProfile.value.activityGoal = activityValue;
 };
 
-const saveProfile = () => {
-  isSubmitting.value = true;
-
-  setTimeout(() => {
-    isSubmitting.value = false;
-    alert('프로필이 성공적으로 업데이트되었습니다!');
-    router.push('/profile');
-  }, 1000);
-};
+onMounted(async () => {
+  await fetchProfile();
+});
 </script>
 
 <style scoped>
@@ -235,6 +562,54 @@ const saveProfile = () => {
   width: 40px;
 }
 
+/* 로딩 및 에러 상태 스타일 */
+.loading-container, .error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  text-align: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #FF7E36;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+.spinner-small {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #FF7E36;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-message {
+  color: #d32f2f;
+  margin-bottom: 16px;
+}
+
+.retry-button {
+  background-color: #FF7E36;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
 .profile-form-card {
   background-color: white;
   border-radius: 16px;
@@ -265,16 +640,17 @@ const saveProfile = () => {
   border: 3px solid #FF7E36;
 }
 
-.profile-level {
+.image-loading-overlay {
   position: absolute;
-  bottom: 0;
+  top: 0;
+  left: 0;
   right: 0;
-  background-color: #FF7E36;
-  color: white;
-  font-size: 12px;
-  font-weight: bold;
-  padding: 3px 8px;
-  border-radius: 10px;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .edit-image-btn {
@@ -292,8 +668,13 @@ const saveProfile = () => {
   transition: all 0.2s;
 }
 
-.edit-image-btn:hover {
+.edit-image-btn:hover:not(:disabled) {
   background-color: #e66a1e;
+}
+
+.edit-image-btn:disabled {
+  background-color: #FFB8A3;
+  cursor: not-allowed;
 }
 
 .profile-form {
@@ -339,12 +720,93 @@ label {
   border-color: #FF7E36;
 }
 
+.form-input.error,
+.form-select.error {
+  border-color: #d32f2f;
+}
+
 .input-counter {
   position: absolute;
   right: 8px;
   bottom: 8px;
   font-size: 12px;
   color: #888;
+}
+
+.error-text {
+  color: #d32f2f;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* 성별 선택 스타일 */
+.gender-selector {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.gender-option {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 0.5rem;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 50px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.gender-option:hover {
+  border-color: #FFB8A3;
+}
+
+.gender-option.selected {
+  border-color: #FF7E36;
+  background-color: rgba(255, 126, 54, 0.05);
+}
+
+.gender-option input {
+  position: absolute;
+  opacity: 0;
+}
+
+.gender-icon {
+  margin-right: 0.5rem;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.gender-icon.male::before {
+  content: "👨";
+}
+
+.gender-icon.female::before {
+  content: "👩";
+}
+
+@media (max-width: 480px) {
+  .gender-selector {
+    gap: 0.5rem;
+  }
+  
+  .gender-option {
+    padding: 0.6rem 0.4rem;
+    font-size: 13px;
+    min-height: 45px;
+  }
+  
+  .gender-icon {
+    font-size: 1.1rem;
+    margin-right: 0.4rem;
+  }
 }
 
 .activity-options {
@@ -407,6 +869,38 @@ label {
 .save-button:disabled {
   background-color: #FFB8A3;
   cursor: not-allowed;
+}
+
+/* 토스트 메시지 */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 1000;
+  animation: slideUp 0.3s ease-out;
+}
+
+.success-toast {
+  background-color: #FF7E36;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 @media (max-width: 480px) {

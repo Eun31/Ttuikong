@@ -44,7 +44,7 @@
     </div>
 
     <main class="main-content" :class="{ 'auth-page': isAuthPage }">
-      <router-view />
+      <router-view :key="$route.path"/>
     </main>
   </div>
 </template>
