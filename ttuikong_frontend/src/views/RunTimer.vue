@@ -62,8 +62,8 @@
             </select>
           </div>
           <div class="form-group">
-            <label>목표 수치</label>
-            <input v-model.number="newCrew.goalTime" type="number" placeholder="예: 30" required />
+            <label>목표 시간 (분)</label>
+            <input v-model.number="newCrew.goalTime" type="number" placeholder="" required />
           </div>
           <div class="form-group">
             <label>시작일</label>

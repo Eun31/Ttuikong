@@ -88,18 +88,12 @@
 
       <!-- 일자 그리드 -->
       <div class="calendar-days">
-        <div
-          v-for="(day, index) in calendarDays"
-          :key="index"
-          class="calendar-day"
-          :class="{
-            'empty': !day.date,
-            'has-run': day.hasRun,
-            'active': day.isActive,
-            'today': day.isToday
-          }"
-          @click="day.date && selectDay(day)"
-        >
+        <div v-for="(day, index) in calendarDays" :key="index" class="calendar-day" :class="{
+          'empty': !day.date,
+          'has-run': day.hasRun,
+          'active': day.isActive,
+          'today': day.isToday
+        }" @click="day.date && selectDay(day)">
           <span v-if="day.date" class="day-number">{{ day.date.getDate() }}</span>
           <span v-if="day.hasRun" class="run-indicator"></span>
         </div>
@@ -119,7 +113,7 @@
           <h3 class="run-title">{{ run.routeName }}</h3>
           <span class="run-time">{{ run.time }}</span>
         </div>
-        
+
         <div class="run-stats">
           <div class="run-stat">
             <span class="stat-icon">⏱️</span>
@@ -131,13 +125,13 @@
             <span class="stat-label">거리:</span>
             <span class="stat-value">{{ run.distance }}</span>
           </div>
-          <div class="run-stat">
+          <!-- <div class="run-stat">
             <span class="stat-icon">🔥</span>
             <span class="stat-label">칼로리:</span>
             <span class="stat-value">{{ run.calories }}</span>
-          </div>
+          </div> -->
         </div>
-        
+
         <div class="run-map-preview">
           <img :src="run.routeImage" alt="러닝 루트" class="route-image">
           <button class="view-route-btn" @click="viewRoute(run.id)">
@@ -169,7 +163,7 @@
             <span class="icon">✕</span>
           </button>
         </div>
-        
+
         <div class="routes-grid">
           <div v-for="(route, index) in routes" :key="index" class="route-item">
             <div class="route-image-container">
@@ -374,11 +368,11 @@ const currentMonthYear = computed(() => {
 
 const selectedDayRuns = computed(() => {
   if (!selectedDay.value || !selectedDay.value.hasRun) return [];
-  
-  const runData = runningData.value.find(data => 
+
+  const runData = runningData.value.find(data =>
     isSameDay(data.date, selectedDay.value.date)
   );
-  
+
   return runData ? runData.runs : [];
 });
 
@@ -386,31 +380,31 @@ const selectedDayRuns = computed(() => {
 function generateCalendar() {
   const year = selectedDate.value.getFullYear();
   const month = selectedDate.value.getMonth();
-  
+
   // 선택된 달의 첫날과 마지막 날
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
-  
+
   // 첫날의 요일 (0: 일요일, 6: 토요일)
   const firstDayOfWeek = firstDay.getDay();
-  
+
   // 캘린더 배열 초기화
   calendarDays.value = [];
-  
+
   // 첫 주의 빈 칸 채우기
   for (let i = 0; i < firstDayOfWeek; i++) {
     calendarDays.value.push({ date: null });
   }
-  
+
   // 날짜 채우기
   for (let i = 1; i <= lastDay.getDate(); i++) {
     const currentDateObj = new Date(year, month, i);
-    
+
     // 러닝 기록 확인
-    const hasRun = runningData.value.some(data => 
+    const hasRun = runningData.value.some(data =>
       isSameDay(data.date, currentDateObj)
     );
-    
+
     calendarDays.value.push({
       date: currentDateObj,
       hasRun: hasRun,
@@ -418,7 +412,7 @@ function generateCalendar() {
       isActive: selectedDay.value ? isSameDay(currentDateObj, selectedDay.value.date) : false
     });
   }
-  
+
   // 마지막 주의 빈 칸 채우기 (7의 배수로 맞추기)
   const remaining = 7 - (calendarDays.value.length % 7);
   if (remaining < 7) {
@@ -438,7 +432,7 @@ function changeMonth(delta) {
 
 function selectDay(day) {
   selectedDay.value = day;
-  
+
   // 활성화 상태 업데이트
   calendarDays.value = calendarDays.value.map(d => ({
     ...d,
@@ -448,8 +442,8 @@ function selectDay(day) {
 
 function isSameDay(date1, date2) {
   return date1.getFullYear() === date2.getFullYear() &&
-         date1.getMonth() === date2.getMonth() &&
-         date1.getDate() === date2.getDate();
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate();
 }
 
 function formatDate(date) {
@@ -465,12 +459,12 @@ function viewRoute(routeId) {
 // 컴포넌트 마운트 시 실행
 onMounted(() => {
   generateCalendar();
-  
+
   // 오늘 날짜에 러닝 기록이 있는지 확인하고 선택
-  const today = calendarDays.value.find(day => 
+  const today = calendarDays.value.find(day =>
     day.date && isSameDay(day.date, currentDate.value)
   );
-  
+
   if (today && today.hasRun) {
     selectDay(today);
   }
@@ -492,6 +486,7 @@ onMounted(() => {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -691,12 +686,15 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 6px;
-  padding: 4px; /* 간격 유지를 위한 패딩 추가 */
+  padding: 4px;
+  /* 간격 유지를 위한 패딩 추가 */
 }
 
 .calendar-day {
-  width: 45px; /* 원의 크기 설정 (기존보다 작게) */
-  height: 45px; /* 높이도 명시적으로 설정 */
+  width: 45px;
+  /* 원의 크기 설정 (기존보다 작게) */
+  height: 45px;
+  /* 높이도 명시적으로 설정 */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -705,7 +703,8 @@ onMounted(() => {
   border-radius: 50%;
   cursor: pointer;
   transition: var(--transition, all 0.3s ease);
-  margin: auto; /* 가운데 정렬을 위해 추가 */
+  margin: auto;
+  /* 가운데 정렬을 위해 추가 */
 }
 
 .calendar-day:not(.empty):hover {
@@ -922,6 +921,7 @@ onMounted(() => {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -944,6 +944,7 @@ onMounted(() => {
     opacity: 0;
     transform: translateY(40px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1056,7 +1057,7 @@ onMounted(() => {
   .routes-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .modal-content {
     width: 95%;
     padding: 16px;

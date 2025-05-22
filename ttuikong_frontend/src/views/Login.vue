@@ -66,6 +66,11 @@ const login = async () => {
         })
       });
 
+      if (!response.ok) {
+        alert('이메일 또는 비밀번호가 올바르지 않습니다.');
+        return;
+      }
+
       const data = await response.json();
       localStorage.setItem('jwt', data.token);
       localStorage.setItem('userId', data.user.id);
@@ -75,6 +80,7 @@ const login = async () => {
       router.push('/');
     } catch (error) {
       console.error('로그인 오류:', error);
+      alert('서버와의 연결에 문제가 발생했습니다.');
     }
   } else {
     alert('이메일과 비밀번호를 입력해주세요.');

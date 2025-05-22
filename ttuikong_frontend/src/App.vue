@@ -61,7 +61,7 @@ const menuActive = ref(false);
 const logo = logoImg;
 
 const isLoggedIn = computed(() => {
-  return localStorage.getItem('token') !== null;
+  return localStorage.getItem('jwt') !== null;
 });
 
 const isAuthPage = computed(() => {
@@ -78,8 +78,9 @@ const closeMenu = () => {
 };
 
 const logout = () => {
-  localStorage.removeItem('token');
-  router.push('/');
+  localStorage.removeItem('jwt');
+  localStorage.removeItem('userId');
+  router.push('/login');
 };
 
 watch(route, () => {

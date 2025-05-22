@@ -73,12 +73,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
-const userName = ref('김러너');
+const token = ref('');
+const userId = ref(null);
+const userName = ref('');
 const recommendation = ref(5);
 const growthRate = ref(100);
 const stats = ref([
@@ -149,6 +151,46 @@ function toggleFeedType() {
 function startRunning() {
   router.push('/run');
 }
+
+/* user 불러오기 */
+const getCurrentUser = async () => {
+  const currentToken = localStorage.getItem('jwt');
+
+  try {
+    const res = await fetch(`http://localhost:8080/api/users/me`, {
+      headers: {
+        Authorization: `Bearer ${currentToken}`
+      }
+    });
+
+    const data = await res.json();
+    const user = data.user;
+
+    token.value = currentToken;
+    userId.value = user.id;
+    userName.value = user.nickname;
+
+    localStorage.setItem('userId', user.id);
+    localStorage.setItem('nickname', user.nickname);
+
+  } catch (err) {
+    console.error('사용자 정보 요청 실패:', err);
+    alert('로그인이 필요합니다.');
+  }
+};
+
+/* 오늘 뛴 시간 */
+const formatDuration = (min) => {
+  if (!min) return "0분";
+  const hr = Math.floor(min / 60);
+  const m = min % 60;
+  return `${hr}시간 ${m.toFixed(0)}분`;
+};
+
+
+onMounted(async () => {
+  await getCurrentUser();
+});
 </script>
 
 <style scoped>
