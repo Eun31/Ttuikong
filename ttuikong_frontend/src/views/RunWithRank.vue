@@ -50,7 +50,7 @@ const userId = ref(null);
 const userName = ref('');
 
 const rankings = ref([]);
-const myRanking = ref(0);
+const myRanking = ref('-');
 const myDistance = ref(0);
 
 const getMedalClass = (index) => {
@@ -117,6 +117,12 @@ const getMyRanking = async () => {
         'Content-Type': 'application/json'
       }
     });
+
+    const contentLength = res.headers.get("content-length");
+    if (!contentLength || parseInt(contentLength) === 0) {
+      console.warn("📭 응답 본문 없음 (content-length: 0)");
+      return;
+    }
 
     const data = await res.json();
 

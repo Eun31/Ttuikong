@@ -23,10 +23,10 @@ public class CrewMemberServiceImpl implements CrewMemberService {
     public boolean joinCrew(int crewId, int userId) {
         Crew crew = crewDao.selectCrewById(crewId);
 
-        // 챌린지 시작일이 오늘보다 이전이면 가입 불가
-        if (crew.getStartDate() != null &&  LocalDate.now().isAfter(crew.getStartDate())) {
-            return false;
-        }
+        // // 챌린지 시작일이 오늘보다 이전이면 가입 불가
+        // if (crew.getStartDate() != null &&  LocalDate.now().isAfter(crew.getStartDate())) {
+        //     return false;
+        // }
 
         // 인원 수 제한 (10명)
         int count = crewMemberDao.countMembersInCrew(crewId);

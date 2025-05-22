@@ -1,4 +1,3 @@
-// views/RunTimer.vue
 <template>
   <div>
 
@@ -133,6 +132,18 @@ const emit = defineEmits(['navigate']);
 const router = useRouter();
 const route = useRoute();
 
+// 토큰 관리 상수 및 유틸리티 함수
+const TOKEN_KEY = "jwt";
+const USER_ID_KEY = "userId";
+
+const getStoredToken = () => localStorage.getItem(TOKEN_KEY);
+const getStoredUserId = () => localStorage.getItem(USER_ID_KEY);
+const setStoredToken = (tokenValue) => localStorage.setItem(TOKEN_KEY, tokenValue);
+const setStoredUserId = (userIdValue) => localStorage.setItem(USER_ID_KEY, userIdValue);
+const removeStoredToken = () => localStorage.removeItem(TOKEN_KEY);
+const removeStoredUserId = () => localStorage.removeItem(USER_ID_KEY);
+
+// 상태 변수들
 const searchQuery = ref('');
 const seconds = ref(0);
 const timer = ref(null);
@@ -147,15 +158,15 @@ const expandedCrews = ref([]);
 const startTime = ref('');
 const endTime = ref(null);
 const duration = ref(0);
-const token = ref(localStorage.getItem("jwt"));
-const userId = ref(Number(localStorage.getItem("userId")));
+const token = ref(getStoredToken());
+const userId = ref(Number(getStoredUserId()));
 const showCrewForm = ref(false);
 const crews = ref([]);
 const crewMembers = ref([]);
 const newCrew = ref({
   roomName: '',
   roomDescription: '',
-  goalType: '거리',
+  goalType: 'SUM',
   goalTime: 0,
   startDate: '',
   endDate: ''
@@ -169,49 +180,64 @@ const toggleCrewForm = () => {
 const submitCrew = async () => {
   console.log("🚨 token for submitCrew:", token.value);
 
-  const response = await fetch('http://localhost:8080/api/crew', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(newCrew.value)
-  });
-
-  const message = await response.text();
-  alert(message);
-  if (response.ok) {
-    showCrewForm.value = false;
-    newCrew.value = {
-      roomName: '',
-      roomDescription: '',
-      goalType: '거리',
-      goalTime: 0,
-      startDate: '',
-      endDate: ''
-    };
-  }
-};
-
-const joinCrew = async (crew) => {
-  const currentToken = localStorage.getItem("jwt");
-  const currentuserId = localStorage.getItem("userId");
-
-  if (!currentuserId) {
+  if (!token.value) {
     alert("로그인이 필요합니다.");
     return;
   }
 
   try {
-    const res = await fetch(`http://localhost:8080/api/crew/${crew.id}/join?userId=${currentuserId}`, {
+    const response = await fetch('http://localhost:8080/api/crew', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${currentToken}`
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token.value}`
+      },
+      body: JSON.stringify(newCrew.value)
+    });
+
+    const message = await response.text();
+    alert(message);
+
+    if (response.ok) {
+      showCrewForm.value = false;
+      newCrew.value = {
+        roomName: '',
+        roomDescription: '',
+        goalType: 'SUM',
+        goalTime: 0,
+        startDate: '',
+        endDate: ''
+      };
+      // 크루 목록 새로고침
+      await fetchCrewsAndMembers();
+    }
+  } catch (error) {
+    console.error("크루 생성 중 오류:", error);
+    alert("크루 생성 실패: 서버 오류");
+  }
+};
+
+const joinCrew = async (crew) => {
+  if (!token.value || !userId.value) {
+    alert("로그인이 필요합니다.");
+    return;
+  }
+
+  try {
+    const res = await fetch(`http://localhost:8080/api/crew/${crew.id}/join?userId=${userId.value}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token.value}`
       }
     });
 
     const message = await res.text();
     alert(message);
+
+    if (res.ok) {
+      // 크루 목록 새로고침
+      await fetchCrewsAndMembers();
+    }
   } catch (err) {
     console.error("크루 가입 중 오류:", err);
     alert("크루 가입 실패: 서버 오류");
@@ -220,6 +246,11 @@ const joinCrew = async (crew) => {
 
 /* 크루 삭제, 탈퇴 */
 const deleteCrew = async (crew) => {
+  if (!token.value || !userId.value) {
+    alert("로그인이 필요합니다.");
+    return;
+  }
+
   try {
     const res = await fetch(`http://localhost:8080/api/crew/${crew.id}?creatorId=${userId.value}`, {
       method: 'DELETE',
@@ -242,6 +273,11 @@ const deleteCrew = async (crew) => {
 };
 
 const quitCrew = async (crew) => {
+  if (!token.value || !userId.value) {
+    alert("로그인이 필요합니다.");
+    return;
+  }
+
   try {
     const res = await fetch(`http://localhost:8080/api/crew/${crew.id}/leave?userId=${userId.value}`, {
       method: 'DELETE',
@@ -263,30 +299,49 @@ const quitCrew = async (crew) => {
   }
 };
 
-
 /* 크루 데이터베이스에서 불러오기*/
 const fetchCrewsAndMembers = async () => {
-  const currentToken = localStorage.getItem("jwt");
+  if (!token.value) {
+    console.warn("토큰이 없어 크루 목록을 가져올 수 없습니다.");
+    return;
+  }
+
   try {
     const res = await fetch("http://localhost:8080/api/crew", {
-      headers: { Authorization: `Bearer ${currentToken}` }
+      headers: { Authorization: `Bearer ${token.value}` }
     });
-    if (!res.ok) throw new Error("크루 목록 불러오기 실패");
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        handleTokenExpired();
+        return;
+      }
+      throw new Error("크루 목록 불러오기 실패");
+    }
 
     const data = await res.json();
     console.log("crew list:", data);
     crews.value = data;
 
     const memberPromises = data.map(async crew => {
-      const res = await fetch(`http://localhost:8080/api/crew/${crew.id}/members`, {
-        headers: { Authorization: `Bearer ${currentToken}` }
-      });
-      if (!res.ok) throw new Error(`멤버 불러오기 실패: crewId=${crew.id}`);
+      try {
+        const res = await fetch(`http://localhost:8080/api/crew/${crew.id}/members`, {
+          headers: { Authorization: `Bearer ${token.value}` }
+        });
 
-      const members = await res.json();
-      console.log(`members for crew ${crew.id}:`, members);
+        if (!res.ok) {
+          console.warn(`멤버 불러오기 실패: crewId=${crew.id}`);
+          return { crewId: crew.id, members: [] };
+        }
 
-      return { crewId: crew.id, members: members || [] };
+        const members = await res.json();
+        console.log(`members for crew ${crew.id}:`, members);
+
+        return { crewId: crew.id, members: members || [] };
+      } catch (error) {
+        console.error(`크루 ${crew.id} 멤버 불러오기 오류:`, error);
+        return { crewId: crew.id, members: [] };
+      }
     });
 
     const memberResults = await Promise.all(memberPromises);
@@ -328,6 +383,17 @@ const filteredCrews = computed(() => {
   if (!query) return crews.value;
   return crews.value.filter(c => c.roomName.toLowerCase().includes(query));
 });
+
+/* 토큰 만료 처리 */
+const handleTokenExpired = () => {
+  removeStoredToken();
+  removeStoredUserId();
+  token.value = null;
+  userId.value = null;
+  alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+  // 필요시 로그인 페이지로 리다이렉트
+  // router.push('/login');
+};
 
 /* 카카오 API */
 const loadKakaoMapScript = () => {
@@ -429,8 +495,12 @@ const drawPolylineOnSVG = () => {
   polyline.setAttribute("points", path);
 };
 
-
 const uploadMapImage = async () => {
+  if (!token.value) {
+    console.warn("토큰이 없어 이미지 업로드를 할 수 없습니다.");
+    return;
+  }
+
   try {
     drawPolylineOnSVG();
 
@@ -483,6 +553,10 @@ const uploadMapImage = async () => {
     });
 
     if (!res.ok) {
+      if (res.status === 401) {
+        handleTokenExpired();
+        return;
+      }
       const err = await res.text();
       console.error("업로드 실패:", err);
     } else {
@@ -507,6 +581,8 @@ const uploadMapImage = async () => {
 
         if (res.ok) {
           console.log("대체 방법으로 업로드 완료");
+        } else if (res.status === 401) {
+          handleTokenExpired();
         }
       }
     } catch (altError) {
@@ -556,27 +632,42 @@ const convertSvgToBlob = async () => {
 };
 
 const saveRunningData = async () => {
-  const currentToken = localStorage.getItem("jwt");
+  if (!token.value) {
+    console.warn("토큰이 없어 러닝 데이터를 저장할 수 없습니다.");
+    return;
+  }
 
-  await fetch("http://localhost:8080/api/runs/track-location", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${currentToken}`
-    },
-    body: JSON.stringify({
-      startTime: startTime.value,
-      endTime: endTime.value,
-      distance: (distance.value / 1000).toFixed(2)
-    })
-  });
+  try {
+    const res = await fetch("http://localhost:8080/api/runs/track-location", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token.value}`
+      },
+      body: JSON.stringify({
+        startTime: startTime.value,
+        endTime: endTime.value,
+        distance: (distance.value / 1000).toFixed(2)
+      })
+    });
 
-  infoText.value = `러닝 완료! ${(distance.value / 1000).toFixed(2)}km를 ${formattedTime.value} 동안 달렸습니다.`;
+    if (res.status === 401) {
+      handleTokenExpired();
+      return;
+    }
+
+    infoText.value = `러닝 완료! ${(distance.value / 1000).toFixed(2)}km를 ${formattedTime.value} 동안 달렸습니다.`;
+  } catch (error) {
+    console.error("러닝 데이터 저장 중 오류:", error);
+  }
 };
 
 /* 타이머 기능 */
 const toggleTimer = async () => {
-  const currentToken = localStorage.getItem("jwt");
+  if (!token.value) {
+    alert("로그인이 필요합니다.");
+    return;
+  }
 
   if (isRunning.value) {
     // 러닝 종료
@@ -597,14 +688,19 @@ const toggleTimer = async () => {
     console.log("종료 시 전송 데이터:", endJsonData);
 
     try {
-      await fetch("http://localhost:8080/api/runs/running-status", {
+      const res = await fetch("http://localhost:8080/api/runs/running-status", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${currentToken}`
+          "Authorization": `Bearer ${token.value}`
         },
         body: endJsonData
       });
+
+      if (res.status === 401) {
+        handleTokenExpired();
+        return;
+      }
 
       // 2. 저장 및 지도 업로드 실행
       await saveRunningData();
@@ -626,14 +722,19 @@ const toggleTimer = async () => {
     console.log("시작 시 전송 데이터:", startJsonData);
 
     try {
-      await fetch("http://localhost:8080/api/runs/running-status", {
+      const res = await fetch("http://localhost:8080/api/runs/running-status", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${currentToken}`
+          "Authorization": `Bearer ${token.value}`
         },
         body: startJsonData
       });
+
+      if (res.status === 401) {
+        handleTokenExpired();
+        return;
+      }
 
       timer.value = setInterval(() => {
         seconds.value++;
@@ -650,15 +751,18 @@ const toggleTimer = async () => {
   isRunning.value = !isRunning.value;
 };
 
-
-
 /* 유저 불러오기 */
 const getCurrentUser = async () => {
-  const currentToken = localStorage.getItem("jwt");
-  const currentuserId = localStorage.getItem("userId");
+  const currentToken = getStoredToken();
+  const currentUserId = getStoredUserId();
+
+  if (!currentToken) {
+    alert("로그인이 필요합니다.");
+    return;
+  }
 
   token.value = currentToken;
-  userId.value = currentuserId;
+  userId.value = Number(currentUserId);
 
   try {
     const res = await fetch("http://localhost:8080/api/users/me", {
@@ -667,15 +771,23 @@ const getCurrentUser = async () => {
       }
     });
 
-    if (!res.ok) throw new Error("유저 정보 불러오기 실패");
+    if (!res.ok) {
+      if (res.status === 401) {
+        handleTokenExpired();
+        return;
+      }
+      throw new Error("유저 정보 불러오기 실패");
+    }
 
     const data = await res.json();
-    const userId = data.user.id;
 
-    localStorage.setItem("userId", currentuserId);
-    console.log("로그인된 사용자 ID:", currentuserId);
+    // 사용자 정보 업데이트
+    if (data.user.id !== userId.value) {
+      userId.value = data.user.id;
+      setStoredUserId(data.user.id.toString());
+    }
 
-    localStorage.setItem("token", currentToken);
+    console.log("로그인된 사용자 ID:", userId.value);
     console.log("사용자 token:", currentToken);
 
   } catch (err) {
@@ -685,9 +797,11 @@ const getCurrentUser = async () => {
 };
 
 const stayOnTimer = () => { };
+
 function goToChat(crewId) {
   router.push(`/chat/${crewId}`);
 }
+
 const navigateToTimer = () => emit('navigate', 'RunTimer');
 const navigateToRank = () => emit('navigate', 'RunWithRank');
 
