@@ -10,22 +10,24 @@ public class Comment {
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String userNickname;
     
     // 기본 생성자
     public Comment() {
     }
-    
-    // 모든 필드를 포함한 생성자
-    public Comment(int id, int boardId, int userId, String content, 
-                  LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.id = id;
-        this.boardId = boardId;
-        this.userId = userId;
-        this.content = content;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
-    
+
+	public Comment(int id, int boardId, int userId, String content, LocalDateTime createdAt, LocalDateTime updatedAt,
+			String userNickname) {
+		super();
+		this.id = id;
+		this.boardId = boardId;
+		this.userId = userId;
+		this.content = content;
+		this.createdAt = createdAt;
+		this.updatedAt = updatedAt;
+		this.userNickname = userNickname;
+	}
+
     // Getter와 Setter 메서드
     public int getId() {
         return id;
@@ -74,6 +76,14 @@ public class Comment {
     
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+    
+    public String getUserNickname() {
+    	return userNickname;
+    }
+    
+    public void setUserNickname(String userNickname) {
+    	this.userNickname = userNickname;
     }
     
     @Override
