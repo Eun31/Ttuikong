@@ -216,8 +216,6 @@ const toggleCrewForm = () => {
 };
 
 const submitCrew = async () => {
-  console.log("🚨 token for submitCrew:", token.value);
-
   if (!token.value) {
     alert("로그인이 필요합니다.");
     return;
@@ -358,7 +356,6 @@ const fetchCrewsAndMembers = async () => {
     }
 
     const data = await res.json();
-    console.log("crew list:", data);
     crews.value = data;
 
     const memberPromises = data.map(async crew => {
@@ -373,7 +370,6 @@ const fetchCrewsAndMembers = async () => {
         }
 
         const members = await res.json();
-        console.log(`members for crew ${crew.id}:`, members);
 
         return { crewId: crew.id, members: members || [] };
       } catch (error) {
@@ -725,7 +721,7 @@ const toggleTimer = async () => {
       status: "ended"
     });
 
-    console.log("종료 시 전송 데이터:", endJsonData);
+    // console.log("종료 시 전송 데이터:", endJsonData);
 
     try {
       const res = await fetch("http://localhost:8080/api/runs/running-status", {
@@ -762,7 +758,7 @@ const toggleTimer = async () => {
       status: "running"
     });
 
-    console.log("시작 시 전송 데이터:", startJsonData);
+    // console.log("시작 시 전송 데이터:", startJsonData);
 
     try {
       const res = await fetch("http://localhost:8080/api/runs/running-status", {
@@ -830,9 +826,6 @@ const getCurrentUser = async () => {
       setStoredUserId(data.user.id.toString());
     }
 
-    console.log("로그인된 사용자 ID:", userId.value);
-    console.log("사용자 token:", currentToken);
-
   } catch (err) {
     console.error("사용자 정보 요청 실패:", err);
     alert("로그인이 필요합니다.");
@@ -863,7 +856,7 @@ const fetchLatestRoute = async (routeId) => {
       data.calories = 0;
     calories.value = data.calories;
 
-    console.log("가장 최근 러닝 기록 불러오기 성공:", data);
+    // console.log("가장 최근 러닝 기록 불러오기 성공:", data);
   } catch (err) {
     console.error("최신 러닝 정보 조회 실패:", err);
   }
@@ -879,7 +872,7 @@ const getRouteId = async () => {
       }
     });
     const data = await res.json();
-    console.log("route id 불러오기", data);
+    // console.log("route id 불러오기", data);
     return data.routeId;
   } catch (err) {
     console.error("route id 불러오기 실패:", err);
@@ -909,7 +902,7 @@ const calDailyRun = async (routeId) => {
     });
 
     const data = await res.json();
-    console.log("하루 러닝 시간 업데이트", data);
+    // console.log("하루 러닝 시간 업데이트", data);
   } catch (err) {
     console.error("하루 러닝 시간 계산 업데이트 중 오류:", err);
   }
@@ -943,7 +936,7 @@ const getCrewRun = async (crewId) => {
     if (!res.ok) throw new Error("서버 응답 오류");
 
     const data = await res.json();
-    console.log("크루 멤버 러닝 시간:", data);
+    // console.log("크루 멤버 러닝 시간:", data);
 
     data.forEach(member => {
       if (member.duration == null) member.duration = 0;
@@ -970,7 +963,7 @@ const getCrewGoal = async (crewId) => {
     if (!res.ok) throw new Error("서버 응답 오류");
 
     const data = await res.json();
-    console.log("크루 시간 현황:", data);
+    // console.log("크루 시간 현황:", data);
 
     crewStatus.value = data;
 

@@ -13,13 +13,13 @@
         </selectKey>
     </insert>
     
-    <!-- 로그인 (이메일, 비밀번호로 사용자 조회) -->
-    <select id="selectOne" parameterType="Map" resultType="User">
+    <!-- 로그인 (이메일로 사용자 조회) -->
+    <select id="selectOne" parameterType="String" resultType="User">
         SELECT id, email, password, nickname, gender, age, height, weight,
                activity_level AS activityLevel, activity_goal AS activityGoal, role,
                total_distance AS totalDistance, avg_distance AS avgDistance
         FROM User
-        WHERE email = #{email} AND password = #{password}
+        WHERE email = #{email}
     </select>
     
     <!-- 전체 사용자 목록 조회 -->

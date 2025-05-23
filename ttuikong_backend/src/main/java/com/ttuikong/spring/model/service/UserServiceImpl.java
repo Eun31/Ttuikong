@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private DailyRecordDao dailyRecordDao;
+
+	@Autowired
+	private BCryptPasswordEncoder passwordEncoder;
 	
 	@Override
 	public List<User> getUserList() {
@@ -29,15 +33,20 @@ public class UserServiceImpl implements UserService {
 	@Transactional
 	@Override
 	public void signup(User user) {
+		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		userDao.insertUser(user);
 	}
 
 	@Override
 	public User login(String email, String password) {
-		Map<String, String> info = new HashMap<>();
-		info.put("email", email);
-		info.put("password", password);
-		return userDao.selectOne(info);
+		User user = userDao.selectOne(email); 
+		if (user == null) return null;
+
+		if (!passwordEncoder.matches(password, user.getPassword())) {
+			return null; 
+		}
+
+		return user;
 	}
 
 	@Override

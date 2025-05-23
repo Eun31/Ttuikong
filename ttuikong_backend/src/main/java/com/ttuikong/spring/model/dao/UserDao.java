@@ -16,7 +16,7 @@ public interface UserDao {
     void insertUser(User user);
 
     // 로그인을 위한 이메일, 비밀번호로 사용자 조회
-    User selectOne(Map<String, String> info);
+    User selectOne(String email);
     
     // 사용자 ID로 조회
     User selectById(int id);
