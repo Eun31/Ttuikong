@@ -163,8 +163,6 @@ const USER_ID_KEY = "userId";
 
 const getStoredToken = () => localStorage.getItem(TOKEN_KEY);
 const getStoredUserId = () => localStorage.getItem(USER_ID_KEY);
-const setStoredToken = (tokenValue) => localStorage.setItem(TOKEN_KEY, tokenValue);
-const setStoredUserId = (userIdValue) => localStorage.setItem(USER_ID_KEY, userIdValue);
 const removeStoredToken = () => localStorage.removeItem(TOKEN_KEY);
 const removeStoredUserId = () => localStorage.removeItem(USER_ID_KEY);
 
@@ -819,12 +817,7 @@ const getCurrentUser = async () => {
     }
 
     const data = await res.json();
-
-    // 사용자 정보 업데이트
-    if (data.user.id !== userId.value) {
-      userId.value = data.user.id;
-      setStoredUserId(data.user.id.toString());
-    }
+    userId.value = data.user.id;
 
   } catch (err) {
     console.error("사용자 정보 요청 실패:", err);

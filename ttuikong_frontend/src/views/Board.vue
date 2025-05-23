@@ -10,49 +10,43 @@
         <button class="write-btn" @click="goToWritePage">글쓰기</button>
       </div>
     </div>
-    
+
     <!-- 카테고리 필터 -->
     <div class="category-filter">
-      <button class="category-btn" :class="{ active: currentCategory === 'all' }" @click="filterByCategory('all')">전체</button>
-      <button class="category-btn" :class="{ active: currentCategory === '자유' }" @click="filterByCategory('자유')">자유</button>
-      <button class="category-btn" :class="{ active: currentCategory === '루틴공유' }" @click="filterByCategory('루틴공유')">루틴공유</button>
-      <button class="category-btn" :class="{ active: currentCategory === '운동후기' }" @click="filterByCategory('운동후기')">운동후기</button>
-      <button class="category-btn" :class="{ active: currentCategory === '장소추천' }" @click="filterByCategory('장소추천')">장소추천</button>
-      <button class="category-btn" :class="{ active: currentCategory === '노래추천' }" @click="filterByCategory('노래추천')">노래추천</button>
-      <button class="category-btn" :class="{ active: currentCategory === '건강식품' }" @click="filterByCategory('건강식품')">건강식품</button>
+      <button class="category-btn" :class="{ active: currentCategory === 'all' }"
+        @click="filterByCategory('all')">전체</button>
+      <button class="category-btn" :class="{ active: currentCategory === '자유' }"
+        @click="filterByCategory('자유')">자유</button>
+      <button class="category-btn" :class="{ active: currentCategory === '루틴공유' }"
+        @click="filterByCategory('루틴공유')">루틴공유</button>
+      <button class="category-btn" :class="{ active: currentCategory === '운동후기' }"
+        @click="filterByCategory('운동후기')">운동후기</button>
+      <button class="category-btn" :class="{ active: currentCategory === '장소추천' }"
+        @click="filterByCategory('장소추천')">장소추천</button>
+      <button class="category-btn" :class="{ active: currentCategory === '노래추천' }"
+        @click="filterByCategory('노래추천')">노래추천</button>
+      <button class="category-btn" :class="{ active: currentCategory === '건강식품' }"
+        @click="filterByCategory('건강식품')">건강식품</button>
     </div>
-
     <div v-if="loading" class="loading-state">
       <div class="spinner"></div>
       <p>게시글을 불러오는 중...</p>
     </div>
-
     <div v-else-if="posts.length > 0" class="posts-grid">
-      <post-card 
-        v-for="post in paginatedPosts" 
-        :key="post.id" 
-        :post="post"
-        @click="viewPostDetail(post.id);"
-      />
+      <post-card v-for="post in paginatedPosts" :key="post.id" :post="post" @click="viewPostDetail(post.id);" />
     </div>
-
     <div v-else class="empty-state">
       <p>게시글이 없습니다.</p>
       <p class="empty-subtitle">첫 번째 게시글을 작성해보세요!</p>
       <button class="write-btn-empty" @click="goToWritePage">글쓰기</button>
     </div>
-    
     <div v-if="posts.length > 0" class="pagination">
       <button class="page-btn" :disabled="currentPage === 1" @click="changePage(currentPage - 1)">
         <i class="fas fa-chevron-left"></i>
       </button>
       <div class="page-numbers">
-        <button 
-          v-for="page in totalPages" 
-          :key="page" 
-          :class="['page-number', { active: page === currentPage }]"
-          @click="changePage(page)"
-        >
+        <button v-for="page in totalPages" :key="page" :class="['page-number', { active: page === currentPage }]"
+          @click="changePage(page)">
           {{ page }}
         </button>
       </div>
@@ -90,23 +84,23 @@ function getFullImageUrl(imageUrl) {
   if (imageUrl.startsWith('http')) {
     return imageUrl;
   }
-  
+
   return `http://localhost:8080${imageUrl}`;
 }
 
 function fetchPosts() {
   loading.value = true;
   error.value = '';
-  
+
   axios.get('http://localhost:8080/api/board')
     .then(response => {
       if (Array.isArray(response.data)) {
         console.log('백엔드에서 가져온 데이터:', response.data);
-        
+
         const transformedPosts = response.data.map(item => {
           const originalImageUrl = item.imageUrl;
           const fullImageUrl = getFullImageUrl(originalImageUrl);
-          
+
           return {
             id: item.postId,
             category: item.category || '자유',
@@ -115,7 +109,8 @@ function fetchPosts() {
               avatar: profileImg,
               id: item.userId
             },
-            title: item.title || '',
+            title: item.
+              title || '',
             description: item.content || '',
             image: fullImageUrl,
             tags: [],
@@ -125,7 +120,7 @@ function fetchPosts() {
             createdAt: item.createdAt
           };
         });
-        
+
         posts.value = transformedPosts;
       } else {
         posts.value = [];
@@ -143,15 +138,13 @@ function fetchPosts() {
 
 const filteredPosts = computed(() => {
   let result = posts.value;
-
   if (currentCategory.value !== 'all') {
     result = result.filter(post => post.category === currentCategory.value);
   }
-
   if (searchQuery.value.trim()) {
     const query = searchQuery.value.toLowerCase().trim();
-    result = result.filter(post => 
-      (post.title && post.title.toLowerCase().includes(query)) || 
+    result = result.filter(post =>
+      (post.title && post.title.toLowerCase().includes(query)) ||
       (post.description && post.description.toLowerCase().includes(query)) ||
       (post.tags && post.tags.some(tag => tag.toLowerCase().includes(query)))
     );
@@ -162,7 +155,7 @@ const filteredPosts = computed(() => {
     const dateB = b.createdAt instanceof Date ? b.createdAt : new Date(b.createdAt);
     return dateB - dateA;
   });
-  
+
   return result;
 });
 
@@ -177,14 +170,16 @@ const totalPages = computed(() => {
 });
 
 function viewPostDetail(postId) {
+  console.log('클릭한 게시글 ID:', postId, typeof postId);
+
   if (postId === undefined || postId === null) {
     console.error('유효하지 않은 게시글 ID');
     return;
   }
-  
+
   try {
-    router.push({ 
-      name: 'post-detail', 
+    router.push({
+      name: 'post-detail',
       params: { id: postId }
     });
   } catch (error) {
@@ -233,8 +228,13 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .error-message {

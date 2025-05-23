@@ -170,7 +170,6 @@ const getCurrentUser = async () => {
     userId.value = user.id;
     userName.value = user.nickname;
 
-    localStorage.setItem('userId', user.id);
     localStorage.setItem('nickname', user.nickname);
 
   } catch (err) {
