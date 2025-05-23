@@ -29,4 +29,7 @@ public interface UserDao {
     
     // 사용자 삭제
     void deleteUser(int id);
+
+    //비밀번호 조회
+	String getPasswordByUserId(int userId);
 }

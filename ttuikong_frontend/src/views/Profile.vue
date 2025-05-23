@@ -1,5 +1,11 @@
 <template>
   <div class="profile-container">
+    <PasswordConfirmModal 
+      :showModal="showPasswordModal"
+      @close="closePasswordModal"
+      @confirm="handlePasswordConfirm"
+      ref="passwordModal"
+    />
     <div v-if="loading" class="loading-container">
       <div class="loading-spinner"></div>
       <p>프로필을 불러오는 중...</p>
@@ -20,7 +26,7 @@
             <h2 class="user-nickname">{{ profileUser.nickname }}</h2>
             <p class="user-desc">{{ getActivityLevel() }}</p>
 
-            <div v-if="isMyProfile" class="edit-profile-btn" @click="editProfile">
+            <div v-if="isMyProfile" class="edit-profile-btn" @click="showPasswordConfirm">
               프로필 수정
             </div>
 
@@ -187,7 +193,7 @@ import { useRouter } from 'vue-router';
 import axios from 'axios';
 import profileImg from '../assets/profile.png';
 import PostCard from '../components/PostCard.vue';
-
+import PasswordConfirmModal from '../components/PasswordConfirmModal.vue';
 
 const props = defineProps({
   userId: {
@@ -218,6 +224,9 @@ const likedPostsLoading = ref(false);
 const followersLoading = ref(false);
 const followingLoading = ref(false);
 const followLoading = ref(false);
+
+const showPasswordModal = ref(false);
+const passwordModal = ref(null);
 
 // 데이터
 const profileUser = reactive({
@@ -646,7 +655,37 @@ const getActivityLevel = () => profileUser.activityLevel;
 const getActivityGoal = () => profileUser.activityGoal;
 const formatDistance = (distance) => distance ? distance.toFixed(1) + 'km' : '0km';
 
-const editProfile = () => router.push('/profile/edit');
+const showPasswordConfirm = () => {
+  showPasswordModal.value = true;
+};
+
+const closePasswordModal = () => {
+  showPasswordModal.value = false;
+};
+
+const handlePasswordConfirm = async (password) => {
+  try {
+    const response = await axios.post(`${API_URL}/users/verify`, {
+      password: password
+    }, {
+      headers: authHeader.value
+    });
+    
+    if (response.data.success) {
+      showPasswordModal.value = false;
+      router.push('/profile/edit');
+    }
+    else {
+      passwordModal.value?.setError('비밀번호가 일치하지 않습니다.');
+    }
+  } catch (err) {
+    passwordModal.value?.setError('비밀번호가 일치하지 않습니다.');
+  }
+  finally {
+    passwordModal.value?.setLoading(false);
+  }
+};
+
 const goToNewPost = () => router.push('/board/write');
 const goToBoard = () => router.push('/board');
 const goToDiscover = () => router.push('/discover');
@@ -663,7 +702,6 @@ const goToUserProfile = (userId) => {
   }
 };
 
-// 팔로우 토글 (메인 프로필)
 const toggleFollowUser = async () => {
   if (!token) {
     alert('로그인이 필요한 기능입니다.');
@@ -700,12 +738,10 @@ const toggleFollowUser = async () => {
   }
 };
 
-// 팔로우 상태 확인
 const isUserFollowing = (userId) => {
   return following.value.some(f => f.id === userId);
 };
 
-// 팔로우 토글 (목록에서)
 const toggleFollow = async (userId) => {
   if (!token) {
     alert('로그인이 필요한 기능입니다.');
@@ -714,7 +750,6 @@ const toggleFollow = async (userId) => {
   }
   
   try {
-    // 로딩 상태 설정
     const followerUser = followers.value.find(f => f.id === userId);
     const followingUser = following.value.find(f => f.id === userId);
     
@@ -745,7 +780,6 @@ const toggleFollow = async (userId) => {
       alert('팔로우 처리에 실패했습니다. 다시 시도해 주세요.');
     }
   } finally {
-    // 로딩 상태 해제
     const followerUser = followers.value.find(f => f.id === userId);
     const followingUser = following.value.find(f => f.id === userId);
     

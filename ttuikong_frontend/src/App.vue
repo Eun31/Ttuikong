@@ -1,6 +1,5 @@
 <template>
   <div id="app">
-    <!-- 기존 템플릿 코드 유지 -->
     <header class="header" v-if="!isAuthPage">
       <div class="container header-container">
         <router-link to="/" class="logo">
@@ -30,7 +29,6 @@
       <router-link to="/board" class="menu-item" @click="closeMenu">게시판</router-link>
       <router-link to="/chat" class="menu-item" @click="closeMenu">채팅</router-link>
 
-      <!-- 인증 관련 메뉴 항목 추가 -->
       <div class="menu-auth-section">
         <template v-if="isLoggedIn">
           <router-link to="/profile" class="menu-item" @click="closeMenu">마이페이지</router-link>

@@ -2,9 +2,7 @@
   <div class="profile-edit-container">
     <div class="page-header">
       <button class="back-button" @click="goBack">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M15 18L9 12L15 6" stroke="#333333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
+        
       </button>
       <h1 class="page-title">프로필 수정</h1>
       <div class="spacer"></div>
@@ -35,23 +33,70 @@
             @input="validateField('nickname')"
             required
           >
-          <div class="input-counter">{{ userProfile.nickname?.length || 0 }}/10</div>
+          <div class="input-counter">{{ userProfile.nickname.length || 0 }}/10</div>
           <div v-if="validationErrors.nickname" class="error-text">{{ validationErrors.nickname }}</div>
         </div>
 
         <div class="form-group">
-          <label for="password">비밀번호</label>
-          <input 
-            type="password" 
-            id="password" 
-            v-model="userProfile.password" 
-            class="form-input"
-            placeholder="새 비밀번호를 입력하세요 (변경하지 않으려면 비워두세요)" 
-            :class="{ 'error': validationErrors.password }"
-            @input="validateField('password')"
-          >
-          <div v-if="validationErrors.password" class="error-text">{{ validationErrors.password }}</div>
-        </div>
+
+  <label for="password">새 비밀번호</label>
+  <div class="password-input-container">
+    <input 
+      :type="showPassword ? 'text' : 'password'"
+      id="password" 
+      v-model="userProfile.password" 
+      class="form-input password-input"
+      placeholder="새 비밀번호를 입력하세요 (변경하지 않으려면 비워두세요)" 
+      :class="{ 'error': validationErrors.password }"
+      @input="validateField('password')"
+    >
+    <button 
+      type="button" 
+      class="password-toggle"
+      @click="togglePasswordVisibility"
+    >
+      <svg v-if="showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+        <line x1="1" y1="1" x2="23" y2="23"></line>
+      </svg>
+      <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+    </button>
+  </div>
+  <div v-if="validationErrors.password" class="error-text">{{ validationErrors.password }}</div>
+</div>
+
+<div class="form-group" v-if="userProfile.password && userProfile.password.trim()">
+  <label for="passwordConfirm">새 비밀번호 확인</label>
+  <div class="password-input-container">
+    <input 
+      :type="showPasswordConfirm ? 'text' : 'password'"
+      id="passwordConfirm" 
+      v-model="userProfile.passwordConfirm" 
+      class="form-input password-input"
+      placeholder="새 비밀번호를 다시 입력하세요" 
+      :class="{ 'error': validationErrors.passwordConfirm }"
+      @input="validateField('passwordConfirm')"
+    >
+    <button 
+      type="button" 
+      class="password-toggle"
+      @click="togglePasswordConfirmVisibility"
+    >
+      <svg v-if="showPasswordConfirm" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+        <line x1="1" y1="1" x2="23" y2="23"></line>
+      </svg>
+      <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+    </button>
+  </div>
+  <div v-if="validationErrors.passwordConfirm" class="error-text">{{ validationErrors.passwordConfirm }}</div>
+</div>
 
         <div class="form-row">
           <div class="form-group half">
@@ -152,14 +197,6 @@
         </div>
       </form>
     </div>
-
-    <!-- 성공 토스트 -->
-    <div v-if="showSuccessToast" class="toast success-toast">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-      </svg>
-      프로필이 성공적으로 업데이트되었습니다!
-    </div>
   </div>
 </template>
 
@@ -167,7 +204,6 @@
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import axios from 'axios';
-import defaultProfileImg from '@/assets/profile.png';
 
 const router = useRouter();
 const route = useRoute();
@@ -185,11 +221,14 @@ const error = ref(null);
 const showSuccessToast = ref(false);
 const validationErrors = ref({});
 const currentUserId = ref(null);
+const showPassword = ref(false);
+const showPasswordConfirm = ref(false);
 
 const userProfile = ref({
   id: null,
   nickname: '',
   password: '',
+  passwordConfirm: '',
   gender: '',
   age: null,
   height: null,
@@ -275,44 +314,15 @@ const isFormValid = computed(() => {
   const hasValidPassword = !userProfile.value.password || 
                           !userProfile.value.password.trim() ||
                           (userProfile.value.password.length >= 6 && userProfile.value.password.length <= 20);
+  
+  const hasValidPasswordConfirm = !userProfile.value.password || 
+                               !userProfile.value.password.trim() ||
+                               userProfile.value.password === userProfile.value.passwordConfirm;
 
   const hasNoErrors = Object.keys(validationErrors.value).length === 0;
   
-  return hasValidNickname && hasValidAge && hasValidPassword && hasNoErrors;
+  return hasValidNickname && hasValidAge && hasValidPassword && hasNoErrors && hasValidPasswordConfirm;
 });
-
-const handleApiError = (err) => {
-  console.error('API Error:', err);
-
-  if (err.response) {
-    const { status, data } = err.response;
-    
-    switch (status) {
-      case 400:
-        return data.message || '잘못된 요청입니다.';
-      case 401:
-        return '인증이 필요합니다. 다시 로그인해주세요.';
-      case 403:
-        return '접근 권한이 없습니다.';
-      case 404:
-        return '요청한 정보를 찾을 수 없습니다.';
-      case 409:
-        return data.message || '이미 존재하는 데이터입니다.';
-      case 422:
-        return data.message || '입력 데이터가 올바르지 않습니다.';
-      case 500:
-        return '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-      default:
-        return data.message || '알 수 없는 오류가 발생했습니다.';
-    }
-  }
-
-  if (err.request) {
-    return '네트워크 연결을 확인해주세요.';
-  }
-
-  return err.message || '알 수 없는 오류가 발생했습니다.';
-};
 
 // 현재 사용자 정보 가져오기
 const getCurrentUser = async () => {
@@ -379,9 +389,7 @@ const fetchProfile = async () => {
     
   } catch (err) {
     console.error('프로필 불러오기 실패:', err);
-    error.value = handleApiError(err);
-    
-    if (err.response?.status === 401) {
+    if (err.response.status === 401) {
       router.push('/login');
     }
   } finally {
@@ -389,6 +397,13 @@ const fetchProfile = async () => {
   }
 };
 
+const togglePasswordVisibility = () => {
+  showPassword.value = !showPassword.value;
+};
+
+const togglePasswordConfirmVisibility = () => {
+  showPasswordConfirm.value = !showPasswordConfirm.value;
+};
 
 const goBack = () => {
   router.push('/profile');
@@ -435,8 +450,6 @@ const saveProfile = async () => {
       alert('로그인이 만료되었습니다. 다시 로그인해 주세요.');
       localStorage.removeItem('jwt');
       router.push('/login');
-    } else {
-      alert(handleApiError(err));
     }
   } finally {
     isSubmitting.value = false;
@@ -489,6 +502,8 @@ const validateField = (fieldName) => {
   
   if (fieldName === 'password') {
     delete newErrors.password;
+    delete newErrors.passwordConfirm;
+
     if (userProfile.value.password && userProfile.value.password.trim()) {
       if (userProfile.value.password.length < 6) {
         newErrors.password = '비밀번호는 6자 이상이어야 합니다.';
@@ -496,8 +511,24 @@ const validateField = (fieldName) => {
         newErrors.password = '비밀번호는 20자 이하여야 합니다.';
       }
     }
+
+    if (userProfile.value.passwordConfirm && userProfile.value.password !== userProfile.value.passwordConfirm) {
+      newErrors.passwordConfirm = '비밀번호가 일치하지 않습니다.';
+    }
+   else {
+    userProfile.value.passwordConfirm = '';
   }
+}
+
+if (fieldName === 'passwordConfirm') {
+  delete newErrors.passwordConfirm;
   
+  if (userProfile.value.password && userProfile.value.password.trim()) {
+    if (userProfile.value.password !== userProfile.value.passwordConfirm) {
+      newErrors.passwordConfirm = '비밀번호가 일치하지 않습니다.';
+    }
+  }
+}
   validationErrors.value = newErrors;
 };
 
@@ -871,25 +902,30 @@ label {
   cursor: not-allowed;
 }
 
-/* 토스트 메시지 */
-.toast {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 12px 24px;
-  border-radius: 8px;
-  color: white;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  z-index: 1000;
-  animation: slideUp 0.3s ease-out;
+.password-input-container {
+  position: relative;
 }
 
-.success-toast {
-  background-color: #FF7E36;
+.password-input {
+  padding-right: 48px !important;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+
+.password-toggle:hover {
+  color: #FF7E36;
 }
 
 @keyframes slideUp {

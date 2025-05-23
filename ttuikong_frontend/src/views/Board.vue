@@ -21,14 +21,12 @@
       <button class="category-btn" :class="{ active: currentCategory === '노래추천' }" @click="filterByCategory('노래추천')">노래추천</button>
       <button class="category-btn" :class="{ active: currentCategory === '건강식품' }" @click="filterByCategory('건강식품')">건강식품</button>
     </div>
-    
-    <!-- 로딩 표시 -->
+
     <div v-if="loading" class="loading-state">
       <div class="spinner"></div>
       <p>게시글을 불러오는 중...</p>
     </div>
-    
-    <!-- 게시글 목록 -->
+
     <div v-else-if="posts.length > 0" class="posts-grid">
       <post-card 
         v-for="post in paginatedPosts" 
@@ -38,15 +36,12 @@
       />
     </div>
 
-    <!-- 게시글이 없을 경우 -->
     <div v-else class="empty-state">
-      <img src="../assets/images/empty-box.svg" alt="게시글 없음" class="empty-icon">
       <p>게시글이 없습니다.</p>
       <p class="empty-subtitle">첫 번째 게시글을 작성해보세요!</p>
       <button class="write-btn-empty" @click="goToWritePage">글쓰기</button>
     </div>
     
-    <!-- 페이지네이션 -->
     <div v-if="posts.length > 0" class="pagination">
       <button class="page-btn" :disabled="currentPage === 1" @click="changePage(currentPage - 1)">
         <i class="fas fa-chevron-left"></i>
@@ -65,8 +60,7 @@
         <i class="fas fa-chevron-right"></i>
       </button>
     </div>
-    
-    <!-- 데이터 로드 오류 -->
+
     <div v-if="error" class="error-message">
       <p>{{ error }}</p>
       <button @click="fetchPosts" class="retry-btn">다시 시도</button>
@@ -100,7 +94,6 @@ function getFullImageUrl(imageUrl) {
   return `http://localhost:8080${imageUrl}`;
 }
 
-// 백엔드에서 게시글 데이터 가져오기
 function fetchPosts() {
   loading.value = true;
   error.value = '';
@@ -118,21 +111,18 @@ function fetchPosts() {
             id: item.postId,
             category: item.category || '자유',
             user: {
-              name: item.userNickname || 'Unknown',
+              name: item.userNickname,
               avatar: profileImg,
-              level: '커뮤니티',
-              verified: false,
               id: item.userId
             },
             title: item.title || '',
             description: item.content || '',
             image: fullImageUrl,
             tags: [],
-            location: '',
             likes: 0,
             comments: 0,
             liked: false,
-            createdAt: item.createdAt ? new Date(item.createdAt) : new Date()
+            createdAt: item.createdAt
           };
         });
         
@@ -153,13 +143,11 @@ function fetchPosts() {
 
 const filteredPosts = computed(() => {
   let result = posts.value;
-  
-  // 카테고리 필터링
+
   if (currentCategory.value !== 'all') {
     result = result.filter(post => post.category === currentCategory.value);
   }
-  
-  // 검색 필터링
+
   if (searchQuery.value.trim()) {
     const query = searchQuery.value.toLowerCase().trim();
     result = result.filter(post => 
@@ -168,8 +156,7 @@ const filteredPosts = computed(() => {
       (post.tags && post.tags.some(tag => tag.toLowerCase().includes(query)))
     );
   }
-  
-  // 정렬 (최신순)
+
   result = [...result].sort((a, b) => {
     const dateA = a.createdAt instanceof Date ? a.createdAt : new Date(a.createdAt);
     const dateB = b.createdAt instanceof Date ? b.createdAt : new Date(b.createdAt);
@@ -190,8 +177,6 @@ const totalPages = computed(() => {
 });
 
 function viewPostDetail(postId) {
-   console.log('클릭한 게시글 ID:', postId, typeof postId);
-  
   if (postId === undefined || postId === null) {
     console.error('유효하지 않은 게시글 ID');
     return;
@@ -222,13 +207,6 @@ function goToWritePage() {
 }
 
 onMounted(() => {
-  // // FontAwesome 로드
-  // const link = document.createElement('link');
-  // link.rel = 'stylesheet';
-  // link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css';
-  // document.head.appendChild(link);
-  
-  // 백엔드에서 데이터 가져오기
   fetchPosts();
 });
 </script>

@@ -82,6 +82,12 @@ public class UserServiceImpl implements UserService {
 			userDao.updateUser(user);
 		}
 	}
+
+	@Override
+	public boolean checkPassword(int userId, String inputPassword) {
+	    String dbPassword = userDao.getPasswordByUserId(userId);
+	    return inputPassword.equals(dbPassword);
+	}
 	
 	
 
