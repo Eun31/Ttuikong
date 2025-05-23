@@ -13,11 +13,11 @@
 
     <div v-else>
       <div class="post-card">
-        <div class="user-profile">
+        <div class="user-profile" @click.stop="goToUserProfile(post.userId)">
           <img :src="getProfileImage()" alt="프로필" class="user-avatar">
           <div class="user-details">
             <div class="user-name">
-              {{ post.userNickname || post.user_nickname }}
+              {{ post.userNickname }}
               <span v-if="isAuthor" class="badge">
                 <i class="icon-check"></i>
               </span>
@@ -60,7 +60,6 @@
           </div>
 
           <div class="post-actions">
-            <!-- 좋아요 버튼 (하트만) -->
             <button 
               class="heart-btn" 
               :class="{ liked: isLiked, disabled: !token }"
@@ -72,7 +71,6 @@
               <span v-else class="heart-emoji">♡</span>
             </button>
             
-            <!-- 좋아요 문구 -->
             <div class="like-text-container">
               <span class="like-status-text clickable" @click="openLikeUsersModal" >
                 {{ likeCount }}명이 이 게시글을 좋아합니다
@@ -82,7 +80,6 @@
         </div>
       </div>
 
-      <!-- 좋아요 사용자 모달 -->
       <div v-if="showLikeUsersModal" class="modal-overlay" @click="closeLikeUsersModal">
         <div class="like-users-modal" @click.stop>
           <div class="modal-header">
@@ -115,13 +112,11 @@
         </div>
       </div>
 
-      <!-- 댓글 섹션 -->
       <div class="comments-section">
         <div class="comments-header">
           <h3>댓글 {{ comments.length }}</h3>
         </div>
 
-        <!-- 댓글 작성 폼 -->
         <div v-if="token" class="comment-form">
           <div class="comment-input-wrapper">
             <img :src="getProfileImage()" alt="프로필" class="comment-user-avatar">
@@ -153,13 +148,11 @@
           </div>
         </div>
 
-        <!-- 로그인하지 않은 경우 -->
         <div v-else class="comment-login-prompt">
           <p>댓글을 작성하려면 로그인이 필요합니다.</p>
           <button @click="goToLogin" class="login-btn">로그인하기</button>
         </div>
 
-        <!-- 댓글 목록 -->
         <div class="comments-list">
           <div v-if="loadingComments" class="comments-loading">
             <div class="spinner small"></div>
@@ -179,10 +172,9 @@
               <img :src="getProfileImage()" alt="프로필" class="comment-avatar">
               <div class="comment-content">
                 <div class="comment-header">
-                  <span class="comment-author">{{ comment.userNickname || comment.user_nickname || '익명' }}</span>
-                  <span class="comment-time">{{ formatDate(comment.createdAt || comment.created_at) }}</span>
+                  <span class="comment-author" @click.stop="goToUserProfile(comment.userId)">{{ comment.userNickname }}</span>
+                  <span class="comment-time">{{ formatDate(comment.createdAt) }}</span>
                   
-                  <!-- 댓글 옵션 메뉴 (작성자만) -->
                   <div v-if="isCommentAuthor(comment)" class="comment-options">
                     <button class="comment-options-btn" @click="toggleCommentOptions(comment.id)">
                     </button>
@@ -191,23 +183,19 @@
                       :class="{ show: comment.showOptions }"
                     >
                       <div class="comment-option-item" @click="startEditComment(comment)">
-                        <span>✏️</span>
                         <span>수정</span>
                       </div>
                       <div class="comment-option-item delete" @click="deleteComment(comment.id)">
-                        <span>🗑️</span>
                         <span>삭제</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <!-- 댓글 내용 (수정 모드가 아닐 때) -->
                 <div v-if="!comment.isEditing" class="comment-text">
                   {{ comment.content }}
                 </div>
 
-                <!-- 댓글 수정 폼 -->
                 <div v-else class="comment-edit-form">
                   <textarea 
                     v-model="comment.editContent"
@@ -229,34 +217,37 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import { ref, computed, onMounted} from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import axios from 'axios';
 import profileImg from '../assets/profile.png';
 
-// 라우터와 라우트 가져오기
 const router = useRouter();
 const route = useRoute();
 
 const token = localStorage.getItem('jwt');
-
-// postId를 숫자로 변환하여 저장
 const postId = ref(parseInt(route.params.id, 10));
 
-// postId 유효성 검사
 const isValidPostId = computed(() => {
   const valid = !isNaN(postId.value) && postId.value > 0;
   console.log('postId 유효성 검사 결과:', valid, 'postId:', postId.value);
   return valid;
 });
 
-// 반응형 데이터 정의
+const goToUserProfile = (userId) => {
+  if (userId === currentUser.value.id) {
+    router.push('/profile');
+  } 
+  else {
+    router.push(`/profile/${userId}`);
+  }
+};
+
 const loading = ref(true);
 const error = ref(null);
 const post = ref({});
 const showOptions = ref(false);
 
-// 좋아요 관련 데이터
 const isLiked = ref(false);
 const likeCount = ref(0);
 const likeLoading = ref(false);
@@ -264,44 +255,35 @@ const showLikeUsersModal = ref(false)
 const likeUsers = ref([]);
 const loadingLikeUsers = ref(false);
 
-// 댓글 관련 데이터
 const comments = ref([]);
 const newComment = ref('');
 const loadingComments = ref(false);
 const submittingComment = ref(false);
 const commentTextarea = ref(null);
 
-// 현재 사용자 정보
 const currentUser = ref({
   id: null,
   nickname: '',
   token: localStorage.getItem('jwt') || ''
 });
 
-// API 기본 URL
 const API_URL = 'http://localhost:8080/api';
 
-// 헤더에 토큰 설정
 const authHeader = computed(() => {
   return currentUser.value.token ? 
     { 'Authorization': `Bearer ${currentUser.value.token}` } : {};
 });
 
-// 현재 사용자가 글 작성자인지 확인
 const isAuthor = computed(() => {
-  console.log(currentUser.value.id)
-  console.log(post.value.userId)
   return currentUser.value.id && post.value.userId === currentUser.value.id;
 });
 
-// 댓글 작성자인지 확인
 const isCommentAuthor = (comment) => {
-  return currentUser.value.id && (comment.userId === currentUser.value.id || comment.user_id === currentUser.value.id);
+  return currentUser.value.id && (comment.userId === currentUser.value.id);
 };
 
-// 이미지 URL 유효성 검사 (수정된 부분)
 const validImageUrl = computed(() => {
-  if (!post.value?.imageUrl && !post.value?.image_url) {
+  if (!post.value?.imageUrl) {
     return null;
   }
   
@@ -326,16 +308,13 @@ const handleImageError = (event) => {
 function getFullImageUrl(imageUrl) {
   if (!imageUrl) return '';
   
-  // 이미 완전한 URL인 경우 (http로 시작하는 경우)
   if (imageUrl.startsWith('http')) {
     return imageUrl;
   }
   
-  // 상대 경로인 경우 백엔드 서버 URL을 앞에 붙임
   return `http://localhost:8080${imageUrl}`;
 }
 
-// 좋아요 토글 함수 (백엔드 API에 맞춰 수정)
 async function toggleLike() {
   if (!token) {
     alert('로그인이 필요한 기능입니다.');
@@ -351,7 +330,6 @@ async function toggleLike() {
       headers: authHeader.value
     });
     
-    // 토글 후 상태를 다시 확인
     await Promise.all([
       checkLikeStatus(),
       fetchLikeCount()
@@ -373,7 +351,6 @@ async function toggleLike() {
   }
 }
 
-// 좋아요 상태 확인 함수 (백엔드 API에 맞춰 수정)
 async function checkLikeStatus() {
   if (!token) {
     console.log('로그인되지 않은 사용자입니다.');
@@ -385,8 +362,7 @@ async function checkLikeStatus() {
     const response = await axios.get(`${API_URL}/board/${postId.value}/like/status`, {
       headers: authHeader.value
     });
-    
-    // 백엔드에서 Boolean 값을 직접 반환
+
     isLiked.value = response.data;
     console.log('좋아요 상태 확인 완료:', isLiked.value);
   } catch (err) {
@@ -395,11 +371,9 @@ async function checkLikeStatus() {
   }
 }
 
-// 좋아요 개수 가져오기 함수 (백엔드 API에 맞춰 수정)
 async function fetchLikeCount() {
   try {
     const response = await axios.get(`${API_URL}/board/${postId.value}/like/count`);
-    // 백엔드에서 Integer 값을 직접 반환
     likeCount.value = response.data || 0;
     console.log('좋아요 개수 로드 완료:', likeCount.value);
   } catch (err) {
@@ -408,7 +382,6 @@ async function fetchLikeCount() {
   }
 }
 
-// 좋아요한 사용자 목록 가져오기 함수
 async function fetchLikeUsers() {
   try {
     const response = await axios.get(`${API_URL}/board/${postId.value}/like/users`);
@@ -441,7 +414,6 @@ function closeLikeUsersModal() {
   likeUsers.value = [];
 }
 
-// 로그인 사용자 정보 가져오기
 async function fetchCurrentUser() {
   if (!token) {
     console.log('로그인되지 않은 사용자입니다.');
@@ -452,26 +424,16 @@ async function fetchCurrentUser() {
     const response = await axios.get(`${API_URL}/users/me`, {
       headers: authHeader.value
     });
-    
-    console.log('API 응답 원본:', response.data);
-    
-    // 응답 데이터 구조에 맞게 수정: user 객체 안에 실제 데이터가 있음
-    const userData = response.data.user || response.data; // user 객체가 있으면 사용, 없으면 직접 접근
+
+    const userData = response.data.user || response.data;
     
     currentUser.value.id = userData.id;
     currentUser.value.nickname = userData.nickname || userData.email || '사용자';
     
-    console.log('로그인 사용자 정보 로드 완료:', {
-      id: currentUser.value.id,
-      nickname: currentUser.value.nickname,
-      원본_응답: response.data,
-      사용된_유저데이터: userData
-    });
   } catch (err) {
     console.error('사용자 정보를 불러오는 중 오류가 발생했습니다:', err);
     console.error('오류 상세:', err.response?.data);
-    
-    // 토큰이 만료되었거나 유효하지 않은 경우
+
     if (err.response && (err.response.status === 401 || err.response.status === 403)) {
       console.log('토큰이 만료되었거나 유효하지 않음');
       localStorage.removeItem('jwt');
@@ -481,12 +443,10 @@ async function fetchCurrentUser() {
   }
 }
 
-// 게시글 상세 정보 불러오기
 async function fetchPostDetail() {
   loading.value = true;
   error.value = null;
   
-  // 유효한 ID 확인
   if (!isValidPostId.value) {
     error.value = '유효하지 않은 게시글 ID입니다.';
     loading.value = false;
@@ -494,63 +454,28 @@ async function fetchPostDetail() {
   }
   
   try {
-    // API 호출 URL 로깅
     const apiUrl = `${API_URL}/board/${postId.value}`;
-    console.log('API 호출 URL:', apiUrl);
-    
     const response = await axios.get(apiUrl);
-    console.log('API 응답:', response.data);
-    
-    // 응답 데이터가 null이거나 undefined인 경우 처리
+
     if (!response.data) {
       throw new Error('게시글 데이터가 없습니다.');
     }
     
     post.value = response.data;
-    
-    // 이미지 URL 로깅
+
     const imageUrl = response.data.imageUrl || response.data.image_url;
     if (imageUrl) {
       console.log('원본 이미지 URL:', imageUrl);
       console.log('변환된 이미지 URL:', getFullImageUrl(imageUrl));
     }
-    
-    // 게시글 정보와 현재 사용자 정보 디버깅
-    console.log('=== 게시글 로드 완료 디버깅 ===');
-    console.log('전체 게시글 데이터:', response.data);
-    console.log('게시글 작성자 정보:', {
-      userId: response.data.userId,
-      user_id: response.data.user_id,
-      userNickname: response.data.userNickname,
-      user_nickname: response.data.user_nickname
-    });
-    console.log('현재 로그인 사용자:', {
-      id: currentUser.value.id,
-      nickname: currentUser.value.nickname
-    });
-    console.log('isAuthor 계산 결과:', isAuthor.value);
+   
   } catch (err) {
     console.error('게시글 조회 중 오류가 발생했습니다:', err);
-    
-    // 상세 오류 정보 로깅
-    if (err.response) {
-      console.log('오류 상태:', err.response.status);
-      console.log('오류 데이터:', err.response.data);
-      
-      if (err.response.status === 404) {
-        error.value = '게시글을 찾을 수 없습니다.';
-      } else {
-        error.value = '게시글을 불러오는데 실패했습니다. 다시 시도해 주세요.';
-      }
-    } else {
-      error.value = err.message || '게시글을 불러오는데 실패했습니다. 다시 시도해 주세요.';
-    }
   } finally {
     loading.value = false;
   }
 }
 
-// 댓글 목록 가져오기
 async function fetchComments() {
   loadingComments.value = true;
   
@@ -581,13 +506,11 @@ async function submitComment() {
     }, {
       headers: authHeader.value
     });
-    
-    // 댓글 작성 후 전체 댓글 목록 다시 불러오기
+  
     await fetchComments();
     
     newComment.value = '';
-    
-    // 텍스트 영역 높이 초기화
+
     if (commentTextarea.value) {
       commentTextarea.value.style.height = 'auto';
     }
@@ -603,23 +526,18 @@ async function submitComment() {
 
 function handleEnterKey(event) {
   if (event.shiftKey) {
-    // Shift + Enter: 줄바꿈 (기본 동작)
     return;
   }
-  
-  // Enter만: 댓글 등록
   event.preventDefault();
   submitComment();
 }
 
-// 텍스트 영역 자동 크기 조절
 function autoResize(event) {
   const textarea = event.target;
   textarea.style.height = 'auto';
   textarea.style.height = textarea.scrollHeight + 'px';
 }
 
-// 댓글 옵션 메뉴 토글
 function toggleCommentOptions(commentId) {
   comments.value = comments.value.map(comment => ({
     ...comment,
@@ -1534,6 +1452,12 @@ onMounted(async () => {
   font-weight: 600;
   color: var(--dark-text);
   font-size: 14px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.comment-author:hover {
+  color: var(--primary-color); /* 추가 */
 }
 
 .comment-time {

@@ -357,12 +357,7 @@ async function submitPost() {
     if (tags.value.length > 0) {
       boardData.tags = tags.value;
     }
-    
-    console.log('=== 제출 전 상태 확인 ===');
-    console.log('imageFile:', imageFile.value?.name || 'null');
-    console.log('imageRemoved:', imageRemoved.value);
-    console.log('originalImageUrl:', originalImageUrl.value);
-    
+  
     let response;
     
     if (isEditMode.value) {
@@ -373,7 +368,6 @@ async function submitPost() {
       if (imageFile.value) {
         console.log('케이스: 새 이미지 업로드');
         formData.append('image', imageFile.value);
-        // imageRemoved는 자동으로 false (기본값)
       } 
       // 이미지 삭제만 하는 경우 (새 이미지 없음)
       else if (imageRemoved.value && originalImageUrl.value) {
@@ -383,7 +377,6 @@ async function submitPost() {
       // 그 외의 경우 (이미지 변경 없음)
       else {
         console.log('케이스: 이미지 변경 없음');
-        // FormData에 아무것도 추가하지 않음 (기본값 사용)
       }
       
       // FormData 내용 확인
@@ -401,7 +394,6 @@ async function submitPost() {
       response = await axios.put(`${API_URL}/board/${postId.value}`, formData, {
         headers: {
           Authorization: `Bearer ${token}`
-          // Content-Type은 브라우저가 자동 설정
         }
       });
       
@@ -435,32 +427,6 @@ async function submitPost() {
     if (error.response) {
       const status = error.response.status;
       const message = error.response.data?.message || error.response.data;
-      
-      switch (status) {
-        case 400:
-          alert(`입력 오류: ${message}`);
-          break;
-        case 401:
-          alert('로그인이 만료되었습니다.');
-          localStorage.removeItem('jwt');
-          router.push('/login');
-          break;
-        case 403:
-          alert('권한이 없습니다.');
-          break;
-        case 404:
-          alert('게시글을 찾을 수 없습니다.');
-          break;
-        case 415:
-          console.error('415 에러 상세:', error.response);
-          alert('요청 형식 오류입니다.');
-          break;
-        case 500:
-          alert('서버 오류가 발생했습니다.');
-          break;
-        default:
-          alert(`오류가 발생했습니다. (${status})`);
-      }
     } else {
       alert('네트워크 오류가 발생했습니다.');
     }
@@ -469,11 +435,7 @@ async function submitPost() {
   }
 }
 
-// 컴포넌트 마운트 시 편집 모드 확인 및 데이터 로드
 onMounted(async () => {
-  console.log('PostWrite 마운트, 편집 모드:', isEditMode.value);
-  console.log('라우트 파라미터:', route.params.id);
-  
   if (isEditMode.value) {
     await loadPostData();
   }
