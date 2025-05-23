@@ -51,8 +51,6 @@ const router = useRouter();
 const userId = ref('');
 
 const login = async () => {
-  console.log('로그인 시도:', email.value);
-
   if (email.value && password.value) {
     try {
       const response = await fetch('http://localhost:8080/api/users/login', {
@@ -63,7 +61,8 @@ const login = async () => {
         body: JSON.stringify({
           email: email.value,
           password: password.value
-        })
+        }),
+        cache: 'no-store'
       });
 
       if (!response.ok) {
@@ -75,7 +74,6 @@ const login = async () => {
       localStorage.setItem('jwt', data.token);
       localStorage.setItem('userId', data.user.id);
       console.log(data.token);
-      console.log(data.user.id);
 
       router.push('/');
     } catch (error) {

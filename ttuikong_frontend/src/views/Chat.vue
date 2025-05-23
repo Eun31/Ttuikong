@@ -47,7 +47,6 @@ const API_BASE_URL = 'http://localhost:8080';
 async function fetchUserId() {
   try {
     const token = localStorage.getItem('jwt');
-    console.log('JWT Token:', token); // 디버깅용
 
     if (!token) {
       console.error('JWT 토큰이 없습니다.');
@@ -70,7 +69,6 @@ async function fetchUserId() {
 
     const data = await res.json();
     myUserId.value = data.user?.id ?? data.id;
-    console.log('현재 사용자 ID:', myUserId.value);
   } catch (error) {
     console.error('사용자 정보 조회 중 오류:', error);
   }
@@ -162,7 +160,6 @@ function sendMessage() {
 }
 
 onMounted(async () => {
-  console.log("현재 crewId:", crewId.value);
   await fetchUserId();
   await fetchMessages();
   fetchInterval = setInterval(fetchMessages, 5000);
