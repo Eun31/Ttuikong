@@ -127,7 +127,6 @@ const goalStyles = [
 
 function selectStyle(style) {
   const savedData = JSON.parse(localStorage.getItem('signupData') || '{}');
-
   const selectedIndex = goalStyles.findIndex(s => s.value === style);
   const savedIndex = goalStyles.findIndex(s => s.value === savedData.activityLevel);
 

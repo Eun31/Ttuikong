@@ -18,25 +18,22 @@ public class SwaggerConfig {
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Spring Board REST API")
-                        .description("Spring Boot을 이용한 게시판 REST API 명세서입니다.")
+                        .title("뛰콩 REST API")
+                        .description("Spring Boot을 이용한 뛰콩 REST API 명세서입니다.")
                         .version("v1.0.0")
-                        .contact(new Contact()
-                                .name("SSAFY")
-                                .email("ssafy@ssafy.com")
-                                .url("https://www.ssafy.com"))
                         .license(new License()
                                 .name("Apache License Version 2.0")
                                 .url("http://www.apache.org/licenses/LICENSE-2.0"))
-                        )
-                .addSecurityItem(new SecurityRequirement().addList("JWT"))
-                .components(new Components()
-                        .addSecuritySchemes("JWT", new SecurityScheme()
-                                .type(SecurityScheme.Type.HTTP)
-                                .scheme("bearer")
-                                .bearerFormat("JWT")
-                                .in(SecurityScheme.In.HEADER)
-                                .name("Authorization"))
                         );
+                // JWT 인증 설정 제거
+                // .addSecurityItem(new SecurityRequirement().addList("JWT"))
+                // .components(new Components()
+                //         .addSecuritySchemes("JWT", new SecurityScheme()
+                //                 .type(SecurityScheme.Type.HTTP)
+                //                 .scheme("bearer")
+                //                 .bearerFormat("JWT")
+                //                 .in(SecurityScheme.In.HEADER)
+                //                 .name("Authorization"))
+                //         );
     }
 }
