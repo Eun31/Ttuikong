@@ -7,17 +7,24 @@
       <h1 class="username">{{ userName }}님!</h1>
     </div>
 
-    <!-- 오늘의 추천 러닝 카드 -->
-    <div class="today-card">
-      <div class="card-icon">
-        <i class="ri-run-line"></i>
-      </div>
-      <div class="card-content">
-        <h3 class="card-title">오늘의 추천 러닝</h3>
-        <p class="recommend-text">{{ recommendation }}km 달려보세요!</p>
-      </div>
-      <button class="start-run-btn" @click="startRunning">GO!</button>
+<div class="today-card">
+  <div class="card-content">
+    <h3 class="card-title">오늘의 러닝 추천</h3>
+    <div v-if="isLoadingRecommendation" class="loading-state">
+      <p class="recommend-text">AI가 분석 중...</p>
     </div>
+    <div v-else-if="recommendationData" class="recommendation-info">
+      <p class="recommend-text">{{ recommendationData.recommendedDistance }}km 달려보세요!</p>
+      <div class="sub-info">
+        <span>{{  formattedTime }}</span>
+        <span>{{ recommendationData.estimatedCalories }}kcal</span>
+      </div>
+    </div>
+    <div v-else class="fallback-state">
+      <p class="recommend-text">{{ recommendation }}km 달려보세요!</p>
+    </div>
+  </div>
+</div>
 
     <!-- 러닝 통계 -->
     <div class="stats-section">
@@ -81,7 +88,9 @@ const router = useRouter();
 const token = ref('');
 const userId = ref(null);
 const userName = ref('');
-const recommendation = ref(5);
+const isLoadingRecommendation = ref(false);
+const recommendationData = ref(null);
+const formattedTime = ref(null);
 const growthRate = ref(100);
 const stats = ref([
   { label: '총 거리', value: '45.8km', icon: '🏁' },
@@ -152,6 +161,21 @@ function startRunning() {
   router.push('/run');
 }
 
+function formatTime(minutes) {
+  if (minutes >= 60) {
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    
+    if (remainingMinutes === 0) {
+      return `${hours}시간`;
+    } else {
+      return `${hours}시간 ${remainingMinutes}분`;
+    }
+  } else {
+    return `${minutes}분`;
+  }
+}
+
 /* user 불러오기 */
 const getCurrentUser = async () => {
   const currentToken = localStorage.getItem('jwt');
@@ -178,6 +202,30 @@ const getCurrentUser = async () => {
   }
 };
 
+const getAIRecommendation = async () => {
+  if (!token.value) return;
+  
+  try {
+    isLoadingRecommendation.value = true;
+    const response = await fetch('http://localhost:8080/api/my/running/recommendation', {
+      headers: {
+        'Authorization': `Bearer ${token.value}`
+      }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      recommendationData.value = data;
+      formattedTime.value = formatTime(recommendationData.value.estimatedTime);
+    }
+  } catch (error) {
+    console.error('AI 추천 로드 실패:', error);
+    // 실패시 기본값 유지
+  } finally {
+    isLoadingRecommendation.value = false;
+  }
+};
+
 /* 오늘 뛴 시간 */
 const formatDuration = (min) => {
   if (!min) return "0분";
@@ -189,6 +237,7 @@ const formatDuration = (min) => {
 
 onMounted(async () => {
   await getCurrentUser();
+  await getAIRecommendation();
 });
 </script>
 
@@ -421,44 +470,101 @@ onMounted(async () => {
 }
 
 .today-card {
-  background-color: #FF7E47;
-  border-radius: 20px;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 15px rgba(255, 126, 71, 0.3);
-  color: white;
-  position: relative;
-  overflow: hidden;
-}
-
-.card-icon {
-  width: 48px;
-  height: 48px;
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
+  background: #FF7E47;
+  border-radius: 16px;
+  padding: 24px;
+  margin: 16px 0;
+  box-shadow: 0 4px 16px rgba(255, 126, 71, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 16px;
-  font-size: 24px;
+  min-height: 120px;
 }
 
 .card-content {
-  flex-grow: 1;
+  text-align: center;
+  width: 100%;
+  text-align: center;
+  width: 100%;
 }
 
 .card-title {
+  color: white;
   font-size: 18px;
-  margin: 0 0 4px;
-  font-weight: 500;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+}
+
+.loading-state,
+.recommendation-info,
+.fallback-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center; 
+  width: 100%; 
+  background: rgba(255, 255, 255, 0.1); 
+  border-radius: 12px; 
+  padding: 20px; 
+  backdrop-filter: blur(10px);
+}
+
+@keyframes loading {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
 }
 
 .recommend-text {
+  color: white;
   font-size: 24px;
   font-weight: 700;
   margin: 0;
+}
+
+.loading-state .recommend-text {
+  opacity: 0.9;
+  animation: loading 1.5s ease-in-out infinite;
+}
+
+.sub-info {
+  display: flex;
+  gap: 24px;
+  margin-top: 8px;
+}
+
+.sub-info span {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.sub-info span:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.sub-info span::before {
+  font-size: 1.2rem;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.sub-info span:first-child::before {
+  content: '⏱️ 예상 소요 시간';
+  font-size: 0.75rem;
+  opacity: 0.8;
+  margin-top: 2px;
+  font-weight: 400;
+}
+
+.sub-info span:last-child::before {
+  content: '🔥 예상 소모 칼로리';
+  font-size: 0.75rem;
+  opacity: 0.8;
+  margin-top: 2px;
+  font-weight: 400;
 }
 
 .start-run-btn {
@@ -546,7 +652,58 @@ onMounted(async () => {
   }
 }
 
-.today-card {
-  animation: pulse 2s infinite;
+
+
+@media (max-width: 480px) {
+  .today-card {
+    padding: 16px;
+    margin: 12px 0;
+    gap: 12px;
+    min-height: 70px;
+  }
+  
+  .card-title {
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+  
+  .recommend-text {
+    font-size: 18px;
+  }
+  
+  .start-run-btn {
+    padding: 10px 16px;
+    font-size: 14px;
+    min-width: 50px;
+  }
+  
+  .sub-info span {
+    font-size: 11px;
+    padding: 2px 6px;
+  }
+}
+
+@media (max-width: 360px) {
+  .today-card {
+    padding: 14px;
+    gap: 10px;
+  }
+  
+  .card-title {
+    font-size: 13px;
+  }
+  
+  .recommend-text {
+    font-size: 16px;
+  }
+  
+  .start-run-btn {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+  
+  .sub-info {
+    gap: 6px;
+  }
 }
 </style>

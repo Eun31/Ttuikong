@@ -8,9 +8,6 @@ public class RunningRecommendation {
 	private double recommendedDistance;
 	private int estimatedTime;
 	private int estimatedCalories;
-	private double averagePace;
-	private double speed;
-	private double improvement;
 	private LocalDateTime createdAt;
 	private LocalDateTime expiresAt;
 	private boolean followed;
@@ -21,17 +18,13 @@ public class RunningRecommendation {
 	}
 
 	public RunningRecommendation(int id, int userId, double recommendedDistance, int estimatedTime,
-			int estimatedCalories, double averagePace, double speed, double improvement,
-			LocalDateTime createdAt, boolean followed) {
+			int estimatedCalories, LocalDateTime createdAt, boolean followed) {
 		super();
 		this.id = id;
 		this.userId = userId;
 		this.recommendedDistance = recommendedDistance;
 		this.estimatedTime = estimatedTime;
 		this.estimatedCalories = estimatedCalories;
-		this.averagePace = averagePace;
-		this.speed = speed;
-		this.improvement = improvement;
 		this.createdAt = createdAt;
 		this.followed = followed;
 	}
@@ -76,30 +69,6 @@ public class RunningRecommendation {
 		this.estimatedCalories = estimatedCalories;
 	}
 
-	public double getAveragePace() {
-		return averagePace;
-	}
-
-	public void setAveragePace(double averagePace) {
-		this.averagePace = averagePace;
-	}
-
-	public double getSpeed() {
-		return speed;
-	}
-
-	public void setSpeed(double speed) {
-		this.speed = speed;
-	}
-
-	public double getImprovement() {
-		return improvement;
-	}
-
-	public void setImprovement(double improvement) {
-		this.improvement = improvement;
-	}
-
 	public LocalDateTime getCreatedAt() {
 		return createdAt;
 	}
@@ -131,8 +100,7 @@ public class RunningRecommendation {
 	@Override
 	public String toString() {
 		return "RunningRecommendation [id=" + id + ", userId=" + userId + ", recommendedDistance=" + recommendedDistance
-				+ ", estimatedTime=" + estimatedTime + ", estimatedCalories=" + estimatedCalories + ", averagePace="
-				+ averagePace + ", speed=" + speed + ", improvement=" + improvement + ", createdAt=" + createdAt 
+				+ ", estimatedTime=" + estimatedTime + ", estimatedCalories=" + estimatedCalories + ", createdAt=" + createdAt 
 				+ ", followed=" + followed + "]";
 	}
 	

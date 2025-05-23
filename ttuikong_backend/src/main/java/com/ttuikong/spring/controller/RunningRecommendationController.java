@@ -85,11 +85,8 @@ public class RunningRecommendationController {
                 recommendation.setRecommendedDistance(((Number) data.get("recommendedDistance")).doubleValue());
                 recommendation.setEstimatedTime(((Number) data.get("estimatedTime")).intValue());
                 recommendation.setEstimatedCalories(((Number) data.get("estimatedCalories")).intValue());
-                recommendation.setAveragePace(((Number) data.get("averagePace")).doubleValue());
-                recommendation.setSpeed(((Number) data.get("speed")).doubleValue());
-                recommendation.setImprovement(((Number) data.get("improvement")).doubleValue());
                 recommendation.setCreatedAt(LocalDateTime.now());
-                recommendation.setExpiresAt(LocalDateTime.now().plusDays(1)); // 24시간 후 만료
+                recommendation.setExpiresAt(LocalDateTime.now().plusDays(1));
                 
                 // DB에 저장
                 int recommendationId = recommendationService.saveRecommendation(recommendation);
