@@ -103,12 +103,12 @@
           <div class="run-stat">
             <span class="stat-icon">📏</span>
             <span class="stat-label">거리:</span>
-            <span class="stat-value">{{ run.distance }}</span>
+            <span class="stat-value">{{ run.distance.toFixed(2) }}km</span>
           </div>
           <div class="run-stat">
             <span class="stat-icon">⏱️</span>
             <span class="stat-label">시간:</span>
-            <span class="stat-value">{{ run.duration }}</span>
+            <span class="stat-value">{{ formatDuration(run.duration) }}</span>
           </div>
         </div>
       </div>

@@ -83,11 +83,30 @@ const userId = ref(null);
 const userName = ref('');
 const recommendation = ref(5);
 const growthRate = ref(100);
-const stats = ref([
-  { label: '총 거리', value: '45.8km', icon: '🏁' },
-  { label: '총 횟수', value: '12', icon: '👟' },
-  { label: '챌린지 보상', value: '3', icon: '🎁' }
-]);
+const runningData = ref([]);
+const stats = computed(() => {
+  const totalDistance = runningData.value.reduce((sum, run) => sum + (run.distance || 0), 0);
+  const totalDuration = runningData.value.reduce((sum, run) => sum + (run.duration || 0), 0);
+  const runCount = runningData.value.length;
+
+  return [
+    {
+      label: '총 거리',
+      value: `${totalDistance.toFixed(1)} km`,
+      icon: '📏'
+    },
+    {
+      label: '총 시간',
+      value: formatDuration(totalDuration),
+      icon: '⏱️'
+    },
+    {
+      label: '러닝 횟수',
+      value: `${runCount}회`,
+      icon: '🏃‍♂️'
+    }
+  ];
+});
 const menus = ref([
   { label: '랭킹', icon: '👟', path: '/run/rank' },
   { label: '캘린더', icon: '📝', path: '/calendar' },
@@ -179,16 +198,56 @@ const getCurrentUser = async () => {
 };
 
 /* 오늘 뛴 시간 */
-const formatDuration = (min) => {
-  if (!min) return "0분";
-  const hr = Math.floor(min / 60);
-  const m = min % 60;
-  return `${hr}시간 ${m.toFixed(0)}분`;
+
+const formatDuration = (seconds) => {
+  if (!seconds || seconds <= 0) return "0초";
+
+  const totalMinutes = Math.floor(seconds / 60);
+  const sec = seconds % 60;
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const minutes = totalMinutes % 60;
+
+  if (days > 0) {
+    return `${days}일 ${hours}시간 ${minutes}분 ${sec}초`;
+  } else if (hours > 0) {
+    return `${hours}시간 ${minutes}분 ${sec}초`;
+  } else if (minutes > 0) {
+    return `${minutes}분 ${sec}초`;
+  } else {
+    return `${sec}초`;
+  }
+};
+
+/* 유저의 하루 러닝 기록 */
+const getDayRoutes = async () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+
+  try {
+    const res = await fetch(
+      `http://localhost:8080/api/users/${userId.value}/records?year=${year}&month=${month}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token.value}`
+        }
+      }
+    );
+
+    const data = await res.json();
+    runningData.value = data;
+    console.log(runningData.value)
+
+  } catch (err) {
+    console.error("하루 러닝 정보 조회 실패:", err);
+  }
 };
 
 
 onMounted(async () => {
   await getCurrentUser();
+  await getDayRoutes();
 });
 </script>
 
