@@ -12,17 +12,17 @@
           <img :src="profile" alt="프로필 이미지">
         </div>
         <div class="profile-details">
-          <h2 class="profile-name">{{ user.name }}</h2>
-          <p class="profile-level">{{ user.level }}</p>
+          <h2 class="profile-name">{{ userName }}</h2>
+          <p class="profile-level">{{ userInfo.activityLevel }}</p>
           <div class="profile-stats">
             <div class="stat">
               <span class="stat-label">총 거리</span>
-              <span class="stat-value">{{ user.totalDistance }}</span>
+              <span class="stat-value">{{ userInfo.totalDistance }}</span>
             </div>
-            <div class="stat">
+            <!-- <div class="stat">
               <span class="stat-label">총 러닝</span>
-              <span class="stat-value">{{ user.totalRuns }}</span>
-            </div>
+              <span class="stat-value">{{ userInfo.totalDistance }}</span>
+            </div> -->
           </div>
         </div>
       </div>
@@ -31,36 +31,22 @@
     <!-- 러닝 통계 카드 -->
     <div class="stats-card">
       <div class="card-header">
-        <h2 class="card-title">이번 달 러닝 통계</h2>
+        <h2 class="card-title">월 통계</h2>
         <span class="card-subtitle">{{ currentMonth }}</span>
       </div>
       <div class="stats-grid">
         <div class="stat-item">
-          <span class="stat-icon">🏃</span>
-          <div class="stat-content">
-            <span class="stat-value">{{ monthlyStats.totalRuns }}</span>
-            <span class="stat-label">러닝 횟수</span>
-          </div>
-        </div>
-        <div class="stat-item">
           <span class="stat-icon">📏</span>
           <div class="stat-content">
-            <span class="stat-value">{{ monthlyStats.totalDistance }}</span>
+            <span class="stat-value">{{ monthlyStats.monthdistance }}</span>
             <span class="stat-label">총 거리</span>
           </div>
         </div>
         <div class="stat-item">
           <span class="stat-icon">⏱️</span>
           <div class="stat-content">
-            <span class="stat-value">{{ monthlyStats.totalTime }}</span>
+            <span class="stat-value">{{ monthlyStats.monthduration }}</span>
             <span class="stat-label">총 시간</span>
-          </div>
-        </div>
-        <div class="stat-item">
-          <span class="stat-icon">🔥</span>
-          <div class="stat-content">
-            <span class="stat-value">{{ monthlyStats.totalCalories }}</span>
-            <span class="stat-label">소모 칼로리</span>
           </div>
         </div>
       </div>
@@ -69,7 +55,7 @@
     <!-- 캘린더 섹션 -->
     <div class="calendar-section">
       <div class="card-header">
-        <h2 class="card-title">일별 러닝 기록</h2>
+        <h2 class="card-title">기록</h2>
         <div class="month-selector">
           <button class="month-btn" @click="changeMonth(-1)">
             <span class="icon">←</span>
@@ -190,22 +176,17 @@ import profileImg from '../assets/profile.png';
 
 // 반응형 상태 정의
 const profile = ref(profileImg);
-const user = ref({
-  name: '러너홍길동',
-  level: '열정적인 러너',
-  totalDistance: '158.2km',
-  totalRuns: 24,
-  achievements: 8
-});
+const token = ref('');
+const userId = ref(null);
+const userName = ref('');
+const userInfo = ref({});
 
 const currentDate = ref(new Date());
 const selectedDate = ref(new Date());
 const selectedDay = ref(null);
 const monthlyStats = ref({
-  totalRuns: 12,
-  totalDistance: '78.5km',
-  totalTime: '8시간 45분',
-  totalCalories: '4,320kcal'
+  monthdistance: '',
+  monthduration: ''
 });
 
 const weekdays = ref(['일', '월', '화', '수', '목', '금', '토']);
@@ -456,8 +437,69 @@ function viewRoute(routeId) {
   alert(`루트 ID: ${routeId} 상세보기로 이동합니다.`);
 }
 
+/* user 불러오기 */
+const getCurrentUser = async () => {
+  const currentToken = localStorage.getItem('jwt');
+
+  try {
+    const res = await fetch(`http://localhost:8080/api/users/me`, {
+      headers: {
+        Authorization: `Bearer ${currentToken}`
+      }
+    });
+
+    const data = await res.json();
+    const user = data.user;
+    userInfo.value = data.user;
+
+    token.value = currentToken;
+    userId.value = user.id;
+    userName.value = user.nickname;
+
+  } catch (err) {
+    console.error('사용자 정보 요청 실패:', err);
+    alert('로그인이 필요합니다.');
+  }
+};
+
+/* 월별 통계 */
+const getMonthlyStats = async (userId) => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+
+  try {
+    const res = await fetch(
+      `http://localhost:8080/api/users/${userId}/records?year=${year}&month=${month}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token.value}`
+        }
+      }
+    );
+
+    const data = await res.json();
+    console.log(data);
+    if (Array.isArray(data)) {
+      const totalDistance = data.reduce((sum, rec) => sum + (rec.distance || 0), 0);
+      const totalDuration = data.reduce((sum, rec) => sum + (rec.duration || 0), 0);
+
+      monthlyStats.value.monthdistance = totalDistance.toFixed(1) + 'km';
+      monthlyStats.value.monthduration = totalDuration + '분';
+    } else {
+      console.warn("예상과 다른 응답 구조:", data);
+    }
+
+  } catch (err) {
+    console.error("월별 러닝 정보 조회 실패:", err);
+  }
+};
+
+
 // 컴포넌트 마운트 시 실행
-onMounted(() => {
+onMounted(async () => {
+  await getCurrentUser();
+  await getMonthlyStats(userId.value);
   generateCalendar();
 
   // 오늘 날짜에 러닝 기록이 있는지 확인하고 선택
@@ -582,7 +624,7 @@ onMounted(() => {
   background-color: var(--card-color, white);
   border-radius: var(--border-radius, 16px);
   box-shadow: var(--shadow-md, 0 2px 8px rgba(0, 0, 0, 0.08));
-  padding: 20px;
+  padding: 10px;
   margin-bottom: 20px;
 }
 
@@ -635,6 +677,7 @@ onMounted(() => {
   box-shadow: var(--shadow-md, 0 2px 8px rgba(0, 0, 0, 0.08));
   padding: 20px;
   margin-bottom: 20px;
+  overflow-x: hidden;
 }
 
 .month-selector {
@@ -685,65 +728,76 @@ onMounted(() => {
 .calendar-days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-  padding: 4px;
-  /* 간격 유지를 위한 패딩 추가 */
+  gap: 8px;
+  padding: 8px;
 }
 
 .calendar-day {
-  width: 45px;
-  /* 원의 크기 설정 (기존보다 작게) */
-  height: 45px;
-  /* 높이도 명시적으로 설정 */
+  position: relative;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  background-color: transparent;
+  border: none;
+  outline: none;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  position: relative;
+  flex-direction: column;
   border-radius: 50%;
-  cursor: pointer;
-  transition: var(--transition, all 0.3s ease);
-  margin: auto;
-  /* 가운데 정렬을 위해 추가 */
+  transition: background-color 0.2s ease;
+  user-select: none;
+  max-width: 40px;
 }
 
-.calendar-day:not(.empty):hover {
+.calendar-day:hover {
   background-color: rgba(255, 87, 34, 0.1);
 }
 
-.calendar-day.today {
-  border: 2px solid var(--primary-color, #FF5722);
-  width: 45px;
-  height: 45px;
-}
-
 .calendar-day.active {
-  background-color: var(--primary-color, #FF5722);
+  background-color: #FF5722;
   color: white;
-  width: 45px;
-  height: 45px;
 }
 
-.calendar-day.active .run-indicator {
-  background-color: white;
+.calendar-day.today {
+  border: 2px solid #FF5722;
+  box-sizing: border-box;
 }
+
+@media (max-width: 740px) {
+  .calendar-day.active {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  .calendar-day.today {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  .run-indicator {
+    bottom: -6px !important;
+  }
+}
+
 
 .calendar-day.empty {
-  cursor: default;
+  visibility: hidden;
 }
 
 .day-number {
-  font-weight: 500;
   font-size: 14px;
+  font-weight: 500;
 }
 
 .run-indicator {
-  width: 5px;
-  height: 5px;
-  background-color: var(--primary-color, #FF5722);
+  width: 6px;
+  height: 6px;
+  background-color: #FF5722;
   border-radius: 50%;
   position: absolute;
-  bottom: 4px;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 /* 러닝 기록 상세 */

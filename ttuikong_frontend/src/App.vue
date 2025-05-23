@@ -44,7 +44,7 @@
     </div>
 
     <main class="main-content" :class="{ 'auth-page': isAuthPage }">
-      <router-view :key="$route.path"/>
+      <router-view :key="$route.path" />
     </main>
   </div>
 </template>
@@ -79,7 +79,9 @@ const closeMenu = () => {
 
 const logout = () => {
   localStorage.removeItem('jwt');
+  localStorage.removeItem('token');
   localStorage.removeItem('userId');
+  localStorage.removeItem('nickname');
   router.push('/login');
 };
 
