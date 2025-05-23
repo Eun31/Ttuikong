@@ -7,24 +7,24 @@
       <h1 class="username">{{ userName }}님!</h1>
     </div>
 
-<div class="today-card">
-  <div class="card-content">
-    <h3 class="card-title">오늘의 러닝 추천</h3>
-    <div v-if="isLoadingRecommendation" class="loading-state">
-      <p class="recommend-text">AI가 분석 중...</p>
-    </div>
-    <div v-else-if="recommendationData" class="recommendation-info">
-      <p class="recommend-text">{{ recommendationData.recommendedDistance }}km 달려보세요!</p>
-      <div class="sub-info">
-        <span>{{  formattedTime }}</span>
-        <span>{{ recommendationData.estimatedCalories }}kcal</span>
+    <div class="today-card">
+      <div class="card-content">
+        <h3 class="card-title">오늘의 러닝 추천</h3>
+        <div v-if="isLoadingRecommendation" class="loading-state">
+          <p class="recommend-text">AI가 분석 중...</p>
+        </div>
+        <div v-else-if="recommendationData" class="recommendation-info">
+          <p class="recommend-text">{{ recommendationData.recommendedDistance }}km 달려보세요!</p>
+          <div class="sub-info">
+            <span>{{ formattedTime }}</span>
+            <span>{{ recommendationData.estimatedCalories }}kcal</span>
+          </div>
+        </div>
+        <div v-else class="fallback-state">
+          <p class="recommend-text">{{ recommendation }}km 달려보세요!</p>
+        </div>
       </div>
     </div>
-    <div v-else class="fallback-state">
-      <p class="recommend-text">{{ recommendation }}km 달려보세요!</p>
-    </div>
-  </div>
-</div>
 
     <!-- 러닝 통계 -->
     <div class="stats-section">
@@ -92,11 +92,30 @@ const isLoadingRecommendation = ref(false);
 const recommendationData = ref(null);
 const formattedTime = ref(null);
 const growthRate = ref(100);
-const stats = ref([
-  { label: '총 거리', value: '45.8km', icon: '🏁' },
-  { label: '총 횟수', value: '12', icon: '👟' },
-  { label: '챌린지 보상', value: '3', icon: '🎁' }
-]);
+const runningData = ref([]);
+const stats = computed(() => {
+  const totalDistance = runningData.value.reduce((sum, run) => sum + (run.distance || 0), 0);
+  const totalDuration = runningData.value.reduce((sum, run) => sum + (run.duration || 0), 0);
+  const runCount = runningData.value.length;
+
+  return [
+    {
+      label: '총 거리',
+      value: `${totalDistance.toFixed(1)} km`,
+      icon: '📏'
+    },
+    {
+      label: '총 시간',
+      value: formatDuration(totalDuration),
+      icon: '⏱️'
+    },
+    {
+      label: '러닝 횟수',
+      value: `${runCount}회`,
+      icon: '🏃‍♂️'
+    }
+  ];
+});
 const menus = ref([
   { label: '랭킹', icon: '👟', path: '/run/rank' },
   { label: '캘린더', icon: '📝', path: '/calendar' },
@@ -165,7 +184,7 @@ function formatTime(minutes) {
   if (minutes >= 60) {
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
-    
+
     if (remainingMinutes === 0) {
       return `${hours}시간`;
     } else {
@@ -204,7 +223,7 @@ const getCurrentUser = async () => {
 
 const getAIRecommendation = async () => {
   if (!token.value) return;
-  
+
   try {
     isLoadingRecommendation.value = true;
     const response = await fetch('http://localhost:8080/api/my/running/recommendation', {
@@ -212,7 +231,7 @@ const getAIRecommendation = async () => {
         'Authorization': `Bearer ${token.value}`
       }
     });
-    
+
     if (response.ok) {
       const data = await response.json();
       recommendationData.value = data;
@@ -227,17 +246,57 @@ const getAIRecommendation = async () => {
 };
 
 /* 오늘 뛴 시간 */
-const formatDuration = (min) => {
-  if (!min) return "0분";
-  const hr = Math.floor(min / 60);
-  const m = min % 60;
-  return `${hr}시간 ${m.toFixed(0)}분`;
+
+const formatDuration = (seconds) => {
+  if (!seconds || seconds <= 0) return "0초";
+
+  const totalMinutes = Math.floor(seconds / 60);
+  const sec = seconds % 60;
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const minutes = totalMinutes % 60;
+
+  if (days > 0) {
+    return `${days}일 ${hours}시간 ${minutes}분 ${sec}초`;
+  } else if (hours > 0) {
+    return `${hours}시간 ${minutes}분 ${sec}초`;
+  } else if (minutes > 0) {
+    return `${minutes}분 ${sec}초`;
+  } else {
+    return `${sec}초`;
+  }
+};
+
+/* 유저의 하루 러닝 기록 */
+const getDayRoutes = async () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+
+  try {
+    const res = await fetch(
+      `http://localhost:8080/api/users/${userId.value}/records?year=${year}&month=${month}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token.value}`
+        }
+      }
+    );
+
+    const data = await res.json();
+    runningData.value = data;
+    console.log(runningData.value)
+
+  } catch (err) {
+    console.error("하루 러닝 정보 조회 실패:", err);
+  }
 };
 
 
 onMounted(async () => {
   await getCurrentUser();
   await getAIRecommendation();
+  await getDayRoutes();
 });
 </script>
 
@@ -502,17 +561,24 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  text-align: center; 
-  width: 100%; 
-  background: rgba(255, 255, 255, 0.1); 
-  border-radius: 12px; 
-  padding: 20px; 
+  text-align: center;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
   backdrop-filter: blur(10px);
 }
 
 @keyframes loading {
-  0%, 100% { opacity: 0.7; }
-  50% { opacity: 1; }
+
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+
+  50% {
+    opacity: 1;
+  }
 }
 
 .recommend-text {
@@ -661,22 +727,22 @@ onMounted(async () => {
     gap: 12px;
     min-height: 70px;
   }
-  
+
   .card-title {
     font-size: 14px;
     margin-bottom: 6px;
   }
-  
+
   .recommend-text {
     font-size: 18px;
   }
-  
+
   .start-run-btn {
     padding: 10px 16px;
     font-size: 14px;
     min-width: 50px;
   }
-  
+
   .sub-info span {
     font-size: 11px;
     padding: 2px 6px;
@@ -688,20 +754,20 @@ onMounted(async () => {
     padding: 14px;
     gap: 10px;
   }
-  
+
   .card-title {
     font-size: 13px;
   }
-  
+
   .recommend-text {
     font-size: 16px;
   }
-  
+
   .start-run-btn {
     padding: 8px 14px;
     font-size: 13px;
   }
-  
+
   .sub-info {
     gap: 6px;
   }
