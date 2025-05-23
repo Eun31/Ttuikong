@@ -278,8 +278,8 @@ const activityGoalOptions = [
     description: '주 1회 가벼운 산책이나 조깅'
   },
   {
-    value: '느긋한 거북이',
-    name: '느긋한 거북이',
+    value: '산책하는 거북이',
+    name: '산책하는 거북이',
     icon: '🐢',
     description: '주 1-2회 가벼운 조깅'
   },

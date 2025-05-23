@@ -314,20 +314,8 @@ const getCurrentUser = async () => {
     const response = await axios.get(`${API_URL}/users/me`, {
       headers: authHeader.value
     });
-    
-    console.log('API 응답 원본:', response.data);
-    
     const userData = response.data.user;
-    
     currentUserId.value = userData.id;
-    
-    console.log('로그인 사용자 정보 로드 완료:', {
-      id: currentUserId.value,
-      nickname: userData.nickname,
-      원본_응답: response.data,
-      사용된_유저데이터: userData
-    });
-    
     return userData;
   } catch (err) {
     console.error('현재 사용자 정보 조회 실패:', err);
@@ -439,15 +427,12 @@ const getUserPosts = async (userId) => {
     const response = await axios.get(`${API_URL}/board/user/${userId}`, {
       headers: authHeader.value
     });
-    console.log('사용자 게시글 조회 결과:', response.data);
     
     if (typeof response.data === 'string') {
-      console.log('게시글이 없음:', response.data);
       return [];
     }
 
     if (!Array.isArray(response.data)) {
-      console.log('예상과 다른 응답 형태:', response.data);
       return [];
     }
     
@@ -478,16 +463,13 @@ const getLikedPosts = async () => {
     });
     
     const likedBoardIds = likedResponse.data || [];
-    console.log('좋아요한 게시글 데이터:', likedBoardIds);
-    
+
     // 2. 각 게시글 상세 정보 가져오기
     const likedPosts = [];
     for (const likeData of likedBoardIds) {
       try {
         // postId 필드에서 실제 게시글 ID 추출
         const actualPostId = likeData.postId;
-        console.log('게시글 ID 추출:', actualPostId);
-        
         const postResponse = await axios.get(`${API_URL}/board/${actualPostId}`, {
           headers: authHeader.value
         });
@@ -508,8 +490,6 @@ const getLikedPosts = async () => {
         console.warn(`게시글 ${likeData.postId} 조회 실패:`, err);
       }
     }
-    
-    console.log('좋아요한 게시글 목록:', likedPosts);
     return likedPosts;
   } catch (err) {
     console.error('좋아요한 게시글 조회 실패:', err);
@@ -679,7 +659,7 @@ const handlePasswordConfirm = async (password) => {
       passwordModal.value?.setError('비밀번호가 일치하지 않습니다.');
     }
   } catch (err) {
-    passwordModal.value?.setError('비밀번호가 일치하지 않습니다.');
+    passwordModal.value.setError('오류 발생');
   }
   finally {
     passwordModal.value?.setLoading(false);
@@ -797,7 +777,6 @@ watch(() => props.userId, (newUserId, oldUserId) => {
 
 watch(() => router.currentRoute.value.fullPath, (newPath, oldPath) => {
   if (newPath.startsWith('/profile') && newPath !== oldPath) {
-    console.log('프로필 경로 변경 감지 - 상태 초기화 및 데이터 로드');
     resetComponentState();
     loadProfileData();
   }
@@ -845,17 +824,9 @@ const resetComponentState = () => {
   feedPosts.value = [];
   followers.value = [];
   following.value = [];
-  
-  console.log('=== 컴포넌트 상태 초기화 완료 ===');
 };
 
 onMounted(async () => {
-  console.log('=== ProfilePage 컴포넌트 마운트 ===');
-  console.log('UserId 파라미터:', props.userId);
-  console.log('사용 가능한 토큰:', !!token);
-  console.log('토큰 값 (일부):', token ? token.substring(0, 20) + '...' : 'null');
-  console.log('goToUserProfile 함수 정의됨:', typeof goToUserProfile);
-  
   await loadProfileData();
 });
 </script>

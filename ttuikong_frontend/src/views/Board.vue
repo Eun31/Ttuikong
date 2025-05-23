@@ -101,8 +101,6 @@ function fetchPosts() {
   axios.get('http://localhost:8080/api/board')
     .then(response => {
       if (Array.isArray(response.data)) {
-        console.log('백엔드에서 가져온 데이터:', response.data);
-        
         const transformedPosts = response.data.map(item => {
           const originalImageUrl = item.imageUrl;
           const fullImageUrl = getFullImageUrl(originalImageUrl);

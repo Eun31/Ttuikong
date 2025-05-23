@@ -1,7 +1,6 @@
 package com.ttuikong.spring.model.dao;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 
@@ -31,5 +30,5 @@ public interface UserDao {
     void deleteUser(int id);
 
     //비밀번호 조회
-	String getPasswordByUserId(int userId);
+	String getPasswordByUserId(long id);
 }

@@ -62,6 +62,7 @@ public class UserServiceImpl implements UserService {
 	@Transactional
 	@Override
 	public void updateUser(User user) {
+		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		userDao.updateUser(user);
 	}
 
@@ -84,11 +85,8 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public boolean checkPassword(int userId, String inputPassword) {
-	    String dbPassword = userDao.getPasswordByUserId(userId);
-	    return inputPassword.equals(dbPassword);
+	public boolean checkPassword(long id, String inputPassword) {
+	    String dbPassword = userDao.getPasswordByUserId(id);
+	    return passwordEncoder.matches(inputPassword, dbPassword);
 	}
-	
-	
-
 }

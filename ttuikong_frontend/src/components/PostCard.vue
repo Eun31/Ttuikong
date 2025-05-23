@@ -86,7 +86,6 @@ const fetchLikeCount = async () => {
   try {
     const response = await axios.get(`${API_URL}/board/${post.value.id}/like/count`);
     likeCount.value = response.data || 0;
-    console.log(`게시글 ${post.value.id} 좋아요 개수:`, likeCount.value);
   } catch (err) {
     console.error('좋아요 개수 조회 실패:', err);
     likeCount.value = 0;
@@ -105,7 +104,6 @@ const checkLikeStatus = async () => {
       headers: authHeader()
     });
     isLiked.value = response.data;
-    console.log(`게시글 ${post.value.id} 좋아요 상태:`, isLiked.value);
   } catch (err) {
     console.error('좋아요 상태 확인 실패:', err);
     isLiked.value = false;

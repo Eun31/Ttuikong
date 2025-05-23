@@ -30,5 +30,5 @@ public interface UserService {
 	void calculateAverageDistance(int id);
 
 	//비밀번호 확인
-	boolean checkPassword(int id, String inputPassword);
+	boolean checkPassword(long userId, String inputPassword);
 }
