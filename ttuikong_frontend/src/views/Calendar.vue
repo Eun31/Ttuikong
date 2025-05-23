@@ -96,26 +96,20 @@
       <!-- 러닝 정보 카드 -->
       <div class="run-card" v-for="(run, index) in selectedDayRuns" :key="index">
         <div class="run-header">
-          <h3 class="run-title">{{ run.routeName }}</h3>
-          <span class="run-time">{{ run.startTime.replace('T', ' ') }}</span>
+          <h3 class="run-title">{{ run.mood }} {{ findEmoji(run.mood) }}</h3>
         </div>
 
         <div class="run-stats">
-          <div class="run-stat">
-            <span class="stat-icon">⏱️</span>
-            <span class="stat-label">시간:</span>
-            <span class="stat-value">{{ run.duration }}</span>
-          </div>
           <div class="run-stat">
             <span class="stat-icon">📏</span>
             <span class="stat-label">거리:</span>
             <span class="stat-value">{{ run.distance }}</span>
           </div>
-        </div>
-
-        <div class="run-map-preview">
-          <img :src="run.imageUrl ? 'http://localhost:8080' + run.imageUrl : defaultImage" alt="러닝 루트"
-            class="route-image" />
+          <div class="run-stat">
+            <span class="stat-icon">⏱️</span>
+            <span class="stat-label">시간:</span>
+            <span class="stat-value">{{ run.duration }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -124,6 +118,48 @@
     <div v-else-if="selectedDay && !selectedDay.hasRun" class="no-run-message">
       <span class="icon">🏃</span>
       <p>{{ formatDate(selectedDay.date) }}에는 러닝 기록이 없습니다.</p>
+    </div>
+  </div>
+
+  <!-- 루트 모음 버튼 -->
+  <div class="route-collection-btn-container">
+    <button class="route-collection-btn" @click="showRouteCollection = true">
+      <span class="icon">🗺️</span> 모든 기록 보기
+    </button>
+  </div>
+
+  <!-- 루트 모음 모달 -->
+  <div v-if="showRouteCollection" class="modal-overlay" @click="showRouteCollection = false">
+    <div class="modal-content" @click.stop>
+      <div class="modal-header">
+        <h2 class="modal-title">내 러닝 기록 모음</h2>
+        <button class="close-modal-btn" @click="showRouteCollection = false">
+          <span class="icon">✕</span>
+        </button>
+      </div>
+
+      <div class="routes-grid">
+        <div v-for="(route, index) in routes" :key="index" class="route-item">
+          <div class="route-image-container">
+            <img :src="route.imageUrl ? 'http://localhost:8080' + run.imageUrl : defaultImage" alt="러닝 루트"
+              class="route-thumbnail" />
+          </div>
+          <div class="route-info">
+            <h3 class="route-name">
+              <span>[{{ route.startTime.slice(0, 10) }}] {{ route.routeName }}</span>
+              <span>{{ findEmoji(route.mood) }}</span>
+            </h3>
+            <div class="route-meta">
+              <span>거리 {{ route.distance }}km</span>
+              <span class="route-separator">•</span>
+              <span>시간 {{ route.startTime.slice(11, 19).replace('T', ' ') }}</span>
+              <span class="route-separator">~</span>
+              <span>{{ route.endTime == null ? '-' : route.endTime.slice(11, 19).replace('T', ' ') }}</span>
+              <span>{{ route.endTime == null ? '' : ' (' + formatDuration(route.duration) + ')' }} </span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -149,10 +185,12 @@ const monthlyStats = ref({
 });
 
 const weekdays = ref(['일', '월', '화', '수', '목', '금', '토']);
+const showRouteCollection = ref(false);
 const calendarDays = ref([]);
 
 // 러닝 데이터
 const runningData = ref([]);
+const routes = ref([]);
 
 // Computed 속성
 const currentMonth = computed(() => {
@@ -168,7 +206,7 @@ const currentMonthYear = computed(() => {
 const selectedDayRuns = computed(() => {
   if (!selectedDay.value) return [];
   const run = runningData.value.find(data =>
-    isSameDay(data.startTime, selectedDay.value.date)
+    isSameDay(data.date, selectedDay.value.date)
   );
   return run ? [run] : [];
 });
@@ -199,7 +237,7 @@ function generateCalendar() {
 
     // 러닝 기록 확인
     const hasRun = runningData.value.some(data =>
-      isSameDay(data.startTime, currentDateObj)
+      isSameDay(data.date, currentDateObj)
     );
 
     calendarDays.value.push({
@@ -219,17 +257,17 @@ function generateCalendar() {
   }
 }
 
-function changeMonth(delta) {
+async function changeMonth(delta) {
   const newDate = new Date(selectedDate.value);
   newDate.setMonth(newDate.getMonth() + delta);
   selectedDate.value = newDate;
   selectedDay.value = null;
+  await getDayRoutes();
   generateCalendar();
 }
 
-function selectDay(day) {
+async function selectDay(day) {
   selectedDay.value = day;
-
   // 활성화 상태 업데이트
   calendarDays.value = calendarDays.value.map(d => ({
     ...d,
@@ -244,6 +282,7 @@ function isSameDay(date1, date2) {
     d1.getMonth() === d2.getMonth() &&
     d1.getDate() === d2.getDate();
 }
+
 
 function formatDate(date) {
   const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
@@ -307,20 +346,59 @@ const getMonthlyStats = async (userId) => {
   }
 };
 
-const formatDuration = (min) => {
-  if (!min) return "0분";
-  const hr = Math.floor(min / 60);
-  const m = min % 60;
-  if (hr < 24)
-    return `${hr}시간 ${m.toFixed(0)}분`;
-  else {
-    const day = Math.floor(hr / 24);
-    const h = hr % 24;
-    return `${day}일 ${h.toFixed(0)}시간 ${m.toFixed(0)}분`;
+const formatDuration = (seconds) => {
+  if (!seconds || seconds <= 0) return "0초";
+
+  const totalMinutes = Math.floor(seconds / 60);
+  const sec = seconds % 60;
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const minutes = totalMinutes % 60;
+
+  if (days > 0) {
+    return `${days}일 ${hours}시간 ${minutes}분 ${sec}초`;
+  } else if (hours > 0) {
+    return `${hours}시간 ${minutes}분 ${sec}초`;
+  } else if (minutes > 0) {
+    return `${minutes}분 ${sec}초`;
+  } else {
+    return `${sec}초`;
   }
 };
 
-/* 유저의 모든 루트 기록 */
+/* 유저의 하루 러닝 기록 */
+const getDayRoutes = async () => {
+  let year, month;
+
+  if (selectedDate.value) {
+    year = selectedDate.value.getFullYear();
+    month = selectedDate.value.getMonth() + 1;
+  } else {
+    const now = new Date();
+    year = now.getFullYear();
+    month = now.getMonth() + 1;
+  }
+
+  try {
+    const res = await fetch(
+      `http://localhost:8080/api/users/${userId.value}/records?year=${year}&month=${month}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token.value}`
+        }
+      }
+    );
+
+    const data = await res.json();
+    runningData.value = data;
+
+  } catch (err) {
+    console.error("하루 러닝 정보 조회 실패:", err);
+  }
+};
+
+
+/* 유저의 모든 러닝 기록 */
 const getAllRoutes = async () => {
   try {
     const res = await fetch(
@@ -333,20 +411,41 @@ const getAllRoutes = async () => {
     );
 
     const data = await res.json();
-    console.log(data);
-    runningData.value = data;
+    routes.value = data;
 
   } catch (err) {
-    console.error("모든 루트 정보 조회 실패:", err);
+    console.error("모든 러닝 정보 조회 실패:", err);
   }
 };
 
+const findEmoji = (label) => {
+  if (!label) return '';
+  const moodOptions = [
+    { label: '기쁨', emoji: '😊' },
+    { label: '뿌듯함', emoji: '💪' },
+    { label: '아쉬움', emoji: '😕' },
+    { label: '화남', emoji: '😠' },
+    { label: '슬픔', emoji: '😢' },
+    { label: '쏘쏘', emoji: '😐' }
+  ];
+  const found = moodOptions.find(option => option.label.trim() === label.trim());
+  return found ? found.emoji : '';
+};
+
+
+const reversedRoute = ref([]);
+const reverseRoutes = async (routes) => {
+  const reversedRoutes = computed(() => [...routes.value].reverse());
+  return reversedRoutes;
+}
 
 // 컴포넌트 마운트 시 실행
 onMounted(async () => {
   await getCurrentUser();
   await getMonthlyStats(userId.value);
   await getAllRoutes();
+  await reverseRoutes();
+  await getDayRoutes();
   generateCalendar();
 
   // 오늘 날짜에 러닝 기록이 있는지 확인하고 선택
@@ -771,5 +870,197 @@ onMounted(async () => {
 
 .no-run-message .icon {
   font-size: 32px;
+}
+
+/* 루트 모음 버튼 */
+.route-collection-btn-container {
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: center;
+}
+
+.route-collection-btn {
+  background-color: var(--primary-color, #FF5722);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: var(--shadow-md, 0 2px 8px rgba(0, 0, 0, 0.08));
+  transition: var(--transition, all 0.3s ease);
+}
+
+.route-collection-btn:hover {
+  background-color: var(--primary-dark, #E64A19);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg, 0 4px 12px rgba(0, 0, 0, 0.15));
+}
+
+/* 모달 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background-color: var(--card-color, white);
+  border-radius: var(--border-radius, 16px);
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 20px;
+  box-shadow: var(--shadow-lg, 0 10px 25px rgba(0, 0, 0, 0.15));
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color, #EEE);
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--dark-text, #333);
+}
+
+.close-modal-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--medium-text, #757575);
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--transition, all 0.3s ease);
+}
+
+.close-modal-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--primary-color, #FF5722);
+}
+
+/* 루트 그리드 */
+.routes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.route-item {
+  background-color: var(--card-color, white);
+  border-radius: var(--border-radius, 12px);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.1));
+  transition: var(--transition, all 0.3s ease);
+  cursor: pointer;
+}
+
+.route-item:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.1));
+}
+
+.route-image-container {
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+}
+
+.route-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.route-item:hover .route-thumbnail {
+  transform: scale(1.05);
+}
+
+.route-info {
+  padding: 12px;
+}
+
+.route-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--dark-text, #333);
+  margin-bottom: 6px;
+}
+
+.route-meta {
+  font-size: 13px;
+  color: var(--medium-text, #757575);
+  display: flex;
+  align-items: center;
+}
+
+.route-separator {
+  margin: 0 6px;
+}
+
+/* 반응형 조정 */
+@media (max-width: 768px) {
+  .routes-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .routes-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-content {
+    width: 95%;
+    padding: 16px;
+  }
 }
 </style>
