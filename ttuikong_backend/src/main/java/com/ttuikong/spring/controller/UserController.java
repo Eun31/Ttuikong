@@ -252,4 +252,14 @@ public class UserController {
 	    dailyRecordService.addRecord(record);
 	    return ResponseEntity.ok().build();
 	}
+	
+	@LoginRequired
+	@PostMapping("/verify")
+	public ResponseEntity<?> verifyPassword(@RequestBody Map<String, String> request, @LoginUser User loginUser) {
+	    String inputPassword = request.get("password");
+	    
+	    boolean isValid = userService.checkPassword(loginUser.getId(), inputPassword);
+	    
+	    return ResponseEntity.ok(Map.of("success", isValid));
+	}
 }
