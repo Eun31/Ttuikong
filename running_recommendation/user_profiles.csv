@@ -1,0 +1,101 @@
+id,email,password,nickname,gender,age,height,weight,activity_level,activity_goal,avg_distance,total_distance,role
+1,gimyejun@example.org,678689cffa3a806546d32f795ceb47dafc670feffc19f4094e42cf7428bbb0d6,yejun35,남성,46,176.8,77.4,산책하는 거북이,산책하는 거북이,3.2,268.8,ADMIN
+2,gimsangceol@example.com,0a9d6f45a0619cfbd00ad7023681c872d35f471af8744665ddaab27d4a2fdcd5,hyeonu52,여성,53,156.3,49.2,신나는 강아지,힘찬 질주 말,5.17,501.49,ADMIN
+3,jeonghun41@example.net,57c67c4e0b1f98cb3ef1772fe8ef2ad83b76404b8c0d8509e0c721988c7473c1,yeonggil76,여성,47,156.5,50.1,힘찬 질주 말,전광석화 치타,10.1,989.8,ADMIN
+4,igim@example.org,7cb63cfe02abc7b2abe4c7b2b66a274cf12589aa873d4c148d3fe8cc6d88f71c,hyeonjeong01,남성,44,169.3,71.4,산책하는 거북이,신나는 강아지,3.58,318.62,USER
+5,eungyeong51@example.com,5ceb4092cc6eb23bb4d92eb840c0f1716af817a6afc0a62d562db22ab843cc52,xgim,남성,64,162.7,73.8,느긋한 코알라,느긋한 코알라,2.79,44.64,USER
+6,yeongil39@example.org,345a39b3d0222230fd857615fc9e3dfe3c6365e791dfaa1400ef1dbd0bd1a7b7,ogim,남성,26,183.4,69.0,힘찬 질주 말,힘찬 질주 말,11.86,213.48,USER
+7,iseohyeon@example.org,6ddecf9a5fe1b32b00431ee9cbc65bbb2d281609e629efa7da61460ca59def94,yunjeonghun,여성,19,156.4,48.9,전광석화 치타,전광석화 치타,18.67,821.48,USER
+8,ubag@example.org,19a6e23bd6dbe4cadd07086363b6d224f6237c42b7e136d94cfb77d34a897c9e,jucaeweon,여성,34,171.1,61.7,힘찬 질주 말,전광석화 치타,9.7,611.1,USER
+9,seonghobag@example.org,c73c16bb0adc9666b2139af589810b5fa554d9824234cd7340aa2e2056a2633a,sinminseog,여성,21,161.3,68.6,힘찬 질주 말,힘찬 질주 말,11.84,1112.96,USER
+10,hbag@example.org,560e588aa1022abba16de2ed24b5e58833412342346e2e697e9379dbbd06e88e,yeongil62,여성,62,165.3,57.8,전광석화 치타,전광석화 치타,16.69,1635.62,USER
+11,hyeonjun10@example.com,010cb1e79a69d0a3c6194d01e8b3a99ed696fe296aee408d2662e3392c2e2910,simseongmin,여성,62,161.9,51.4,느긋한 코알라,산책하는 거북이,2.09,35.53,USER
+12,sonogsun@example.org,b003e10c46ff1d0b839f2cadb217828c6c467a13f6bbb2e0f31e00acd551c158,bcoe,여성,28,157.7,51.2,신나는 강아지,신나는 강아지,7.31,102.34,USER
+13,gimhayun@example.net,0b1e2687c230a96778e2c7e3c1e2eef4ee663ae844ed7e8b8c5a5a3a41e53615,jiagu,여성,56,164.0,69.4,힘찬 질주 말,전광석화 치타,8.38,268.16,USER
+14,jiyeonggim@example.net,824bf7b8916a1b1e1d195d9b4eab3a967bdcb1fda6fd05cf66669dbc502721fa,yejun14,여성,41,161.4,63.4,힘찬 질주 말,전광석화 치타,9.1,400.4,USER
+15,sunog68@example.com,a4aab3df4b600a7daab3b83f551452dad0b5770f4cf3dd259b61c6adddfdd60e,juweongim,남성,52,175.5,80.3,산책하는 거북이,산책하는 거북이,4.54,163.44,USER
+16,sujin14@example.net,aac89e5c64bfbfddbefd8057878368f6cc2b904b7cd55601d26758a339625919,nbag,남성,32,168.5,66.5,산책하는 거북이,신나는 강아지,3.22,231.84,USER
+17,yan@example.net,113dc174778dffa25a55439151ac98582ce83f4e67f1b678b108797beb50466d,yeeuni,여성,56,175.8,75.9,전광석화 치타,전광석화 치타,13.99,335.76,USER
+18,pgim@example.net,1e552585efb99809787c2ee79d9628d08332e5e8fea2324b974069416f0fd1d1,jryu,남성,46,165.8,60.0,신나는 강아지,신나는 강아지,5.48,411.0,USER
+19,vbae@example.com,bb1323e907cb15e59f3ad16851ab56e2a8c1edceed113333a2617c3fb7cfa01e,ijeongung,여성,62,156.3,55.3,힘찬 질주 말,전광석화 치타,9.67,686.57,USER
+20,ni@example.com,f5721c31517f55156c7e732349630b40dbb220a82dabee2bc82d7f9987b8031f,vgim,남성,45,170.8,66.7,느긋한 코알라,느긋한 코알라,1.84,130.64,USER
+21,do@example.org,dfc923ad895063561d40de6a9c53019faf55a73980cdaf82d6202c35e7b4e5fd,gweonminseog,남성,30,154.4,51.9,신나는 강아지,힘찬 질주 말,6.01,528.88,USER
+22,yeongsig10@example.org,47b5b2efa6d995bf11495ecacc0919b401b55e7c3876f0f1d5d61be9ebfd0000,seoyeong66,남성,49,175.4,74.3,느긋한 코알라,산책하는 거북이,2.05,137.35,USER
+23,minjunhan@example.net,27ad83e2e2b065139a8f168ee55798c8d5b459871a84958b982e56f65cedf3e2,bo,여성,29,159.9,54.7,느긋한 코알라,산책하는 거북이,1.56,17.16,USER
+24,yejinca@example.com,59522efe66dc74de8468ea0b67f2b8f10daadbe1023a4416bcb774394344af54,eunjeong54,여성,45,150.0,43.7,전광석화 치타,전광석화 치타,14.76,147.6,USER
+25,boram83@example.org,b23b6afca00a1b7fe20db8e24763178b5d9ae92bc90408796e2cc7b36bad03d1,yeweon44,남성,19,155.5,59.1,힘찬 질주 말,힘찬 질주 말,11.05,287.3,USER
+26,yeongsig35@example.org,99a3b95fe88def60ad5544a9ef69d59c5697034e1debe748e3c78bc604401cf4,coeyeonghyi,남성,55,183.4,77.2,힘찬 질주 말,전광석화 치타,10.53,210.6,USER
+27,sunoggweon@example.org,2117e537c9d5ea5d4bae9e80e844aaacccf5744ab85bc1268254e898220a3bf9,yjo,남성,65,169.9,69.5,전광석화 치타,전광석화 치타,18.87,1283.16,USER
+28,eungyeongi@example.com,b9458c1122e2975245969ca602fa2f1834304b01187abbca53b8284bed2784de,gimyeweon,여성,36,162.3,65.0,신나는 강아지,힘찬 질주 말,6.94,423.34,USER
+29,ogim@example.com,45b966ba0ae59216125ac0b9bb1ce46e59377de4d0c9c8d58ec7dbe3335493dc,gno,남성,50,176.0,82.7,신나는 강아지,힘찬 질주 말,7.21,425.39,USER
+30,mi@example.org,906f3f74c0d1ca19cf5473a898a27116dd7181e500077fef2c4d0d4bbe0e71ae,fyun,남성,48,155.7,65.5,신나는 강아지,신나는 강아지,6.98,691.02,USER
+31,bagjungsu@example.com,5073dab43d6d723326bd01b5683e12165846bf6d780a9b5ca498f14b761ed6c5,hgim,여성,19,166.0,56.5,느긋한 코알라,느긋한 코알라,2.55,226.95,USER
+32,sujin77@example.org,bc78a6f75f9b539b20f57ae916bb46a17fac9d76cd1e210b6c33a8278705c0e5,snam,남성,37,174.1,82.1,느긋한 코알라,산책하는 거북이,2.78,225.18,USER
+33,jihu77@example.org,287cae2e6c56587dfe10e7fbf936cdabfe0ff7712809025bf3c45548e217fbed,wbag,여성,55,165.1,59.9,느긋한 코알라,느긋한 코알라,2.96,79.92,USER
+34,minji86@example.com,3bdf10c6ab68a08e74b24a852e44afeac230254cab6ae4c92730bf983e21fee0,jiyeon71,여성,63,170.7,68.2,신나는 강아지,힘찬 질주 말,7.98,335.16,USER
+35,jgim@example.com,c0ec8546a3dba4fff6437ac0a8e221e2a5dd841c5c404b62cfeef6c99395d77d,sugjaheo,여성,50,152.0,50.7,신나는 강아지,신나는 강아지,5.92,337.44,USER
+36,ogjai@example.org,2de78ee74bbc665f3f177f5e8561ddc90c70798c7affc06162a2a1770ff1db6b,jbaeg,여성,39,159.8,53.9,전광석화 치타,전광석화 치타,15.89,270.13,USER
+37,hyeonjungim@example.com,708e71946636cb88a26ad44f89f77a74b361bf649228f9c9490992e7317a3b34,seoyeong40,남성,44,173.1,73.8,느긋한 코알라,느긋한 코알라,1.85,105.45,USER
+38,ki@example.net,0ed5b46da5fb51cc45e0ccdd10ca961f31ff83115cae0308cb4f847b49e3bbd5,xgim,남성,21,183.2,67.8,느긋한 코알라,산책하는 거북이,1.77,69.03,USER
+39,byeongceoli@example.net,28cc96963beff4112bb3f361987d00f7e83653161ac0db136f672e6c7eed068a,zju,남성,63,171.4,59.1,전광석화 치타,전광석화 치타,15.43,956.66,USER
+40,byeongceol60@example.com,90e39f237324299f30599b20622bc0dde83b72bc35c2d68e4f60a298a21b8b1d,sunja12,남성,52,178.0,88.2,힘찬 질주 말,힘찬 질주 말,9.22,378.02,USER
+41,hajaeho@example.com,57afe2085fa09cb00e356685f2fac9e0db7ae1a1f324ffde961bd0df00867485,jinhoha,남성,50,166.5,67.8,산책하는 거북이,산책하는 거북이,4.14,136.62,USER
+42,sanghyeon58@example.net,0b87284a289eb3e50d60b19878a271b0ac96b3ecbcbdc6754fa5f17bce2ff484,eunjigim,여성,49,156.9,60.0,산책하는 거북이,산책하는 거북이,4.04,44.44,USER
+43,eunyeongcoe@example.com,3a7e65432045129bcd5fc53204b5d0e034784511dc39b59616dd78017f244516,bagyeongsu,여성,34,162.7,56.6,산책하는 거북이,산책하는 거북이,3.51,115.83,USER
+44,seojieun@example.net,9310831538dd4e7529695f74aaa305d5cf9e6c20a7ac8da500dc582262d7db18,junyeong98,남성,24,185.5,82.6,전광석화 치타,전광석화 치타,13.55,230.35,USER
+45,hyeonu96@example.org,aa49a34583b979c464b50feb2168e09fcf0391554e60f78a9ff93e4097a7420d,ryusangceol,여성,63,161.4,56.5,힘찬 질주 말,전광석화 치타,8.38,804.48,USER
+46,sinjunseo@example.org,364aec5c69bec55e13cd3e2df7f5e64662bc7f5b74a149c83555df575db1446b,iboram,남성,39,174.2,68.7,산책하는 거북이,산책하는 거북이,4.96,153.76,USER
+47,gweonseoyeong@example.com,3e9436d4bd72e8eb93b367e4ce96ff683c0e558dcb1b4a2d9baa6fb87d505c39,gimmijeong,여성,39,162.1,56.8,전광석화 치타,전광석화 치타,14.17,198.38,USER
+48,vi@example.org,18b945253e80d52f92854661b11171e1cac65913aa7d6a03c5ef4e4ad5bb8c2b,iyeongsun,남성,21,159.8,68.3,힘찬 질주 말,전광석화 치타,10.16,650.24,USER
+49,tbag@example.org,ba43e0ea27ffdeae097bb9b9e26944616dd095a1391800754c4bd3dc3973376b,ihyeonjun,여성,33,160.1,55.3,느긋한 코알라,산책하는 거북이,1.91,127.97,USER
+50,munseoyeong@example.net,bd59fc044796f709d84c1fd74597f98a98639073c47a32f90550c6d4184294bd,eunseo18,남성,43,176.1,62.7,전광석화 치타,전광석화 치타,12.65,227.7,USER
+51,bagseunghyeon@example.com,489977a6649314edd67a3d994dcfedd6c93012e5dc2b6ce9b601d74387333fa6,cgim,여성,18,158.0,52.4,느긋한 코알라,산책하는 거북이,2.9,29.0,USER
+52,eunjeong90@example.com,994632aa5d79b9219c75f576118042707bfe02b2f8a1d3009807d34335a6ffe0,sumin82,여성,56,158.1,60.6,전광석화 치타,전광석화 치타,16.89,1283.64,USER
+53,bageunji@example.com,b1f5ae61300adaf10245e0316b539c6e47fad12f3106f7e43403c9e40d6a18bb,ui,여성,43,167.6,53.7,힘찬 질주 말,힘찬 질주 말,8.38,594.98,USER
+54,jeongungcoe@example.org,b13334fff1ac035df5e54b9ca48d355991680d45fa8afb6d4a447814d782128c,gwangsu42,여성,22,155.8,55.3,산책하는 거북이,신나는 강아지,3.98,191.04,USER
+55,jeonghohwang@example.org,11f424d67c1454b69c28851750aff65525ce8d9d2ae660c84aa1abac3648c04b,iyeongsug,여성,50,172.7,57.8,전광석화 치타,전광석화 치타,19.09,1164.49,USER
+56,hyeonjeonggang@example.net,fa607f99908847315d64a2b9b302c7c199ef4ba8ee4e9e0eef16c2b930b25c99,yunjiyeon,남성,27,169.5,71.8,산책하는 거북이,신나는 강아지,4.71,367.38,USER
+57,omisug@example.org,0228fc91c79f5d586103a2a3930a79611b57afbc118b5fb008b88cc849a89be4,caeweon52,남성,21,177.0,86.3,힘찬 질주 말,전광석화 치타,10.55,981.15,USER
+58,dohyeonheo@example.com,cc1d98559555be23135750053fee3170fc02d24122a0f544680585ab52a8be4b,fgim,여성,29,160.9,57.2,힘찬 질주 말,힘찬 질주 말,9.83,589.8,USER
+59,gangseoyeong@example.net,ecb78fd54d92d835cb215c431e7595d151725d9a60875a27bb62a247d942f4e9,yeongceol05,남성,54,181.0,82.6,신나는 강아지,힘찬 질주 말,5.82,122.22,USER
+60,iyejin@example.net,e62d67496a2be898f73c6e32bb12141cc38ba4dccdd88838766ba0d74c9809e1,anjiu,남성,63,176.1,62.5,신나는 강아지,힘찬 질주 말,7.05,634.5,USER
+61,caeweon86@example.net,c4c83980d1d49e6eaeac362af9cad37b9ba311f35affe9e73d99bb8b70a8f4d0,eunjeong61,여성,25,169.3,62.3,신나는 강아지,신나는 강아지,6.49,434.83,USER
+62,ljo@example.net,806c6aef3ec3e6b3e79429fba95a83713018be6469f2267bdbe7c3f38816533d,misug20,남성,62,166.1,75.9,힘찬 질주 말,힘찬 질주 말,11.21,504.45,USER
+63,jeonghyijang@example.com,f8e483f5d0fec7a72617666ef4b1902d90c8d6f6c097e6456fb7faef6311d5c1,seomyeongja,여성,54,164.5,72.9,힘찬 질주 말,전광석화 치타,9.0,297.0,USER
+64,hbaeg@example.com,061d428270304352c7589d5a7c2dc7b9eb1b2d8767a9dd1c025953b5e356b160,jiu22,남성,49,177.3,84.5,느긋한 코알라,느긋한 코알라,2.63,257.74,USER
+65,migyeong13@example.org,69ebc7ef2ee15fd4253db5a8190bef9e0584cca1ef0ffcb48fefb59a84491331,bagyeongsun,남성,58,177.4,75.4,느긋한 코알라,산책하는 거북이,1.95,54.6,USER
+66,seojun89@example.org,c6e664a4865767fdbebd00f10cc6ccf8af43831d4440ef768cc44de217ecfb32,bagseongho,남성,53,157.2,49.6,느긋한 코알라,느긋한 코알라,1.64,131.2,USER
+67,seonghogang@example.net,9d5f6a9c90cbadb185af2b808ba8ec620b036d370be482300c674f4a602c816a,dgim,여성,31,158.8,57.9,전광석화 치타,전광석화 치타,12.73,267.33,USER
+68,jinhobag@example.org,c622121f08ea63545f7d87fa6b48eecd2e17afcd08878f7df2a17495b8115ba3,kgim,남성,38,187.2,91.2,느긋한 코알라,느긋한 코알라,1.64,83.64,USER
+69,caeweon53@example.org,aa562295c6fe54793bd5bd4ff2146db128bdfc8d31717c135413830e68f1d232,qgim,여성,56,161.9,64.6,힘찬 질주 말,힘찬 질주 말,11.05,287.3,USER
+70,yunseo50@example.com,d1b5f67c40523e2bedca25c0aca86adfa4f086fe7765939c462b86143bef3db2,cbag,남성,55,184.7,70.5,전광석화 치타,전광석화 치타,13.78,248.04,USER
+71,gimjeongung@example.com,40cbfc8cb9b8a8753ca0c6205a29c6305c473c4965ef786a16dff16a40b2317e,guseoyun,여성,44,157.2,48.6,신나는 강아지,힘찬 질주 말,6.12,452.88,USER
+72,coeyeonghwan@example.net,78d3d4131d450b5282ca2dd1cb4ce7b32e057375927d3c347a3b61065c20ba4f,nbag,여성,34,161.4,69.2,느긋한 코알라,느긋한 코알라,2.63,207.77,USER
+73,vmun@example.net,da794e11142612f4beba5881faedbd346c4ccaa58b3f75e17ea8be0c0439596a,yejuni,여성,48,146.0,52.5,산책하는 거북이,신나는 강아지,3.66,278.16,USER
+74,eungyeong37@example.com,4c8f3d65e6bc94b44346cbe1cecf4c103c6be04130fb8d4d7ce37135301715b7,igim,남성,30,170.5,67.6,산책하는 거북이,신나는 강아지,3.24,226.8,USER
+75,caeweon42@example.org,b7dfeb93a6f79bf7718f351f82bc6f9392d69f5f73f7b7f9ac4e538888f3edf9,ujin01,남성,58,178.9,70.1,느긋한 코알라,느긋한 코알라,2.22,75.48,USER
+76,mijeongo@example.org,2928d6e05f4145a6b898a2e0e090c8ce28fab45b3f5af5e46c6e559beb2d67ec,zi,여성,50,166.8,57.8,산책하는 거북이,신나는 강아지,4.96,267.84,USER
+77,yeeun05@example.com,a1ae0007828df54ebba863884d38653bf9890b4e9bd2150ae4078ae1e9bc3d7b,ijongsu,남성,64,173.5,84.1,전광석화 치타,전광석화 치타,14.02,392.56,USER
+78,minsugim@example.com,27a0b96d17b08ff37f5a00ed0fb520a2598ba9476717a10dd64f42557c7b5091,zgweon,여성,35,165.9,56.0,느긋한 코알라,산책하는 거북이,1.94,19.4,USER
+79,yunseojang@example.net,f2957d9d7efa45e714b2231cb6430fc2e31bcc67d3b83f02428e740eb3205994,dsong,남성,20,172.2,74.0,산책하는 거북이,신나는 강아지,4.29,72.93,USER
+80,misugbag@example.org,6c5f345746ba6ccc643a1c7268751c465c5016c381a955d15c2b0f1426642e71,eungyeonggweon,여성,45,165.9,54.0,느긋한 코알라,산책하는 거북이,2.98,214.56,USER
+81,yi@example.com,a8b09193bc2db6807cb677aef4388ef1a93ad6f5eacb957f1cce6cb0eb9012fb,obag,남성,26,179.7,82.3,전광석화 치타,전광석화 치타,13.07,575.08,USER
+82,hyeonjungim@example.org,9a139aca8520df0f31eb4a9c64d0c0a3bf89f03b9681ced8483229f6afecdc9e,myeongjai,남성,23,169.0,78.8,전광석화 치타,전광석화 치타,16.91,1268.25,USER
+83,seoyeong53@example.com,257cca050db6452e088211317ee5b3c7112d41a6896428eca388190896d92cf4,junseo87,여성,47,159.6,64.9,느긋한 코알라,느긋한 코알라,2.39,172.08,USER
+84,jeonghyii@example.net,44b28b2293d1d0eb73f51389b513ef74b586565f0c7d18edc822cfd4fcb23fd1,gimyunseo,남성,39,171.0,77.9,느긋한 코알라,느긋한 코알라,1.6,16.0,USER
+85,gyeonghyimun@example.com,008ca71de79dcd15d661462633b92cea97eef312663d2eb0f37bc6fe52ce3c4e,ugim,남성,65,174.5,73.9,전광석화 치타,전광석화 치타,19.97,1238.14,USER
+86,ugweon@example.org,16e733bf1c587ea99a72767796d1bb6eb3c06ddcc6935d98b2c47064817e6441,ubag,남성,54,169.6,74.2,산책하는 거북이,신나는 강아지,3.76,353.44,USER
+87,seongho87@example.org,7203fd5d42f34674c80a7e638fc4e248c0c749a4d706deec6b907025e7b9888a,bagjungsu,여성,26,151.8,56.2,산책하는 거북이,신나는 강아지,3.54,169.92,USER
+88,bagyejun@example.com,18db31e20591da18179e976e246b4e50b8d7afb1893113e1d928905fb34fc03a,jaehoryu,여성,51,163.2,60.8,신나는 강아지,신나는 강아지,5.92,438.08,USER
+89,yunjimin@example.org,f5fbc2aea66adaa8fee806e76193924d1705d3d93eaf9ade586de6cd912d6a3f,donghyeon14,여성,61,166.2,61.4,전광석화 치타,전광석화 치타,16.96,1272.0,USER
+90,gimjeonghyi@example.org,cfbbdd587d10d526b04ef6833dff89c956ce56d14688768f2c53c2d744913cdb,gimyeongil,남성,56,174.2,64.0,힘찬 질주 말,전광석화 치타,9.4,855.4,USER
+91,ieungyeong@example.net,28840dc37fbc2414003022d7088d263d3512bbe3593f27fe7ab68a45aab4f71c,ogsuni,여성,32,165.3,59.5,느긋한 코알라,산책하는 거북이,2.87,111.93,USER
+92,gimhayun@example.com,21a84fdea2c3795719146241e80cecc6f90a64f94ea351afed5e13716280948f,yeongsungim,남성,59,172.0,79.6,전광석화 치타,전광석화 치타,18.37,349.03,USER
+93,jaeho72@example.org,11c26cbddd97914385a230822ff9d364a2967e6e8e16489961aa2152d50b9906,jaehojo,여성,34,149.8,50.9,산책하는 거북이,신나는 강아지,3.99,343.14,USER
+94,gyeongjagim@example.com,5d2699d74a59bd5fb0f5f3887fa951736e8e2348a5be0dc5714d27e380186332,san,여성,60,159.7,60.3,신나는 강아지,신나는 강아지,6.61,211.52,USER
+95,ryueunjeong@example.com,4bd839c68d3fec84fe5265b9a7dcc2a715b4b02488826da8314799b1b849124f,gimyeongceol,남성,33,165.3,62.2,신나는 강아지,힘찬 질주 말,6.42,263.22,USER
+96,seongho90@example.net,1c3f517dd4ef14d3b78e3d829c45848c1965102ca58301eb0c2d91d435447460,agim,여성,36,162.9,67.9,산책하는 거북이,신나는 강아지,3.7,114.7,USER
+97,gimcunja@example.org,bd1ebe4d3f36e207123170975ed15a499d7e322821229840d496444321b8bcee,minjii,남성,23,172.3,64.3,산책하는 거북이,산책하는 거북이,4.01,216.54,USER
+98,oseong@example.com,a7496007190c7da7ef18dcbcbf9d8a82192b4158d64daa890ddfba5223e43490,qgim,남성,26,165.8,57.0,느긋한 코알라,산책하는 거북이,1.62,116.64,USER
+99,obag@example.com,c4aa9b4262e3b4b7a6b2940ec6e267517a6ee81516bd1c470b51b7159a60805f,ii,여성,34,165.1,68.1,전광석화 치타,전광석화 치타,19.89,1113.84,USER
+100,fi@example.net,971eaf71f8e852ce8b92e28d04253fa52f4d099216e50581bf307030d9e060a0,fbag,남성,39,168.7,62.3,힘찬 질주 말,힘찬 질주 말,10.13,111.43,USER
