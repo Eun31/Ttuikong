@@ -140,3 +140,6 @@ CREATE TABLE Chat (
  ALTER TABLE route ADD CONSTRAINT uq_user_start UNIQUE (user_id, start_time);
  ALTER TABLE daily_record ADD UNIQUE KEY uniq_user_date (user_id, date);
 
+ALTER TABLE User MODIFY COLUMN activity_level VARCHAR(50);
+ALTER TABLE User MODIFY COLUMN activity_goal VARCHAR(50);
+
