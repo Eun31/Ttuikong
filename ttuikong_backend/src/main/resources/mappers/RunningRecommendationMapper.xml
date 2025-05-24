@@ -8,13 +8,9 @@
 	<insert id="insertRecommendation"
 		parameterType="com.ttuikong.spring.model.dto.RunningRecommendation">
 		INSERT INTO Recommendations (
-		user_id, recommended_distance, estimated_time, estimated_calories,
-		average_pace, speed, improvement,
-		created_at, expires_at, followed
+		user_id, recommended_distance, estimated_time, estimated_calories
 		) VALUES (
-		#{userId}, #{recommendedDistance}, #{estimatedTime}, #{estimatedCalories},
-		#{averagePace}, #{speed}, #{improvement},
-		#{createdAt}, #{expiresAt}, #{followed}
+		#{userId}, #{recommendedDistance}, #{estimatedTime}, #{estimatedCalories}
 		)
 		<selectKey keyProperty="id" resultType="int" order="AFTER">
 			SELECT LAST_INSERT_ID()
@@ -25,12 +21,13 @@
 	<select id="getLatestValidRecommendation"
 		resultType="com.ttuikong.spring.model.dto.RunningRecommendation">
 		SELECT
-		id, user_id AS userId, recommended_distance AS recommendedDistance,
-		estimated_time AS estimatedTime, estimated_calories AS
-		estimatedCalories,
-		average_pace AS averagePace, speed, improvement,
+		id,
+		user_id AS userId,
+		recommended_distance AS recommendedDistance,
+		estimated_time AS estimatedTime,
+		estimated_calories AS estimatedCalories,
 		created_at AS createdAt,
-		expires_at AS expiresAt, followed
+		expires_at AS expiresAt
 		FROM Recommendations
 		WHERE user_id = #{userId}
 		AND expires_at > #{now}
@@ -38,17 +35,12 @@
 		LIMIT 1
 	</select>
 
-	<!-- 팔로우 상태 업데이트 -->
-	<update id="updateRecommendationFollowed">
-		UPDATE Recommendations
-		SET followed = #{param2}
-		WHERE id = #{param1}
-	</update>
 
 	<!-- 만료된 추천 삭제 -->
 	<delete id="deleteExpiredRecommendations">
 		DELETE FROM Recommendations
-		WHERE expires_at &lt;= #{now}
+		WHERE expires_at &lt;=
+		#{now}
 	</delete>
 
 </mapper>

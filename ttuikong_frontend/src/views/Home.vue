@@ -89,6 +89,7 @@ const token = ref('');
 const userId = ref(null);
 const userName = ref('');
 const isLoadingRecommendation = ref(false);
+const recommendation = ref(5);
 const recommendationData = ref(null);
 const formattedTime = ref(null);
 const growthRate = ref(100);
@@ -208,7 +209,6 @@ const getCurrentUser = async () => {
 
     const data = await res.json();
     const user = data.user;
-
     token.value = currentToken;
     userId.value = user.id;
     userName.value = user.nickname;
@@ -244,7 +244,6 @@ const getAIRecommendation = async () => {
     isLoadingRecommendation.value = false;
   }
 };
-
 /* 오늘 뛴 시간 */
 
 const formatDuration = (seconds) => {
@@ -618,7 +617,7 @@ onMounted(async () => {
 }
 
 .sub-info span:first-child::before {
-  content: '⏱️ 예상 소요 시간';
+  content: '⏱️예상 소요 시간';
   font-size: 0.75rem;
   opacity: 0.8;
   margin-top: 2px;

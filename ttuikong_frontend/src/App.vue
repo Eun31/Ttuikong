@@ -98,11 +98,10 @@ watch(route, () => {
 
 /* 웹 화면 뷰 조절 */
 #app {
-  width: 95%;
+  width: 100%;
   max-width: 1240px;
   margin-left: auto;
   margin-right: auto;
-  padding: 16px;
 }
 
 body {
