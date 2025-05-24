@@ -976,6 +976,13 @@ const calDailyRun = async (routeId) => {
     return;
   }
 
+  console.log(
+        routeId,
+        distance.value,
+        calories.value,
+        selectedMood.value
+  );
+
   try {
     const res = await fetch(`http://localhost:8080/api/runs/user/${userId.value}/day-time`, {
       method: 'PUT',

@@ -3,6 +3,7 @@ package com.ttuikong.spring.chat.controller;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -93,7 +94,7 @@ public class RunController {
 
         try {
             ObjectMapper mapper = new ObjectMapper();
-            String rawJson = new BufferedReader(new InputStreamReader(request.getInputStream()))
+            String rawJson = new BufferedReader(new InputStreamReader(request.getInputStream(), StandardCharsets.UTF_8))
                                 .lines()
                                 .collect(Collectors.joining());
 
@@ -158,14 +159,17 @@ public class RunController {
             HttpServletRequest request
         ) {
         try {
-            String rawJson = new BufferedReader(new InputStreamReader(request.getInputStream()))
-                    .lines().collect(Collectors.joining());
+            String rawJson = new BufferedReader(
+                new InputStreamReader(request.getInputStream(), StandardCharsets.UTF_8) 
+            ).lines().collect(Collectors.joining());
             System.out.println(request);
             ObjectMapper mapper = new ObjectMapper();
             JsonNode node = mapper.readTree(rawJson);
+            System.out.println("받은 JSON: " + rawJson);
+
             Integer routeId = node.has("routeId") ? node.get("routeId").asInt() : null;
-            if (routeId != null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "존재하지 않는 routeId입니다."));
+            if (routeId == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "routeId가 없습니다."));
             }
             double distance = node.has("distance") ? node.get("distance").asDouble() : 0.0;
             double calories = node.has("calories") ? node.get("calories").asDouble() : 0.0;
