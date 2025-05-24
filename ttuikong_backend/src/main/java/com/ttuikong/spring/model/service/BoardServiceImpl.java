@@ -166,4 +166,14 @@ public class BoardServiceImpl implements BoardService {
 	public List<Board> readBoardByUserId(int userId) {
 		return boardDao.selectByUserId(userId);
 	}
+
+	@Override
+	public List<Board> getPopularPosts(int limit) {
+		return boardDao.selectPopularPosts(limit);
+	}
+
+	@Override
+	public List<Board> getFollowingPosts(int id, int limit) {
+		return boardDao.selectFollowingPosts(id, limit);
+	}
 }

@@ -22,7 +22,7 @@
                 <i class="icon-check"></i>
               </span>
             </div>
-            <div class="post-time">{{ formatDate(post.createdAt || post.created_at) }}</div>
+            <div class="post-time">{{ formatDate(post.createdAt) }}</div>
           </div>
           <div v-if="isAuthor" class="post-options">
             <button class="post-options-btn" @click="toggleOptions">
@@ -264,7 +264,7 @@ const commentTextarea = ref(null);
 const currentUser = ref({
   id: null,
   nickname: '',
-  token: localStorage.getItem('jwt') || ''
+  token: localStorage.getItem('jwt') 
 });
 
 const API_URL = 'http://localhost:8080/api';
@@ -545,14 +545,12 @@ function toggleCommentOptions(commentId) {
   }));
 }
 
-// 댓글 수정 시작
 function startEditComment(comment) {
   comment.isEditing = true;
   comment.editContent = comment.content;
   comment.showOptions = false;
 }
 
-// 댓글 수정 저장
 async function saveEditComment(comment) {
   if (!comment.editContent.trim()) return;
   
@@ -573,13 +571,11 @@ async function saveEditComment(comment) {
   }
 }
 
-// 댓글 수정 취소
 function cancelEditComment(comment) {
   comment.isEditing = false;
   comment.editContent = comment.content;
 }
 
-// 댓글 삭제
 async function deleteComment(commentId) {
   if (!confirm('정말 이 댓글을 삭제하시겠습니까?')) return;
   
@@ -596,30 +592,24 @@ async function deleteComment(commentId) {
   }
 }
 
-// 옵션 메뉴 토글
 function toggleOptions() {
   showOptions.value = !showOptions.value;
 }
 
-// 뒤로 가기
 function goBack() {
   router.push('/board');
 }
 
-// 게시글 수정
 function editPost() {
-  // 수정 페이지로 이동
   router.push(`/board/edit/${postId.value}`);
   toggleOptions();
 }
 
-// 로그인 페이지로 이동
 function goToLogin() {
   router.push('/login');
   toggleOptions();
 }
 
-// 게시글 삭제
 async function deletePost() {
   console.log('삭제 버튼 클릭됨');
   console.log('현재 사용자 ID:', currentUser.value.id);
@@ -650,17 +640,6 @@ async function deletePost() {
     }
   }
   toggleOptions();
-}
-
-// 게시글 신고
-function reportPost() {
-  alert('게시글이 신고되었습니다.');
-  toggleOptions();
-}
-
-// 게시글 공유
-function sharePost() {
-  alert('공유 기능은 준비 중입니다.');
 }
 
 // 날짜 형식 변환
@@ -710,7 +689,6 @@ function getProfileImage() {
   return profileImg;
 }
 
-// 컴포넌트 마운트 시 실행
 onMounted(async () => {
   console.log('=== PostDetail 컴포넌트 마운트 ===');
   console.log('ID 파라미터:', route.params.id);
@@ -723,17 +701,10 @@ onMounted(async () => {
     loading.value = false;
     return;
   }
-  
-  // 로그인 사용자 정보 가져오기
+
   await fetchCurrentUser();
-  
-  // 게시글 상세 정보 가져오기
   await fetchPostDetail();
-  
-  // 댓글 목록 가져오기
   await fetchComments();
-  
-  // 좋아요 관련 데이터 가져오기
   await fetchLikeCount();
   await checkLikeStatus();
 });
@@ -756,7 +727,6 @@ onMounted(async () => {
   }
 }
 
-/* 헤더 스타일 - 테마 맞춤 */
 .header {
   display: flex;
   justify-content: space-between;
@@ -792,7 +762,6 @@ onMounted(async () => {
   transform: translateY(0);
 }
 
-/* 메뉴 버튼 스타일 개선 */
 .options-btn {
   position: relative;
   width: 40px;
@@ -866,7 +835,6 @@ onMounted(async () => {
   margin-top: 8px;
 }
 
-/* 게시글 카드 */
 .post-card {
   background-color: var(--card-color);
   border-radius: 20px;
@@ -888,7 +856,6 @@ onMounted(async () => {
   }
 }
 
-/* 작성자 정보 */
 .user-profile {
   display: flex;
   align-items: center;

@@ -25,7 +25,8 @@ public interface BoardDao {
     
     // 사용자별 게시글 조회
     List<Board> selectByUserId(int userId);
-    
-    // 카테고리별 게시글 조회
-    List<Board> selectByCategory(String category);
+
+	public List<Board> selectPopularPosts(int limit);
+
+	public List<Board> selectFollowingPosts(int id, int limit);
 }

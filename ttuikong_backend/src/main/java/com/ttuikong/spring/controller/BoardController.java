@@ -16,14 +16,13 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ttuikong.spring.annotation.LoginRequired;
 import com.ttuikong.spring.annotation.LoginUser;
 import com.ttuikong.spring.model.dto.Board;
 import com.ttuikong.spring.model.dto.User;
 import com.ttuikong.spring.model.service.BoardService;
 
-import jakarta.servlet.http.HttpServletRequest;
+import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 @RequestMapping("/api/board")
@@ -153,4 +152,23 @@ public class BoardController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("게시글을 삭제하는 중 오류가 발생했습니다.");
 		}
 	}
+	
+	@Operation(summary = "인기 게시글 조회", description = "좋아요 수 기준으로 정렬된 인기 게시글을 조회합니다.")
+	@GetMapping("/popular")
+	public ResponseEntity<List<Board>> getPopularPosts(
+	        @RequestParam(defaultValue = "10") int limit) {
+	    List<Board> popularPosts = boardService.getPopularPosts(limit);
+	    return ResponseEntity.ok(popularPosts);
+	}
+
+	@Operation(summary = "팔로우 사용자 게시글 조회", description = "현재 사용자가 팔로우한 사용자들의 게시글을 조회합니다.")
+	@GetMapping("/following")
+	@LoginRequired
+	public ResponseEntity<List<Board>> getFollowingPosts(
+	        @LoginUser User loginUser,
+	        @RequestParam(defaultValue = "10") int limit) {
+	    List<Board> followingPosts = boardService.getFollowingPosts(loginUser.getId(), limit);
+	    return ResponseEntity.ok(followingPosts);
+	}
+	
 }

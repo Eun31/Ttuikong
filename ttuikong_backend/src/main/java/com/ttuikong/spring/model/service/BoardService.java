@@ -26,4 +26,10 @@ public interface BoardService {
     //사용자별 게시글 조회
 	List<Board> readBoardByUserId(int userId);
 
+	//인기 게시글 조회
+	List<Board> getPopularPosts(int limit);
+
+	//팔로우 게시글 조회
+	List<Board> getFollowingPosts(int id, int limit);
+
 }

@@ -21,4 +21,7 @@ public interface DailyRecordDao {
     
     //사용자의 운동 기록 개수 조회
     int countByUserId(int userId);
+    
+    //user 기록 업데이트
+    void updateUserStatistics(int userId);
 }

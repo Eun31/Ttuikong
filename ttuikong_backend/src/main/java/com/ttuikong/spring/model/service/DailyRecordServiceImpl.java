@@ -1,7 +1,10 @@
 package com.ttuikong.spring.model.service;
 
 import java.util.List;
+
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.ttuikong.spring.model.dao.DailyRecordDao;
 import com.ttuikong.spring.model.dto.DailyRecord;
 
@@ -15,6 +18,7 @@ public class DailyRecordServiceImpl implements DailyRecordService {
 	}
 
 	@Override
+	@Transactional
 	public void addRecord(DailyRecord record) {
 	    Integer routeId = dailyRecordDao.findRouteIdByDate(record.getDate());
 	    if (routeId != null) {
@@ -23,6 +27,7 @@ public class DailyRecordServiceImpl implements DailyRecordService {
 	        record.setRouteId(null);
 	    }
 	    dailyRecordDao.addRecord(record);
+	    dailyRecordDao.updateUserStatistics(record.getUserId());
 	}
 
 
