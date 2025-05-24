@@ -3,7 +3,7 @@
   <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet" />
 
   <div class="container">
-    <h3>🔥 이달의 러닝 랭킹</h3>
+    <h3>🔥 오늘의 러닝 랭킹</h3>
 
     <div class="rank-container">
       <div v-for="(user, index) in rankings" :key="user.id" class="rank-item">

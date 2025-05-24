@@ -134,7 +134,7 @@
               <div class="goal-details">
                 <p><strong>📍 목표:</strong> {{ crew.goalType == 'SUM' ? '총합' : '평균' }} {{ formatDuration(crew.goalTime) }}</p>
                 <p>
-                  <strong>📍 시간 현황:</strong>
+                  <strong>📍 시간 현황:</strong> {{ crew.goalType == 'SUM' ? '총합' : '평균' }}
                   {{ crew.goalType == 'SUM' ? formatDuration(crewStatus.totalDuration) : formatDuration(crewStatus.averageDuration) }}
                 </p>
               </div>
