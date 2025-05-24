@@ -160,14 +160,17 @@ public class RunController {
         try {
             String rawJson = new BufferedReader(new InputStreamReader(request.getInputStream()))
                     .lines().collect(Collectors.joining());
-
+            System.out.println(request);
             ObjectMapper mapper = new ObjectMapper();
             JsonNode node = mapper.readTree(rawJson);
-
-            int routeId = node.get("routeId").asInt();
-            double distance = node.get("distance").asDouble();
-            double calories = node.get("calories").asDouble();
-            String mood = node.get("mood").asText();
+            Integer routeId = node.has("routeId") ? node.get("routeId").asInt() : null;
+            if (routeId != null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "존재하지 않는 routeId입니다."));
+            }
+            double distance = node.has("distance") ? node.get("distance").asDouble() : 0.0;
+            double calories = node.has("calories") ? node.get("calories").asDouble() : 0.0;
+            String mood = node.has("mood") ? node.get("mood").asText() : null;
+            System.out.println("routeId:"+routeId+"distance:"+ distance+"calories:"+calories+"mood:"+ mood);
 
             runService.updateDailyDuration(userId, routeId, distance, calories, mood);
             return ResponseEntity.ok().body(Map.of("message", "성공"));

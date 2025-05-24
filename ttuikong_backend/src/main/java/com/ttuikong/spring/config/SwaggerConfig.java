@@ -24,17 +24,17 @@ public class SwaggerConfig {
                         .license(new License()
                                 .name("Apache License Version 2.0")
                                 .url("http://www.apache.org/licenses/LICENSE-2.0"))
-                        );
+                        )
                 // JWT 인증 설정 제거
-                // .addSecurityItem(new SecurityRequirement().addList("JWT"))
-                // .components(new Components()
-                //         .addSecuritySchemes("JWT", new SecurityScheme()
-                //                 .type(SecurityScheme.Type.HTTP)
-                //                 .scheme("bearer")
-                //                 .bearerFormat("JWT")
-                //                 .in(SecurityScheme.In.HEADER)
-                //                 .name("Authorization"))
-                //         );
+                .addSecurityItem(new SecurityRequirement().addList("JWT"))
+                .components(new Components()
+                        .addSecuritySchemes("JWT", new SecurityScheme()
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")
+                                .in(SecurityScheme.In.HEADER)
+                                .name("Authorization"))
+                        );
         
     }
 }

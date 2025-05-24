@@ -62,38 +62,49 @@
             </select>
           </div>
           <div class="form-group">
-            <label>목표 시간 (분)</label>
-            <input v-model.number="newCrew.goalTime" type="number" placeholder="" required />
+            <label>목표 시간 (초)</label>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input v-model.number="goalHours" type="number" min="0" max="23" placeholder="시" required />시
+              <input v-model.number="goalMinutes" type="number" min="0" max="59" placeholder="분" required />분
+              <input v-model.number="goalSeconds" type="number" min="0" max="59" placeholder="초" required />초
+            </div>
           </div>
           <div class="form-group">
-            <label>시작일</label>
-            <input v-model="newCrew.startDate" type="date" required />
+            <input v-model="newCrew.startDate" type="date" :min="today" required />
           </div>
           <div class="form-group">
             <label>종료일</label>
-            <input v-model="newCrew.endDate" type="date" required />
+            <input v-model="newCrew.endDate" type="date" :min="newCrew.startDate" required />
           </div>
           <button type="submit" class="submit-button">크루 생성하기</button>
         </form>
       </div>
 
       <!--크루 검색-->
-      <div v-for="crew in filteredCrews" :key="'search-' + crew.id" class="crew-card search-result">
-        <div class="crew-header">
-          <h4>{{ crew.roomName }}</h4>
-          <button class="join-btn" @click.stop="joinCrew(crew)">가입하기</button>
-        </div>
-        <p class="crew-meta"> 목표: {{ crew.goalType == 'SUM' ? '총합' : '평균' }} / {{ formatDuration(crew.goalTime) }}</p>
-        <p class="crew-meta"> 참여 인원: {{crewMembers.find(c => c.crewId === crew.id)?.members.length || 0}}명</p>
-      </div>
       <div class="group-search">
         <input type="text" v-model="searchQuery" placeholder="크루 이름으로 검색..." class="search-input" />
-        <button>검색</button>
+      </div>
+      <div v-for="crew in paginatedCrews" :key="'search-' + crew.id" class="crew-card search-result">
+        <div class="crew-header"  @click="openCrewId = openCrewId === crew.id ? null : crew.id">
+          <h4>{{ crew.roomName }}</h4>
+          <span>
+            {{ crewMembers.find(c => c.crewId === crew.id)?.members.length || 0 }}명
+            <button v-if="new Date(crew.startDate) > new Date() && (crewMembers.find(c => c.crewId === crew.id)?.members.length || 0) < 10" class="join-btn" @click.stop="joinCrew(crew)">가입하기</button>
+          </span>
+        </div>
+        <p style="font-size: 1em; color: #f57c00; padding-top:5px; padding-bottom: 5px;">{{ crew.roomDescription }}</p>
+        <p class="crew-meta">챌린지일: {{ crew.startDate }} ~ {{ crew.endDate }}</p>
+        <p class="crew-meta">목표: {{ crew.goalType == 'SUM' ? '총합' : '평균' }} {{ formatDuration(crew.goalTime) }}</p>
+      </div>
+      <div class="pagination-controls">
+        <button @click="prevPage" :disabled="page === 1">이전</button>
+        <span>{{ page }} / {{ totalPages }}</span>
+        <button @click="nextPage" :disabled="page === totalPages">다음</button>
       </div>
 
       <!-- 내 크루 목록 -->
       <h3>내가 속한 크루</h3>
-      <div v-for="crew in myCrews" :key="crew.id" class="crew-card" @click="toggleCrew(crew.id)">
+      <div v-for="crew in mypaginatedCrews" :key="crew.id" class="crew-card" @click="toggleCrew(crew.id)">
         <div class="crew-header">
           <h4>{{ crew.roomName }}</h4>
           <span>{{crewMembers.find(c => c.crewId === crew.id)?.members.length || 0}}명
@@ -101,35 +112,50 @@
             <button v-else class="delete-btn" @click.stop="deleteCrew(crew)">삭제하기</button>
           </span>
         </div>
+        <p style="font-size: 1em; color: #f57c00; padding-top:5px; padding-bottom: 5px;">{{ crew.roomDescription }}</p>
+        <p class="crew-meta">챌린지일: {{ crew.startDate }} ~ {{ crew.endDate }}</p>
+        <p class="crew-meta">목표: {{ crew.goalType == 'SUM' ? '총합' : '평균' }} {{ formatDuration(crew.goalTime) }}</p>
         <transition name="fade">
           <div v-show="expandedCrews.includes(crew.id)" class="crew-detail">
-            <p><strong>📍 목표:</strong></p>
-            <p>{{ crew.goalType == 'SUM' ? '총합' : '평균' }} / {{ formatDuration(crew.goalTime) }}</p>
-            <p><strong>📍 시간 현황:</strong></p>
-            <p>{{ crew.goalType == 'SUM' ? formatDuration(crewStatus.totalDuration) :
-              formatDuration(crewStatus.averageDuration) }}</p>
-            <p><strong>🏅 목표 달성률: </strong></p>
-            <p>{{ crew.goalType == 'SUM' ? Percentage(crew.goalTime, crewStatus.totalDuration) :
-              Percentage(crew.goalTime, crewStatus.averageDuration) }}</p>
+            <p class="crew-meta">크루 생성일: {{ crew.createdAt.split("T")[0] }}</p>            
+            <div class="goal-status-box">
+              <h4 class="title">🏅 목표 달성률</h4>
+              <!-- 게이지 바 -->
+              <div v-if="(crew.goalType == 'SUM' ? Percentage(crew.goalTime, crewStatus.totalDuration) : Percentage(crew.goalTime, crewStatus.averageDuration)) < 100" class="progress-bar-container">
+                <div class="progress-bar-bg">
+                  <div class="progress-bar-fill" :style="{ width: crew.goalType == 'SUM' ? progressPercent(crew.goalTime, crewStatus.totalDuration) : progressPercent(crew.goalTime, crewStatus.averageDuration) }"></div>
+                </div>
+                <p class="progress-percent">{{ crew.goalType == 'SUM' ? Percentage(crew.goalTime, crewStatus.totalDuration) : Percentage(crew.goalTime, crewStatus.averageDuration) }}</p>
+              </div>
+              <div v-else class="goal-celebration">
+                <p>🎉목표를 이미 달성했습니다🎉</p>
+              </div>
+              <!-- 수치 정보 -->
+              <div class="goal-details">
+                <p><strong>📍 목표:</strong> {{ crew.goalType == 'SUM' ? '총합' : '평균' }} {{ formatDuration(crew.goalTime) }}</p>
+                <p>
+                  <strong>📍 시간 현황:</strong>
+                  {{ crew.goalType == 'SUM' ? formatDuration(crewStatus.totalDuration) : formatDuration(crewStatus.averageDuration) }}
+                </p>
+              </div>
+          </div>
             <hr style="border: none; border-top: 2px dashed tan; margin: 24px 0;">
             <h3 class="sub-title">크루 멤버</h3>
-            <div v-if="crewMembersMap[crew.id] == null" class="user-list">
-              <div v-for="member in crewMembers.find(c => c.crewId === crew.id)?.members || []" :key="member.id"
-                class="user-card">
-                <strong>{{ member.nickname }}</strong>
-                <span>{{ formatDuration(member.duration) }}</span>
-              </div>
-            </div>
-            <div v-else class="user-list">
+            <div class="user-list">
               <div v-for="member in crewMembersMap[crew.id] || []" :key="crew.id + '-' + member.nickname"
                 class="user-card">
-                <strong>{{ member.nickname }}</strong>
+                <strong>{{ member.nickname }} <span v-if="crew.creatorId == userId">🔸</span> </strong>
                 <span>{{ formatDuration(member.duration) }}</span>
               </div>
             </div>
             <button class="talk-button" @click="goToChat(crew.id)">▶ 실시간 메신저</button>
           </div>
         </transition>
+      </div>
+      <div class="pagination-controls">
+        <button @click="myprevPage" :disabled="mypage === 1">이전</button>
+        <span>{{ mypage }} / {{ mytotalPages }}</span>
+        <button @click="mynextPage" :disabled="mypage === mytotalPages">다음</button>
       </div>
     </div>
 
@@ -151,11 +177,9 @@ import { useRoute, useRouter } from 'vue-router';
 import dogRun from '@/assets/dog_run.gif';
 import dogSit from '@/assets/dog_sit.gif';
 import html2canvas from "html2canvas";
-import { Canvg } from 'canvg';
 
 const emit = defineEmits(['navigate']);
 const router = useRouter();
-const route = useRoute();
 
 // 토큰 관리 상수 및 유틸리티 함수
 const TOKEN_KEY = "jwt";
@@ -171,6 +195,7 @@ const searchQuery = ref('');
 const seconds = ref(0);
 const timer = ref(null);
 const isRunning = ref(false);
+const STORAGE_KEY = 'run-timer-start'
 const status = ref('ended');
 const map = ref(null);
 const kakaoMapLoaded = ref(false);
@@ -203,12 +228,63 @@ const moodOptions = [
   { label: '쏘쏘', emoji: '😐' }
 ];
 const calories = ref(0);
-const selectedMood = ref(null);
+const selectedMood = ref('');
 const showMoodModal = ref(false);
 const crewMembersMap = ref({});
 const crewStatus = ref({});
+const goalHours = ref(0);
+const goalMinutes = ref(0);
+const goalSeconds = ref(0);
+const today = new Date().toISOString().split('T')[0];
+const page = ref(1);
+const perPage = 4;
+const mypage = ref(1);
+const myperPage = 4;
+const openCrewId = ref(null);
+
+/* 크루 목록 페이징 */
+const paginatedCrews = computed(() => {
+  const start = (page.value - 1) * perPage;
+  return filteredCrews.value.slice(start, start + perPage);
+});
+
+const totalPages = computed(() =>
+  Math.ceil(filteredCrews.value.length / perPage)
+);
+
+const nextPage = () => {
+  if (page.value < totalPages.value) page.value++;
+};
+const prevPage = () => {
+  if (page.value > 1) page.value--;
+};
+
+/* 내 크루 목록 페이징 */
+const mypaginatedCrews = computed(() => {
+  const start = (mypage.value - 1) * myperPage;
+  return myCrews.value.slice(start, start + myperPage);
+});
+
+const mytotalPages = computed(() =>
+  Math.ceil(myCrews.value.length / myperPage)
+);
+
+const mynextPage = () => {
+  if (mypage.value < mytotalPages.value) mypage.value++;
+};
+const myprevPage = () => {
+  if (mypage.value > 1) mypage.value--;
+};
 
 /* 크루 생성 */
+const goalTime = computed(() => {
+  return goalHours.value * 3600 + goalMinutes.value * 60 + goalSeconds.value
+});
+
+watch(goalTime, (newVal) => {
+  newCrew.value.goalTime = newVal
+})
+
 const toggleCrewForm = () => {
   showCrewForm.value = !showCrewForm.value;
 };
@@ -216,6 +292,7 @@ const toggleCrewForm = () => {
 const submitCrew = async () => {
   if (!token.value) {
     alert("로그인이 필요합니다.");
+    router.push('/login');
     return;
   }
 
@@ -238,7 +315,7 @@ const submitCrew = async () => {
         roomName: '',
         roomDescription: '',
         goalType: 'SUM',
-        goalTime: 0,
+        goalTime: goalTime.value,
         startDate: '',
         endDate: ''
       };
@@ -254,6 +331,7 @@ const submitCrew = async () => {
 const joinCrew = async (crew) => {
   if (!token.value || !userId.value) {
     alert("로그인이 필요합니다.");
+    router.push('/login');
     return;
   }
 
@@ -282,6 +360,7 @@ const joinCrew = async (crew) => {
 const deleteCrew = async (crew) => {
   if (!token.value || !userId.value) {
     alert("로그인이 필요합니다.");
+    router.push('/login');
     return;
   }
 
@@ -306,9 +385,26 @@ const deleteCrew = async (crew) => {
   }
 };
 
+const silentDeleteCrew = async (crew) => {
+  try {
+    const res = await fetch(`http://localhost:8080/api/crew/${crew.id}?creatorId=${userId.value}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token.value}` }
+    });
+
+    if (res.ok) {
+      console.log(`종료일 지난 크루 자동 삭제: ${crew.roomName}`);
+    }
+  } catch (err) {
+    console.error("자동 크루 삭제 중 오류:", err);
+  }
+};
+
+
 const quitCrew = async (crew) => {
   if (!token.value || !userId.value) {
     alert("로그인이 필요합니다.");
+    router.push('/login');
     return;
   }
 
@@ -425,8 +521,7 @@ const handleTokenExpired = () => {
   token.value = null;
   userId.value = null;
   alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
-  // 필요시 로그인 페이지로 리다이렉트
-  // router.push('/login');
+  router.push('/login');
 };
 
 /* 카카오 API */
@@ -704,24 +799,23 @@ const toggleTimer = async () => {
   }
 
   if (isRunning.value) {
-    // 러닝 종료
-    clearInterval(timer.value);
-
-    endTime.value = new Date().toISOString();
-    duration.value = seconds.value;
-
-    // 1. 러닝 종료 데이터 전송
-    const endJsonData = JSON.stringify({
-      startTime: startTime.value,
-      endTime: endTime.value,
-      duration: duration.value,
-      distance: (distance.value / 1000).toFixed(2),
-      status: "ended"
-    });
-
-    // console.log("종료 시 전송 데이터:", endJsonData);
-
+    // 종료 분기
     try {
+      endTime.value = new Date().toISOString();
+      duration.value = seconds.value;
+
+      if (!startTime.value) {
+        startTime.value = localStorage.getItem(STORAGE_KEY);
+      }
+
+      const endJsonData = JSON.stringify({
+        startTime: startTime.value,
+        endTime: endTime.value,
+        duration: duration.value,
+        distance: (distance.value / 1000).toFixed(2),
+        status: "ended"
+      });
+
       const res = await fetch("http://localhost:8080/api/runs/running-status", {
         method: "POST",
         headers: {
@@ -736,29 +830,30 @@ const toggleTimer = async () => {
         return;
       }
 
-      // 2. 저장 및 지도 업로드 실행
       await saveRunningData();
       await uploadMapImage();
-
       infoText.value = "러닝이 종료되었습니다.";
-
-      // 하루 러닝 시간 계산 후 업데이트
       showMoodModal.value = true;
     } catch (error) {
       console.error("러닝 종료 요청 중 에러 발생:", error);
+    } finally {
+      clearInterval(timer.value);
+      isRunning.value = false;
+      localStorage.removeItem(STORAGE_KEY);
+      startTime.value = null;
+      seconds.value = 0;
     }
   } else {
-    // 러닝 시작
-    startTime.value = new Date().toISOString();
-
-    const startJsonData = JSON.stringify({
-      startTime: startTime.value,
-      status: "running"
-    });
-
-    // console.log("시작 시 전송 데이터:", startJsonData);
-
+    // 시작 분기
     try {
+      startTime.value = new Date().toISOString();
+      localStorage.setItem(STORAGE_KEY, startTime.value);
+
+      const startJsonData = JSON.stringify({
+        startTime: startTime.value,
+        status: "running"
+      });
+
       const res = await fetch("http://localhost:8080/api/runs/running-status", {
         method: "POST",
         headers: {
@@ -778,15 +873,14 @@ const toggleTimer = async () => {
         if (kakaoMapLoaded.value) updateLocation();
       }, 1000);
 
+      isRunning.value = true;
       infoText.value = "달리는 중...";
     } catch (error) {
       console.error("러닝 시작 요청 중 에러 발생:", error);
     }
   }
-
-  // 상태 전환
-  isRunning.value = !isRunning.value;
 };
+
 
 /* 유저 불러오기 */
 const getCurrentUser = async () => {
@@ -795,6 +889,7 @@ const getCurrentUser = async () => {
 
   if (!currentToken) {
     alert("로그인이 필요합니다.");
+    router.push('/login');
     return;
   }
 
@@ -822,6 +917,7 @@ const getCurrentUser = async () => {
   } catch (err) {
     console.error("사용자 정보 요청 실패:", err);
     alert("로그인이 필요합니다.");
+    router.push('/login');
   }
 };
 
@@ -876,6 +972,7 @@ const getRouteId = async () => {
 const calDailyRun = async (routeId) => {
   if (!token.value || !userId.value) {
     alert("로그인이 필요합니다.");
+    router.push('/login');
     return;
   }
 
@@ -902,19 +999,34 @@ const calDailyRun = async (routeId) => {
 };
 
 /* 목표 관련 */
-const formatDuration = (min) => {
-  if (!min) return "0분";
-  const hr = Math.floor(min / 60);
-  const m = min % 60;
-  return `${hr}시간 ${m.toFixed(0)}분`;
+const formatDuration = (seconds) => {
+  if (!seconds || seconds <= 0) return "0초";
+
+  const totalMinutes = Math.floor(seconds / 60);
+  const sec = Math.floor(seconds % 60);
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const minutes = totalMinutes % 60;
+
+  if (days > 0) {
+    return `${days}일 ${hours}시간 ${minutes}분 ${sec}초`;
+  } else if (hours > 0) {
+    return `${hours}시간 ${minutes}분 ${sec}초`;
+  } else if (minutes > 0) {
+    return `${minutes}분 ${sec}초`;
+  } else {
+    return `${sec}초`;
+  }
 };
 
 const Percentage = (goal, now) => {
   if (!(goal || now)) return "0%";
   if (goal <= now)
     return `목표를 이미 달성했습니다.`;
-  const per = (goal - now) / goal * 100;
-  return `${per.toFixed(2)}%`;
+  else {
+    const per = (goal - now) / goal * 100;
+    return `${per.toFixed(2)}%`;
+  }
 };
 
 const getCrewRun = async (crewId) => {
@@ -978,6 +1090,30 @@ onMounted(async () => {
   getCurrentUser();
   loadKakaoMapScript();
   fetchCrewsAndMembers();
+
+  // 종료일이 지난 크루 자동 삭제
+  const now = new Date();
+  for (const crew of crews.value) {
+    const end = new Date(crew.endDate);
+    end.setDate(end.getDate() + 1);
+
+    if (end <= now && crew.creatorId == userId.value) {
+      await silentDeleteCrew(crew);
+    }
+  }
+
+  // 새로고침 후 타이머 복원
+  const savedStart = localStorage.getItem(STORAGE_KEY);
+  if (savedStart) {
+    startTime.value = savedStart;
+    seconds.value = Math.floor((new Date() - new Date(savedStart)) / 1000);
+    isRunning.value = true;
+
+    timer.value = setInterval(() => {
+      seconds.value++;
+      if (kakaoMapLoaded.value) updateLocation();
+    }, 1000);
+  }
 });
 
 onBeforeUnmount(() => {
@@ -1160,7 +1296,8 @@ body {
 .join-btn {
   background: linear-gradient(135deg, #FF9F69, #FF7043);
   color: white;
-  padding: 8px 20px;
+  padding: 6px 14px;
+  margin-left: 4px;
   border: none;
   border-radius: 999px;
   font-weight: 600;
@@ -1450,7 +1587,6 @@ textarea {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
 }
 
 .crew-header h4 {
@@ -1572,4 +1708,79 @@ textarea {
 .fade-leave-to {
   opacity: 0;
 }
+
+.more-btn-wrapper, .pagination-controls {
+  text-align: center;
+  margin-top: 12px;
+}
+
+.pagination-controls button {
+  padding: 4px 8px;
+  margin: 0px 8px;
+  background-color: #f58220;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.progress-bar-container {
+  margin-top: 8px;
+  height: 20px;
+  background: #f5f5f5;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 100%;
+  background: #eee;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(to right, #ffa500, #ff6347);
+  transition: width 0.4s ease;
+}
+
+.progress-percent {
+  margin-top: 4px;
+  font-weight: bold;
+  text-align: right;
+  font-size: 14px;
+}
+
+.goal-details {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.goal-celebration {
+  background-color: #fff3cd;
+  color: #d48806;
+  border: 2px solid #ffe58f;
+  border-radius: 8px;
+  padding: 12px 20px;
+  margin: 12px 0;
+  font-weight: bold;
+  font-size: 1.2em;
+  text-align: center;
+  animation: pop 0.5s ease-in-out;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 </style>

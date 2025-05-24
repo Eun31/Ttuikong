@@ -3,7 +3,7 @@
   <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet" />
 
   <div class="container">
-    <h3>🔥 러닝 랭킹</h3>
+    <h3>🔥 이달의 러닝 랭킹</h3>
 
     <div class="rank-container">
       <div v-for="(user, index) in rankings" :key="user.id" class="rank-item">
@@ -24,7 +24,7 @@
         <div class="rank">{{ myRanking }}</div>
         <div class="user-info">
           <strong>{{ userName }}</strong>
-          <span>{{ myDistance }}분</span>
+          <span>{{ formatDuration(myDistance) }}</span>
         </div>
       </div>
     </div>
@@ -53,11 +53,24 @@ const rankings = ref([]);
 const myRanking = ref('-');
 const myDistance = ref(0);
 
-const formatDuration = (min) => {
-  if (!min) return "0분";
-  const hr = Math.floor(min / 60);
-  const m = min % 60;
-  return `${hr}시간 ${m.toFixed(0)}분`;
+const formatDuration = (seconds) => {
+  if (!seconds || seconds <= 0) return "0초";
+
+  const totalMinutes = Math.floor(seconds / 60);
+  const sec = Math.floor(seconds % 60);
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const minutes = totalMinutes % 60;
+
+  if (days > 0) {
+    return `${days}일 ${hours}시간 ${minutes}분 ${sec}초`;
+  } else if (hours > 0) {
+    return `${hours}시간 ${minutes}분 ${sec}초`;
+  } else if (minutes > 0) {
+    return `${minutes}분 ${sec}초`;
+  } else {
+    return `${sec}초`;
+  }
 };
 
 const getMedalClass = (index) => {
@@ -124,12 +137,6 @@ const getMyRanking = async () => {
         'Content-Type': 'application/json'
       }
     });
-
-    const contentLength = res.headers.get("content-length");
-    if (!contentLength || parseInt(contentLength) === 0) {
-      console.warn("📭 응답 본문 없음 (content-length: 0)");
-      return;
-    }
 
     const data = await res.json();
 

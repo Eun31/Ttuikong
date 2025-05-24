@@ -17,12 +17,12 @@
           <div class="profile-stats">
             <div class="stat">
               <span class="stat-label">총 거리</span>
-              <span class="stat-value">{{ userInfo.totalDistance }}</span>
+              <span class="stat-value">{{ userInfo.totalDistance }}km</span>
             </div>
-            <!-- <div class="stat">
-              <span class="stat-label">총 시간</span>
-              <span class="stat-value">{{ userInfo.totalDuration }}</span>
-            </div> -->
+            <div class="stat">
+              <span class="stat-label">목표</span>
+              <span class="stat-value">{{ userInfo.activityGoal }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -167,7 +167,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import profileImg from '../assets/profile.png';
-import defaultImage from '@/assets/default-map.jpg';
+import defaultImage from '@/assets/default-map2.png';
 
 // 반응형 상태 정의
 const profile = ref(profileImg);
@@ -350,7 +350,7 @@ const formatDuration = (seconds) => {
   if (!seconds || seconds <= 0) return "0초";
 
   const totalMinutes = Math.floor(seconds / 60);
-  const sec = seconds % 60;
+  const sec = Math.floor(seconds % 60);
   const days = Math.floor(totalMinutes / 1440);
   const hours = Math.floor((totalMinutes % 1440) / 60);
   const minutes = totalMinutes % 60;

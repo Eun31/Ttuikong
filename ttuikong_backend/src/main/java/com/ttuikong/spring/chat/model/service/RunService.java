@@ -13,7 +13,7 @@ public interface RunService {
     public void updateRunRecord(int userId, LocalDateTime startTime, LocalDateTime endTime, double distance,
             long duration);
 
-    public void updateDailyDuration(int userId, int routeId, double distance, double calories, String mood);
+    public void updateDailyDuration(int userId, Integer routeId, double distance, double calories, String mood);
 
     public List<Map<String, Object>> getTop10UsersByDuration();
 

@@ -315,8 +315,6 @@ button {
     /* 텍스트 표시 */
     font-size: 11px;
     /* 텍스트 크기 더 줄임 */
-    margin-left: 3px;
-    /* 아이콘과 텍스트 사이 간격 */
   }
 
   .main-content {

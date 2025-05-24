@@ -20,7 +20,7 @@ public interface RunDao {
     void updateRunRecord(int userId, LocalDateTime startTime, LocalDateTime endTime, double distance, long duration);
 
     void updateDailyDuration(@Param("userId") int userId,
-                         @Param("routeId") int routeId,
+                         @Param("routeId") Integer routeId,
                          @Param("distance") double distance,
                          @Param("calories") double calories,
                          @Param("mood") String mood);

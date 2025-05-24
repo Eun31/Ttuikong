@@ -118,7 +118,7 @@ const stats = computed(() => {
   ];
 });
 const menus = ref([
-  { label: '랭킹', icon: '👟', path: '/run/rank' },
+  { label: '챌린지', icon: '👟', path: '/run' },
   { label: '캘린더', icon: '📝', path: '/calendar' },
   { label: '루트 찾기', icon: '👥', path: '/routes' },
   { label: '게시판', icon: '🖐️', path: '/board' }
@@ -245,12 +245,11 @@ const getAIRecommendation = async () => {
   }
 };
 /* 오늘 뛴 시간 */
-
 const formatDuration = (seconds) => {
   if (!seconds || seconds <= 0) return "0초";
 
   const totalMinutes = Math.floor(seconds / 60);
-  const sec = seconds % 60;
+  const sec = Math.floor(seconds % 60);
   const days = Math.floor(totalMinutes / 1440);
   const hours = Math.floor((totalMinutes % 1440) / 60);
   const minutes = totalMinutes % 60;

@@ -32,7 +32,7 @@ public class RunServiceImpl implements RunService {
     }
 
     @Override
-    public void updateDailyDuration(int userId, int routeId, double distance, double calories, String mood) {
+    public void updateDailyDuration(int userId, Integer routeId, double distance, double calories, String mood) {
         runDao.updateDailyDuration(userId, routeId, distance, calories, mood);
     }
 

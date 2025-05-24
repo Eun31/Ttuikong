@@ -31,11 +31,11 @@
     <!-- 1. 하루동안 duration을 누적한 값 업데이트 -->
     <insert id="updateDailyDuration">
       INSERT INTO daily_record (
-      user_id, route_id, date, duration, distance, calories, mood
+      user_id, <if test="routeId != null">route_id,</if> date, duration, distance, calories, mood
       )
       VALUES (
           #{userId},
-          #{routeId},
+          <if test="routeId != null">#{routeId},</if>
           CURRENT_DATE,
           (SELECT IFNULL(SUM(duration), 0)
           FROM route

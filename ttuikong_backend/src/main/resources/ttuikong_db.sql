@@ -18,6 +18,8 @@ CREATE TABLE User (
     total_distance DOUBLE,
     role ENUM('USER', 'ADMIN') NOT NULL DEFAULT 'USER'
 );
+ALTER TABLE User MODIFY COLUMN activity_level VARCHAR(50);
+ALTER TABLE User MODIFY COLUMN activity_goal VARCHAR(50);
 
 -- 운동 경로 테이블
 CREATE TABLE Route (
@@ -33,6 +35,7 @@ CREATE TABLE Route (
     status ENUM('running', 'ended') DEFAULT NULL,
     image_url VARCHAR(255) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_user_start (user_id, start_time),
     FOREIGN KEY (user_id) REFERENCES User(id)
 );
 
@@ -40,15 +43,16 @@ CREATE TABLE Route (
 CREATE TABLE Daily_Record (
     id INT AUTO_INCREMENT PRIMARY KEY, -- 기록 아이디
     user_id INT NOT NULL,
-    route_id INT,
+    route_id INT DEFAULT NULL,
     date DATE,
     duration BIGINT DEFAULT NULL, -- 운동 시간 (분)
     distance DOUBLE DEFAULT NULL, -- 거리 (km)
     calories DOUBLE DEFAULT NULL, -- 소모한 칼로리
     mood ENUM('기쁨', '뿌듯함', '아쉬움', '화남', '슬픔', '쏘쏘') DEFAULT NULL, -- 오늘의 기분 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_user_date (user_id, date),
     FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE,
-    FOREIGN KEY (route_id) REFERENCES Route(id) ON DELETE SET NULL
+    FOREIGN KEY (route_id) REFERENCES Route(id)
 );
 
 -- 게시판 글 테이블
@@ -137,9 +141,15 @@ CREATE TABLE Chat (
     FOREIGN KEY (crew_id) REFERENCES Crew(id) ON DELETE CASCADE,
     FOREIGN KEY (sender_id) REFERENCES User(id) ON DELETE CASCADE
 );
- ALTER TABLE route ADD CONSTRAINT uq_user_start UNIQUE (user_id, start_time);
- ALTER TABLE daily_record ADD UNIQUE KEY uniq_user_date (user_id, date);
 
-ALTER TABLE User MODIFY COLUMN activity_level VARCHAR(50);
-ALTER TABLE User MODIFY COLUMN activity_goal VARCHAR(50);
-
+-- 추천 테이블
+CREATE TABLE Recommendations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    recommended_distance DECIMAL(5,2) NOT NULL,
+    estimated_time INT NOT NULL,
+    estimated_calories INT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME NOT NULL DEFAULT (DATE_ADD(DATE(NOW()), INTERVAL 1 DAY)),
+    FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE
+);
