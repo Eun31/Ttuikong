@@ -64,7 +64,7 @@
             <i class="icon-arrow-left"></i>
             이전 단계
           </button>
-          <button class="btn btn-success" @click="submitForm" :disabled="!formData.acceptTerms">
+          <button class="btn btn-success" @click="submitForm" :disabled="!formData.acceptTerms || !activityGoal">
             가입 완료
             <i class="icon-check"></i>
           </button>
@@ -96,31 +96,31 @@ const goalStyles = [
   {
     emoji: '🐨',
     value: '느긋한 코알라',
-    title: '편안한 생활 러너',
+    title: '느긋한 코알라',
     description: '즐겁게 달리며 일상에 활력을 더하고 싶어요.'
   },
   {
     emoji: '🐢',
     value: '산책하는 거북이',
-    title: '건강한 습관 러너',
+    title: '산책하는 거북이',
     description: '꾸준한 러닝으로 건강한 습관을 만들고 싶어요.'
   },
   {
     emoji: '🐶',
     value: '신나는 강아지',
-    title: '활력 넘치는 러너',
+    title: '신나는 강아지',
     description: '러닝으로 스트레스를 해소하고 에너지를 충전하고 싶어요.'
   },
   {
     emoji: '🐎',
     value: '힘찬 질주 말',
-    title: '도전하는 러너',
+    title: '힘찬 질주 말',
     description: '5K, 10K, 하프 마라톤 등 나만의 목표를 달성하고 싶어요.'
   },
   {
     emoji: '🐆',
     value: '전광석화 치타',
-    title: '퍼포먼스 러너',
+    title: '전광석화 치타',
     description: '내 기록을 경신하고 마라톤 완주를 목표로 해요.'
   }
 ];

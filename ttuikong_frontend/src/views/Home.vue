@@ -405,11 +405,21 @@ const fetchBeanStatus = async () => {
   }
 };
 
+const levelThresholds = {
+  '느긋한 코알라': 100,
+  '산책하는 거북이': 150,
+  '신나는 강아지': 200,
+  '힘찬 질주 말': 250,
+  '전광석화 치타': 999999  
+};
+
 const loadBeanStatus = async () => {
   const data = await fetchBeanStatus()
   if (data) {
     beanCount.value = data.beanCount
-    growthRate.value = Math.min((data.beanCount / 100) * 100, 100)
+    const maxBeans = levelThresholds[data.activityLevel] || 100;
+    growthRate.value = Math.min((data.beanCount / maxBeans) * 100, 100);
+
     activityLevel.value = data.activityLevel
   }
 }

@@ -4,6 +4,6 @@ import com.ttuikong.spring.model.dto.Bean;
 
 public interface BeanDao {
     void insertBean(Bean bean);
-    int getTotalBeanByUser(int userId);
-    void deleteBeansByUserId(int userId);
+    int getTotalBeanByUser(int id);
+    void deleteBeansByUserId(int id);
 }

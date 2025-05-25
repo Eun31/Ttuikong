@@ -1,14 +1,16 @@
 <template>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet" />
+
   <div id="app">
     <header class="header" v-if="!isAuthPage">
       <div class="container header-container">
         <router-link to="/" class="logo">
           <img :src="logo" alt="Logo" />
         </router-link>
-        <button class="menu-toggle" @click="toggleMenu" v-if="!isAuthPage">
+        <!-- <button class="menu-toggle" @click="toggleMenu" v-if="!isAuthPage">
           <i class="ri-menu-line" v-if="!menuActive"></i>
           <i class="ri-close-line" v-else></i>
-        </button>
+        </button> -->
         <nav class="nav-buttons">
           <button v-if="isLoggedIn" class="nav-btn text" @click="logout"><i class="ri-logout-box-r-line"></i>
             <span>로그아웃</span></button>
@@ -27,16 +29,15 @@
     <div class="mobile-menu" :class="{ active: menuActive }" v-if="!isAuthPage">
       <router-link to="/" class="menu-item" @click="closeMenu">홈</router-link>
       <router-link to="/board" class="menu-item" @click="closeMenu">게시판</router-link>
-      <router-link to="/chat" class="menu-item" @click="closeMenu">채팅</router-link>
 
       <div class="menu-auth-section">
         <template v-if="isLoggedIn">
-          <router-link to="/profile" class="menu-item" @click="closeMenu">마이페이지</router-link>
-          <a href="#" class="menu-item" @click="logout(); closeMenu();">로그아웃</a>
+          <router-link to="/profile" class="menu-item" @click="closeMenu"><i class="ri-user-line"></i>마이페이지</router-link>
+          <a href="#" class="menu-item" @click="logout(); closeMenu();"><i class="ri-logout-box-r-line"></i>로그아웃</a>
         </template>
         <template v-else>
-          <router-link to="/login" class="menu-item" @click="closeMenu">로그인</router-link>
-          <router-link to="/signup" class="menu-item" @click="closeMenu">회원가입</router-link>
+            <router-link to="/login" class="menu-item" @click="closeMenu"><i class="ri-login-box-line"></i> 로그인</router-link>
+          <router-link to="/signup" class="menu-item" @click="closeMenu"><i class="ri-user-add-line"></i>회원가입</router-link>
         </template>
       </div>
     </div>
@@ -58,9 +59,11 @@ const router = useRouter();
 const menuActive = ref(false);
 const logo = logoImg;
 
-const isLoggedIn = computed(() => {
-  return localStorage.getItem('jwt') !== null;
+const isLoggedIn = ref(localStorage.getItem('jwt') !== null);
+watch(() => route.path, () => {
+  isLoggedIn.value = localStorage.getItem('jwt') !== null;
 });
+
 
 const isAuthPage = computed(() => {
   const authPages = ['/login', '/signup', '/signup2', '/signup3'];
@@ -76,10 +79,8 @@ const closeMenu = () => {
 };
 
 const logout = () => {
-  localStorage.removeItem('jwt');
-  localStorage.removeItem('token');
-  localStorage.removeItem('userId');
-  localStorage.removeItem('nickname');
+  localStorage.clear(); 
+  isLoggedIn.value = false;
   router.push('/login');
 };
 
@@ -253,6 +254,13 @@ button {
   border-bottom: 1px solid #eee;
   font-weight: 500;
   color: #333;
+}
+
+.menu-item i {
+  margin-right: 6px;
+  font-size: 18px;
+  vertical-align: middle;
+  color: #FF7E47;
 }
 
 .menu-auth-section {

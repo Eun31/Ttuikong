@@ -27,7 +27,7 @@ public interface UserDao {
     // 사용자 정보 수정
     void updateUser(User user);
 
-    void updateActivityLevel(@Param("userId") int userId, @Param("activityLevel") String activityLevel);
+    void updateActivityLevel(@Param("id") int id, @Param("activityLevel") String activityLevel);
     
     // 사용자 삭제
     void deleteUser(int id);

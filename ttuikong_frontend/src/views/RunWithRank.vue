@@ -169,6 +169,7 @@ onMounted(async () => {
 <style scoped>
 .container {
   background-color: #ffe3d6;
+  padding-top: 10px;
 }
 
 h3 {
@@ -178,7 +179,7 @@ h3 {
 h3,
 h4 {
   font-size: 25px;
-  margin: 10px 0 10px 15px;
+  margin: 0px 0 10px 15px;
   font-weight: 600;
   color: #333;
 }

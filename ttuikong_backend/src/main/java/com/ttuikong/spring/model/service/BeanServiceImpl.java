@@ -29,31 +29,34 @@ public class BeanServiceImpl implements BeanService {
     @Autowired private CrewDao crewDao;
 
     @Transactional
-    public void addBeans(int userId, int amount) {
+    public void addBeans(int id, int amount) {
         Bean bean = new Bean();
-        bean.setUserId(userId);
+        bean.setUserId(id);
         bean.setBeans(amount);
         beanDao.insertBean(bean);
 
-        int totalBeans = beanDao.getTotalBeanByUser(userId);
+        int totalBeans = beanDao.getTotalBeanByUser(id);
 
-        User user = userDao.selectById(userId);
+        User user = userDao.selectById(id);
         ActivityLevel currentLevel = ActivityLevel.fromDisplayName(user.getActivityLevel());
         ActivityLevel newLevel = currentLevel;
 
-        while (totalBeans >= 100) {
-            totalBeans -= 100;
+        while (true) {
+            int required = levelUpThresholds.getOrDefault(newLevel, Integer.MAX_VALUE); // 전광석화 치타면 무한 필요
+            if (totalBeans < required) break;
+
+            totalBeans -= required;
             newLevel = ActivityLevel.getNextLevel(newLevel);
         }
 
         if (!newLevel.equals(currentLevel)) {
-            userDao.updateActivityLevel(userId, newLevel.name());
+            userDao.updateActivityLevel(id, newLevel.getDisplayName());
         }
 
-        beanDao.deleteBeansByUserId(userId);
+        beanDao.deleteBeansByUserId(id);
         if (totalBeans > 0) {
             Bean remaining = new Bean();
-            remaining.setUserId(userId);
+            remaining.setUserId(id);
             remaining.setBeans(totalBeans);
             beanDao.insertBean(remaining);
         }
@@ -126,4 +129,13 @@ public class BeanServiceImpl implements BeanService {
                 return next < values().length ? values()[next] : current; // 마지막 레벨이면 그대로 유지
             }
         }
+
+    private static final Map<ActivityLevel, Integer> levelUpThresholds = new HashMap<>() {{
+        put(ActivityLevel.느긋한_코알라, 100);
+        put(ActivityLevel.산책하는_거북이, 150);
+        put(ActivityLevel.신나는_강아지, 200);
+        put(ActivityLevel.힘찬_질주_말, 250);
+        // 전광석화_치타는 마지막 레벨이므로 추가 안 해도 됨
+    }};
+
 }

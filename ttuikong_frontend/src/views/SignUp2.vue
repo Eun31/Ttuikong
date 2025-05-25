@@ -36,7 +36,7 @@
             <i class="icon-arrow-left"></i>
             이전 단계
           </button>
-          <button class="btn btn-primary" @click="goToNextStep">
+          <button class="btn btn-primary" @click="goToNextStep" :disabled="!activityLevel">
             다음 단계
             <i class="icon-arrow-right"></i>
           </button>

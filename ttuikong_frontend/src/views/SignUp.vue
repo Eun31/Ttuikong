@@ -38,11 +38,12 @@
                 id="password"
                 type="password" 
                 v-model="formData.password" 
+                minlength="6"
                 required 
                 placeholder="비밀번호를 입력하세요"
               >
             </div>
-            <small class="form-hint">8자 이상, 영문/숫자/특수문자 조합</small>
+            <small class="form-hint">6자 이상</small>
           </div>
         </div>
 

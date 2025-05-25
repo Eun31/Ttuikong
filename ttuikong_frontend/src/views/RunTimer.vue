@@ -70,6 +70,7 @@
             </div>
           </div>
           <div class="form-group">
+          <label>시작일</label>
             <input v-model="newCrew.startDate" type="date" :min="today" required />
           </div>
           <div class="form-group">
@@ -98,7 +99,7 @@
       </div>
       <div class="pagination-controls">
         <button @click="prevPage" :disabled="page === 1">이전</button>
-        <span>{{ page }} / {{ totalPages }}</span>
+        <span>{{ totalPages == 0 ? 0 : mypage }} / {{ totalPages }}</span>
         <button @click="nextPage" :disabled="page === totalPages">다음</button>
       </div>
 
@@ -119,17 +120,25 @@
           <div v-show="expandedCrews.includes(crew.id)" class="crew-detail">
             <p class="crew-meta">크루 생성일: {{ crew.createdAt.split("T")[0] }}</p>            
             <div class="goal-status-box">
-              <h4 class="title">🏅 목표 달성률</h4>
+              <h4 class="title">
+                🏅 목표 달성률
+              <span class="percent-text" v-if="(crew.goalType == 'SUM' ? getPercent(crew.goalTime, crewStatusMap[crew.id]?.totalDuration) : getPercent(crew.goalTime, crewStatusMap[crew.id]?.averageDuration)) < 100 && (crew.goalType == 'SUM' ? getPercent(crew.goalTime, crewStatusMap[crew.id]?.totalDuration) : getPercent(crew.goalTime, crewStatusMap[crew.id]?.averageDuration)) >= 0" >
+                {{ crew.goalType == 'SUM' ? Percentage(crew.goalTime, crewStatusMap[crew.id]?.totalDuration) : Percentage(crew.goalTime, crewStatusMap[crew.id]?.averageDuration) }} 
+              </span>
+              </h4>
               <!-- 게이지 바 -->
-              <div v-if="(crew.goalType == 'SUM' ? Percentage(crew.goalTime, crewStatus.totalDuration) : Percentage(crew.goalTime, crewStatus.averageDuration)) < 100" class="progress-bar-container">
+              <div v-if="(crew.goalType == 'SUM' ? getPercent(crew.goalTime, crewStatusMap[crew.id]?.totalDuration) : getPercent(crew.goalTime, crewStatusMap[crew.id]?.averageDuration)) < 100 && (crew.goalType == 'SUM' ? getPercent(crew.goalTime, crewStatusMap[crew.id]?.totalDuration) : getPercent(crew.goalTime, crewStatusMap[crew.id]?.averageDuration)) >= 0" class="progress-bar-container">
                 <div class="progress-bar-bg">
-                  <div class="progress-bar-fill" :style="{ width: crew.goalType == 'SUM' ? progressPercent(crew.goalTime, crewStatus.totalDuration) : progressPercent(crew.goalTime, crewStatus.averageDuration) }"></div>
+                  <div class="progress-bar-fill" :style="{ width: crew.goalType == 'SUM' ? Percentage(crew.goalTime, crewStatusMap[crew.id]?.totalDuration) : Percentage(crew.goalTime, crewStatusMap[crew.id]?.averageDuration) }"></div>
                 </div>
-                <p class="progress-percent">{{ crew.goalType == 'SUM' ? Percentage(crew.goalTime, crewStatus.totalDuration) : Percentage(crew.goalTime, crewStatus.averageDuration) }}</p>
+                <p class="progress-percent">
+                  {{ crew.goalType == 'SUM' ? getPercent(crew.goalTime, crewStatusMap[crew.id]?.totalDuration) : getPercent(crew.goalTime, crewStatusMap[crew.id]?.averageDuration) }}
+                </p>
               </div>
               <div v-else class="goal-celebration">
-                <p>🎉목표를 이미 달성했습니다🎉</p>
+                🎉목표를 이미 달성했습니다🎉
               </div>
+
               <!-- 수치 정보 -->
               <div class="goal-details">
                 <p><strong>📍 목표:</strong> {{ crew.goalType == 'SUM' ? '총합' : '평균' }} {{ formatDuration(crew.goalTime) }}</p>
@@ -154,7 +163,7 @@
       </div>
       <div class="pagination-controls">
         <button @click="myprevPage" :disabled="mypage === 1">이전</button>
-        <span>{{ mypage }} / {{ mytotalPages }}</span>
+        <span>{{ mytotalPages == 0 ? 0 : mypage }} / {{ mytotalPages }}</span>
         <button @click="mynextPage" :disabled="mypage === mytotalPages">다음</button>
       </div>
     </div>
@@ -232,6 +241,7 @@ const selectedMood = ref('');
 const showMoodModal = ref(false);
 const crewMembersMap = ref({});
 const crewStatus = ref({});
+const crewStatusMap = ref({});
 const goalHours = ref(0);
 const goalMinutes = ref(0);
 const goalSeconds = ref(0);
@@ -1026,14 +1036,15 @@ const formatDuration = (seconds) => {
   }
 };
 
+const getPercent = (goal, now) => {
+  if (!(goal || now)) return 0;
+  return ((goal - now) / goal) * 100;
+};
+
 const Percentage = (goal, now) => {
-  if (!(goal || now)) return "0%";
-  if (goal <= now)
-    return `목표를 이미 달성했습니다.`;
-  else {
-    const per = (goal - now) / goal * 100;
-    return `${per.toFixed(2)}%`;
-  }
+  const percent = getPercent(goal, now);
+  if (percent >= 100 || percent < 0) return "🎉목표를 이미 달성했습니다.🎉";
+  return `${percent.toFixed(2)}%`;
 };
 
 const getCrewRun = async (crewId) => {
@@ -1078,6 +1089,7 @@ const getCrewGoal = async (crewId) => {
     // console.log("크루 시간 현황:", data);
 
     crewStatus.value = data;
+    crewStatusMap.value[crewId] = data;
 
   } catch (err) {
     console.error("크루 시간 현황:", err);
@@ -1787,6 +1799,16 @@ textarea {
     transform: scale(1);
     opacity: 1;
   }
+}
+.title {
+  display: flex;
+  justify-content: space-between;
+}
+.percent-text {
+  margin-left: 10px;
+  font-size: 14px;
+  color: #999; /* 연한 회색 */
+  font-weight: normal;
 }
 
 </style>

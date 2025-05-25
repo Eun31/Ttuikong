@@ -374,12 +374,6 @@ input::placeholder {
   transition: var(--transition);
 }
 
-.style-option:hover {
-  border-color: var(--primary-light);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
-}
-
 .style-option.selected {
   border-color: var(--primary-color);
   background-color: rgba(255, 87, 34, 0.05);
