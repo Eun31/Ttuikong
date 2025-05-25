@@ -219,7 +219,7 @@ const getFollowingPosts = async () => {
     if (response.ok) {
       const data = await response.json();
       followPosts.value = data.map(post => ({
-        id: post.boardId,
+        id: post.postId,
         title: post.title,
         description: post.content,
         user: {

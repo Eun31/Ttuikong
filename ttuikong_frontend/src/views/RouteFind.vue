@@ -112,7 +112,7 @@ const showFeedback = ref(false)
 const feedbackMessage = ref('')
 const feedbackType = ref('')
 const feedbackIcon = ref('')
-const calorieRate = ref(0.8)
+const calorieRate = ref(1.2)
 const averageWeight = ref(65)
 
 const startAddress = ref('')
@@ -205,7 +205,7 @@ const checkDistanceAndProvideFeedback = () => {
 
   setTimeout(() => {
     showFeedback.value = false;
-  }, 8000);
+  }, 3000);
 };
 
 watch(routeCalculated, (newValue) => {
@@ -374,12 +374,10 @@ const getAddressFromCoords = (position, callback) => {
 
 const setStartPosition = (position) => {
   coords.value.start = position
-  console.log("출발지 마커 생성", position.toString())
 }
 
 const setEndPosition = (position) => {
   coords.value.end = position
-  console.log("도착지 마커 생성", position.toString())
 }
 
 const calculateRoute = () => {
@@ -727,6 +725,7 @@ html, body {
   align-items: center;
   padding: 16px;
   position: relative;
+  margin-bottom: 20px;
 }
 
 .header-title-section {
@@ -756,7 +755,7 @@ html, body {
 
 /* 피드백 카드 스타일 */
 .feedback-card {
-  margin: 16px;
+  margin: 0 16px 20px 16px;
   border-radius: 12px;
   padding: 16px;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
@@ -879,7 +878,7 @@ html, body {
   background-color: #FFF3ED;
   border-radius: 12px;
   padding: 16px;
-  margin-top: 30px;
+  margin-top: 0px;
   display: flex;
   align-items: center;
   flex: 1;

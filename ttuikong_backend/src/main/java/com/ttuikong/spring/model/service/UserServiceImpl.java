@@ -51,7 +51,12 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public User getUserById(int id) {
-		return userDao.selectById(id);
+		User user = userDao.selectById(id);
+		if(user != null) {
+			int totalRuns = dailyRecordDao.countByUserId(id);
+			user.setTotalRuns(totalRuns);
+		}
+		return user;
 	}
 
 	@Override

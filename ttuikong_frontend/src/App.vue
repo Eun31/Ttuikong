@@ -224,7 +224,6 @@ button {
   display: none;
   font-size: 24px;
   color: #FF7E47;
-  /* 주황색으로 변경 */
   padding: 8px;
   border-radius: 4px;
 }

@@ -292,10 +292,6 @@ const getProfile = async (userId) => {
 };
 
 const getFollowers = async (userId) => {
-  if (!token || currentUserId.value !== userId) {
-    return [];
-  }
-
   const response = await axios.get(`${API_URL}/users/${userId}/followers`, {
     headers: authHeader.value
   });
@@ -322,9 +318,6 @@ const getFollowers = async (userId) => {
 };
 
 const getFollowing = async (userId) => {
-  if (!token || currentUserId.value !== userId) {
-    return [];
-  }
 
   const response = await axios.get(`${API_URL}/users/${userId}/followings`, {
     headers: authHeader.value
@@ -490,9 +483,16 @@ const loadProfileData = async () => {
           isFollowing.value = followStatus.isFollowing;
         }
 
-        stats.followerCount = 0;
-        stats.followingCount = 0;
-        stats.totalRuns = 0;
+        const [followersData, followingData] = await Promise.all([
+          getFollowers(targetUserId),
+          getFollowing(targetUserId)
+        ]);
+
+        followers.value = followersData.map(user => ({ ...user, loading: false }));
+        following.value = followingData.map(user => ({ ...user, loading: false }));
+        stats.followerCount = followersData.length;
+        stats.followingCount = followingData.length;
+        stats.totalRuns = profileData.totalRuns || 0;
 
         await loadTabData(0);
 
@@ -523,7 +523,7 @@ const loadProfileData = async () => {
 
       stats.followerCount = followersData.length;
       stats.followingCount = followingData.length;
-      stats.totalRuns = 0;
+      stats.totalRuns = profileData.totalRuns || 0;
 
       await loadTabData(0);
     }
@@ -644,10 +644,23 @@ const toggleFollowUser = async () => {
       await unfollowUser(profileUser.id);
       isFollowing.value = false;
       stats.followerCount--;
+      followers.value = followers.value.filter(f => f.id !== currentUserId.value);
     } else {
       await followUser(profileUser.id);
       isFollowing.value = true;
       stats.followerCount++;
+
+      try {
+        const currentUserProfile = await getProfile(currentUserId.value);
+        followers.value.push({
+          id: currentUserId.value,
+          nickname: currentUserProfile.nickname,
+          activityLevel: currentUserProfile.activityLevel,
+          loading: false
+        });
+      } catch (err) {
+        console.warn('현재 사용자 프로필 조회 실패:', err);
+      }
     }
   } catch (err) {
     console.error('팔로우 처리 실패:', err);
