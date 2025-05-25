@@ -15,7 +15,7 @@ public class User {
 	
 	private float avgDistance;
 	private float totalDistance;
-
+	private int totalRuns;
 
 	public User() {
 	}
@@ -143,6 +143,14 @@ public class User {
 	
 	public void setTotalDistance(float totalDistance) {
 		this.totalDistance = totalDistance;
+	}
+	
+	public int getTotalRuns() {
+		return totalRuns;
+	}
+	
+	public void setTotalRuns(int totalRuns) {
+		this.totalRuns = totalRuns;
 	}
 	
 	@Override
