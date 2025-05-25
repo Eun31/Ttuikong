@@ -13,10 +13,10 @@
 
     <div v-else>
       <div class="post-card">
-        <div class="user-profile" @click.stop="goToUserProfile(post.userId)">
+        <div class="user-profile">
           <img :src="getProfileImage()" alt="프로필" class="user-avatar">
           <div class="user-details">
-            <div class="user-name">
+            <div class="user-name" @click.stop="goToUserProfile(post.userId)">
               {{ post.userNickname }}
               <span v-if="isAuthor" class="badge">
                 <i class="icon-check"></i>

@@ -112,7 +112,7 @@ const showFeedback = ref(false)
 const feedbackMessage = ref('')
 const feedbackType = ref('')
 const feedbackIcon = ref('')
-const calorieRate = ref(0.8)
+const calorieRate = ref(1.2)
 const averageWeight = ref(65)
 
 const startAddress = ref('')
