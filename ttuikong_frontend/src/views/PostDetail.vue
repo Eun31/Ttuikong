@@ -49,11 +49,6 @@
               :alt="post.title"
             >
           </div>
-          
-          <div v-if="post.location" class="post-location">
-            <span class="location-icon">📍</span>
-            <span>{{ post.location }}</span>
-          </div>
 
           <div v-if="post.category" class="post-tags">
             <span class="tag">{{ post.category }}</span>
@@ -102,8 +97,7 @@
               <div v-for="user in likeUsers" :key="user.id" class="like-user-card">
                 <img :src="getProfileImage()" alt="프로필" class="user-card-avatar">
                 <div class="user-card-info">
-                  <div class="user-card-name">{{ user.nickname || user.email || '익명' }}</div>
-                  <div class="user-card-level">{{ user.level || '일반 사용자' }}</div>
+                  <div class="user-card-name" @click.stop="goToUserProfile(user.id)">{{ user.nickname}}</div>
                 </div>
                 <div class="user-card-heart">❤️</div>
               </div>
@@ -267,7 +261,7 @@ const currentUser = ref({
   token: localStorage.getItem('jwt') 
 });
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = '/api';
 
 const authHeader = computed(() => {
   return currentUser.value.token ? 
@@ -312,7 +306,7 @@ function getFullImageUrl(imageUrl) {
     return imageUrl;
   }
   
-  return `http://localhost:8080${imageUrl}`;
+  return `${imageUrl}`;
 }
 
 async function toggleLike() {
@@ -1793,11 +1787,6 @@ onMounted(async () => {
   margin-bottom: 2px;
 }
 
-.like-user-level {
-  font-size: 12px;
-  color: var(--medium-text);
-}
-
 /* 반응형 */
 @media (max-width: 480px) {
   .like-users-header {
@@ -1823,10 +1812,6 @@ onMounted(async () => {
   
   .like-user-name {
     font-size: 13px;
-  }
-  
-  .like-user-level {
-    font-size: 11px;
   }
 }
 
@@ -2094,11 +2079,6 @@ onMounted(async () => {
   margin-bottom: 2px;
 }
 
-.user-card-level {
-  font-size: 12px;
-  color: var(--medium-text);
-}
-
 .user-card-heart {
   font-size: 16px;
   opacity: 0.6;
@@ -2165,10 +2145,6 @@ onMounted(async () => {
   
   .user-card-name {
     font-size: 13px;
-  }
-  
-  .user-card-level {
-    font-size: 11px;
   }
 }
 

@@ -109,7 +109,7 @@ const router = useRouter();
 const route = useRoute();
 
 // API 기본 URL
-const API_URL = 'http://localhost:8080/api';
+const API_URL = '/api';
 
 // Refs
 const imageInput = ref(null);

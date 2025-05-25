@@ -185,7 +185,7 @@ const goToPost = (postId) => {
 
 const getPopularPosts = async () => {
   try {
-    const response = await fetch('http://localhost:8080/api/board/popular?limit=10');
+    const response = await fetch('/api/board/popular?limit=10');
     if (response.ok) {
       const data = await response.json();
       popularPosts.value = data.map(post => ({
@@ -210,7 +210,7 @@ const getFollowingPosts = async () => {
   if (!token.value) return;
   
   try {
-    const response = await fetch('http://localhost:8080/api/board/following?limit=10', {
+    const response = await fetch('/api/board/following?limit=10', {
       headers: {
         'Authorization': `Bearer ${token.value}`
       }
@@ -296,7 +296,7 @@ const getCurrentUser = async () => {
   const currentToken = localStorage.getItem('jwt');
 
   try {
-    const res = await fetch(`http://localhost:8080/api/users/me`, {
+    const res = await fetch(`/api/users/me`, {
       headers: {
         Authorization: `Bearer ${currentToken}`
       }
@@ -321,7 +321,7 @@ const getAIRecommendation = async () => {
   if (!token.value) return;
   try {
     isLoadingRecommendation.value = true;
-    const response = await fetch('http://localhost:8080/api/my/running/recommendation', {
+    const response = await fetch('/api/my/running/recommendation', {
       headers: {
         'Authorization': `Bearer ${token.value}`
       }
@@ -368,7 +368,7 @@ const getDayRoutes = async () => {
 
   try {
     const res = await fetch(
-      `http://localhost:8080/api/users/${userId.value}/records?year=${year}&month=${month}`,
+      `/api/users/${userId.value}/records?year=${year}&month=${month}`,
       {
         headers: {
           Authorization: `Bearer ${token.value}`
@@ -388,7 +388,7 @@ const getDayRoutes = async () => {
 /* 콩 */
 const fetchBeanStatus = async () => {
   try {
-    const res = await fetch(`http://localhost:8080/api/bean/${userId.value}`, {
+    const res = await fetch(`/api/bean/${userId.value}`, {
       headers: {
         Authorization: `Bearer ${token.value}`
       }

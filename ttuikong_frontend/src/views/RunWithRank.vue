@@ -43,7 +43,7 @@
 import { ref, onMounted } from 'vue';
 const emit = defineEmits(['navigate']);
 
-const BASE_URL = 'http://localhost:8080/api/runs';
+const BASE_URL = '/api/runs';
 
 const token = ref('');
 const userId = ref(null);
@@ -88,7 +88,7 @@ const getCurrentUser = async () => {
   const currentToken = localStorage.getItem('jwt');
 
   try {
-    const res = await fetch(`http://localhost:8080/api/users/me`, {
+    const res = await fetch(`/api/users/me`, {
       headers: {
         Authorization: `Bearer ${currentToken}`
       }

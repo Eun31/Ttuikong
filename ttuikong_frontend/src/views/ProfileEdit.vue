@@ -209,7 +209,7 @@ const router = useRouter();
 const route = useRoute();
 
 // API 기본 설정
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = '/api';
 const token = localStorage.getItem('jwt');
 const authHeader = computed(() => {
   return token ? { 'Authorization': `Bearer ${token}` } : {};

@@ -84,14 +84,14 @@ function getFullImageUrl(imageUrl) {
     return imageUrl;
   }
 
-  return `http://localhost:8080${imageUrl}`;
+  return `${imageUrl}`;
 }
 
 function fetchPosts() {
   loading.value = true;
   error.value = '';
 
-  axios.get('http://localhost:8080/api/board')
+  axios.get('/api/board')
     .then(response => {
       if (Array.isArray(response.data)) {
         const transformedPosts = response.data.map(item => {
@@ -107,8 +107,8 @@ function fetchPosts() {
               id: item.userId
             },
             title: item.
-              title || '',
-            description: item.content || '',
+              title,
+            description: item.content,
             image: fullImageUrl,
             likes: 0,
             comments: 0,

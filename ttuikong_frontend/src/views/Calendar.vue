@@ -294,7 +294,7 @@ const getCurrentUser = async () => {
   const currentToken = localStorage.getItem('jwt');
 
   try {
-    const res = await fetch(`http://localhost:8080/api/users/me`, {
+    const res = await fetch(`/api/users/me`, {
       headers: {
         Authorization: `Bearer ${currentToken}`
       }
@@ -322,7 +322,7 @@ const getMonthlyStats = async (userId) => {
 
   try {
     const res = await fetch(
-      `http://localhost:8080/api/users/${userId}/records?year=${year}&month=${month}`,
+      `/api/users/${userId}/records?year=${year}&month=${month}`,
       {
         headers: {
           Authorization: `Bearer ${token.value}`
@@ -381,7 +381,7 @@ const getDayRoutes = async () => {
 
   try {
     const res = await fetch(
-      `http://localhost:8080/api/users/${userId.value}/records?year=${year}&month=${month}`,
+      `/api/users/${userId.value}/records?year=${year}&month=${month}`,
       {
         headers: {
           Authorization: `Bearer ${token.value}`
@@ -402,7 +402,7 @@ const getDayRoutes = async () => {
 const getAllRoutes = async () => {
   try {
     const res = await fetch(
-      `http://localhost:8080/api/my/route`,
+      `/api/my/route`,
       {
         headers: {
           Authorization: `Bearer ${token.value}`

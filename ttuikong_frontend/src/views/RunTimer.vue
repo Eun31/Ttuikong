@@ -307,7 +307,7 @@ const submitCrew = async () => {
   }
 
   try {
-    const response = await fetch('http://localhost:8080/api/crew', {
+    const response = await fetch('/api/crew', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -346,7 +346,7 @@ const joinCrew = async (crew) => {
   }
 
   try {
-    const res = await fetch(`http://localhost:8080/api/crew/${crew.id}/join?userId=${userId.value}`, {
+    const res = await fetch(`/api/crew/${crew.id}/join?userId=${userId.value}`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token.value}`
@@ -375,7 +375,7 @@ const deleteCrew = async (crew) => {
   }
 
   try {
-    const res = await fetch(`http://localhost:8080/api/crew/${crew.id}?creatorId=${userId.value}`, {
+    const res = await fetch(`/api/crew/${crew.id}?creatorId=${userId.value}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${token.value}`
@@ -397,7 +397,7 @@ const deleteCrew = async (crew) => {
 
 const silentDeleteCrew = async (crew) => {
   try {
-    const res = await fetch(`http://localhost:8080/api/crew/${crew.id}?creatorId=${userId.value}`, {
+    const res = await fetch(`/api/crew/${crew.id}?creatorId=${userId.value}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token.value}` }
     });
@@ -419,7 +419,7 @@ const quitCrew = async (crew) => {
   }
 
   try {
-    const res = await fetch(`http://localhost:8080/api/crew/${crew.id}/leave?userId=${userId.value}`, {
+    const res = await fetch(`/api/crew/${crew.id}/leave?userId=${userId.value}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${token.value}`
@@ -447,7 +447,7 @@ const fetchCrewsAndMembers = async () => {
   }
 
   try {
-    const res = await fetch("http://localhost:8080/api/crew", {
+    const res = await fetch("/api/crew", {
       headers: { Authorization: `Bearer ${token.value}` }
     });
 
@@ -464,7 +464,7 @@ const fetchCrewsAndMembers = async () => {
 
     const memberPromises = data.map(async crew => {
       try {
-        const res = await fetch(`http://localhost:8080/api/crew/${crew.id}/members`, {
+        const res = await fetch(`/api/crew/${crew.id}/members`, {
           headers: { Authorization: `Bearer ${token.value}` }
         });
 
@@ -542,7 +542,7 @@ const loadKakaoMapScript = () => {
     return;
   }
 
-  fetch("http://localhost:8080/api/config/kakao-map-key")
+  fetch("/api/config/kakao-map-key")
     .then(res => res.text())
     .then(apiKey => {
       const script = document.createElement("script");
@@ -685,7 +685,7 @@ const uploadMapImage = async () => {
     formData.append("startTime", startTime.value);
     formData.append("endTime", new Date().toISOString());
 
-    const res = await fetch("http://localhost:8080/api/runs/upload-map-image", {
+    const res = await fetch("/api/runs/upload-map-image", {
       method: "POST",
       headers: { Authorization: `Bearer ${token.value}` },
       body: formData
@@ -712,7 +712,7 @@ const uploadMapImage = async () => {
         formData.append("startTime", startTime.value);
         formData.append("endTime", new Date().toISOString());
 
-        const res = await fetch("http://localhost:8080/api/runs/upload-map-image", {
+        const res = await fetch("/api/runs/upload-map-image", {
           method: "POST",
           headers: { Authorization: `Bearer ${token.value}` },
           body: formData
@@ -777,7 +777,7 @@ const saveRunningData = async () => {
   }
 
   try {
-    const res = await fetch("http://localhost:8080/api/runs/track-location", {
+    const res = await fetch("/api/runs/track-location", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -826,7 +826,7 @@ const toggleTimer = async () => {
         status: "ended"
       });
 
-      const res = await fetch("http://localhost:8080/api/runs/running-status", {
+      const res = await fetch("/api/runs/running-status", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -864,7 +864,7 @@ const toggleTimer = async () => {
         status: "running"
       });
 
-      const res = await fetch("http://localhost:8080/api/runs/running-status", {
+      const res = await fetch("/api/runs/running-status", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -907,7 +907,7 @@ const getCurrentUser = async () => {
   userId.value = Number(currentUserId);
 
   try {
-    const res = await fetch("http://localhost:8080/api/users/me", {
+    const res = await fetch("/api/users/me", {
       headers: {
         Authorization: `Bearer ${currentToken}`
       }
@@ -943,7 +943,7 @@ const selectMood = async (mood) => {
 
 const fetchLatestRoute = async (routeId) => {
   try {
-    const res = await fetch(`http://localhost:8080/api/my/route/${routeId}`, {
+    const res = await fetch(`/api/my/route/${routeId}`, {
       headers: {
         Authorization: `Bearer ${token.value}`
       }
@@ -963,7 +963,7 @@ const fetchLatestRoute = async (routeId) => {
 
 const getRouteId = async () => {
   try {
-    const res = await fetch(`http://localhost:8080/api/my/route/latest-route-id`, {
+    const res = await fetch(`/api/my/route/latest-route-id`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token.value}`,
@@ -994,7 +994,7 @@ const calDailyRun = async (routeId) => {
   );
 
   try {
-    const res = await fetch(`http://localhost:8080/api/runs/user/${userId.value}/day-time`, {
+    const res = await fetch(`/api/runs/user/${userId.value}/day-time`, {
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${token.value}`,
@@ -1049,7 +1049,7 @@ const Percentage = (goal, now) => {
 
 const getCrewRun = async (crewId) => {
   try {
-    const res = await fetch(`http://localhost:8080/api/runs/crew/${crewId}`, {
+    const res = await fetch(`/api/runs/crew/${crewId}`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token.value}`
@@ -1076,7 +1076,7 @@ const getCrewRun = async (crewId) => {
 /* 목표 관련 2 */
 const getCrewGoal = async (crewId) => {
   try {
-    const res = await fetch(`http://localhost:8080/api/runs/crew/${crewId}/time`, {
+    const res = await fetch(`/api/runs/crew/${crewId}/time`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token.value}`

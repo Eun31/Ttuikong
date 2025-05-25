@@ -118,7 +118,6 @@
           <div v-else-if="followers.length === 0" class="empty-state">
             <p v-if="isMyProfile">아직 팔로워가 없어요 👀</p>
             <p v-else>{{ profileUser.nickname }}님의 팔로워가 없어요</p>
-            <button v-if="isMyProfile" class="action-btn" @click="goToDiscover">다른 러너 찾아보기</button>
           </div>
           <div v-else class="user-list">
             <div v-for="follower in followers" :key="follower.id" class="user-item">
@@ -147,7 +146,6 @@
           <div v-else-if="following.length === 0" class="empty-state">
             <p v-if="isMyProfile">아직 팔로우 중인 러너가 없어요 🏃‍♀️</p>
             <p v-else>{{ profileUser.nickname }}님이 팔로우 중인 러너가 없어요</p>
-            <button v-if="isMyProfile" class="action-btn" @click="goToDiscover">러너 찾아보기</button>
           </div>
           <div v-else class="user-list">
             <div v-for="follow in following" :key="follow.id" class="user-item">
@@ -191,7 +189,7 @@ const props = defineProps({
 const router = useRouter();
 
 // API 설정
-const API_URL = 'http://localhost:8080/api';
+const API_URL = '/api';
 
 // 인증 헤더 생성
 const authHeader = computed(() => {
@@ -247,6 +245,16 @@ const following = ref([]);
 // 탭 설정
 const myProfileTabs = ['내 게시글', '좋아요한 글', '팔로워', '팔로잉'];
 const otherProfileTabs = ['게시글', '팔로워', '팔로잉'];
+
+function getFullImageUrl(imageUrl) {
+  if (!imageUrl) return '';
+  
+  if (imageUrl.startsWith('http')) {
+    return imageUrl;
+  }
+  
+  return `${imageUrl}`;
+}
 
 const currentTabs = computed(() => {
   return isMyProfile.value ? myProfileTabs : otherProfileTabs;
@@ -384,6 +392,8 @@ const getUserPosts = async (userId) => {
     const postsWithUserInfo = response.data.map(post => ({
       ...post,
       id: post.postId,
+      description: post.content,
+      image: getFullImageUrl(post.imageUrl),
       user: {
         id: post.userId,
         name: post.userNickname,
@@ -423,6 +433,8 @@ const getLikedPosts = async () => {
             ...postResponse.data,
             id: postResponse.data.postId,
             liked: true,
+            description: postResponse.data.content,
+            image: getFullImageUrl(postResponse.imageUrl),
             user: {
               id: postResponse.data.userId,
               name: postResponse.data.userNickname,
@@ -616,7 +628,6 @@ const handlePasswordConfirm = async (password) => {
 
 const goToNewPost = () => router.push('/board/write');
 const goToBoard = () => router.push('/board');
-const goToDiscover = () => router.push('/discover');
 
 const goToPostDetail = (postId) => {
   router.push(`/board/${postId}`);
@@ -792,7 +803,7 @@ const deleteUser = async () => {
   const token = localStorage.getItem('jwt');
 
   try {
-    await fetch(`http://localhost:8080/api/users/${userId}`, {
+    await fetch(`/api/users/${userId}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${token}`

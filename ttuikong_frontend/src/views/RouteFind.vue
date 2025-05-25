@@ -158,7 +158,7 @@ const getAIRecommendation = async () => {
 
   try {
     isLoadingRecommendation.value = true;
-    const response = await fetch('http://localhost:8080/api/my/running/recommendation', {
+    const response = await fetch('/api/my/running/recommendation', {
       headers: {
         'Authorization': `Bearer ${token.value}`
       }
