@@ -57,6 +57,12 @@
 		</if>
 		WHERE id = #{id}
 	</update>
+
+    <update id="updateActivityLevel">
+        UPDATE User
+        SET activity_level = #{activityLevel}
+        WHERE id = #{id}
+    </update>
     
     <!-- 사용자 삭제 -->
     <delete id="deleteUser" parameterType="int">

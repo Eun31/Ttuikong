@@ -37,12 +37,18 @@
 
     <!-- 콩 성장률 -->
     <div class="bean-section">
-      <h3>🌱 콩이 자라고 있어요!</h3>
-      <p>오늘의 미션: <strong>{{ recommendation }}km 달리기</strong></p>
+      <h3>        
+        <span v-if="growthRate >= 100">🌳</span>
+        <span v-else-if="growthRate >= 60">🌿</span>
+        <span v-else-if="growthRate >= 30">🌱</span>
+        <span v-else>🫘</span>
+        콩이 자라고 있어요!
+      </h3>
+      <!-- <p>오늘의 미션: <strong>{{ recommendation }}km 달리기</strong></p> -->
       <div class="progress-bar">
         <div class="progress-fill" :style="{ width: growthRate + '%' }"></div>
       </div>
-      <p class="progress-percent">{{ growthRate }}%</p>
+      <p class="progress-percent">{{ growthRate.toFixed(1) }}%</p>
     </div>
 
     <!-- 메인 메뉴 -->
@@ -92,8 +98,11 @@ const isLoadingRecommendation = ref(false);
 const recommendation = ref(5);
 const recommendationData = ref(null);
 const formattedTime = ref(null);
-const growthRate = ref(100);
+const beanCount = ref(null);
+const growthRate = ref(0);
+const activityLevel = ref('');
 const runningData = ref([]);
+
 const stats = computed(() => {
   const totalDistance = runningData.value.reduce((sum, run) => sum + (run.distance || 0), 0);
   const totalDuration = runningData.value.reduce((sum, run) => sum + (run.duration || 0), 0);
@@ -218,6 +227,7 @@ const getCurrentUser = async () => {
   } catch (err) {
     console.error('사용자 정보 요청 실패:', err);
     alert('로그인이 필요합니다.');
+    router.push('login');
   }
 };
 
@@ -290,11 +300,40 @@ const getDayRoutes = async () => {
   }
 };
 
+/* 콩 */
+const fetchBeanStatus = async () => {
+  try {
+    const res = await fetch(`http://localhost:8080/api/bean/${userId.value}`, {
+      headers: {
+        Authorization: `Bearer ${token.value}`
+      }
+    })
+
+    if (!res.ok) throw new Error('콩 상태 조회 실패')
+
+    const data = await res.json()
+    return data
+
+  } catch (err) {
+    console.error('콩 상태 조회 실패:', err)
+    return null
+  }
+};
+
+const loadBeanStatus = async () => {
+  const data = await fetchBeanStatus()
+  if (data) {
+    beanCount.value = data.beanCount
+    growthRate.value = Math.min((data.beanCount / 100) * 100, 100)
+    activityLevel.value = data.activityLevel
+  }
+}
 
 onMounted(async () => {
   await getCurrentUser();
   await getAIRecommendation();
   await getDayRoutes();
+  await loadBeanStatus();
 });
 </script>
 
@@ -394,14 +433,18 @@ onMounted(async () => {
   border-radius: 999px;
   overflow: hidden;
   margin-top: 8px;
-
+  position: relative;
 }
 
 .progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
   height: 100%;
   background: #FF7043;
   transition: width 0.3s ease;
 }
+
 
 .progress-percent {
   font-size: 13px;
@@ -770,4 +813,35 @@ onMounted(async () => {
     gap: 6px;
   }
 }
+
+/* 콩 */
+.bean-section {
+  margin: 16px 0;
+  padding: 12px;
+  background-color: #f3faff;
+  border-radius: 12px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 20px;
+  background-color: #eee;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #81c784;
+  transition: width 0.4s ease-in-out;
+}
+
+.progress-percent {
+  text-align: right;
+  font-weight: bold;
+  color: #388e3c;
+}
+
 </style>

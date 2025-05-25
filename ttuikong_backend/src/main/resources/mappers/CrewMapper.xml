@@ -25,4 +25,32 @@
     <select id="selectAllCrews" resultType="com.ttuikong.spring.chat.model.dto.Crew">
         SELECT * FROM crew
     </select>
+
+    <select id="didMeetAnyCrewGoal" resultType="boolean">
+        SELECT COUNT(*) &gt; 0
+        FROM Crew c
+        JOIN Crew_Member cm ON c.id = cm.crew_id
+        WHERE cm.user_id = #{userId}
+            AND CURDATE() BETWEEN c.start_date AND c.end_date
+            AND (
+            (c.goal_type = 'SUM' AND c.goal_time &lt;= (
+                SELECT IFNULL(SUM(dr.duration), 0)
+                FROM Daily_Record dr
+                WHERE dr.user_id IN (
+                SELECT user_id FROM Crew_Member WHERE crew_id = c.id
+                )
+                AND DATE(dr.date) = CURDATE()
+            ))
+            OR
+            (c.goal_type = 'AVERAGE' AND c.goal_time &lt;= (
+                SELECT IFNULL(AVG(dr.duration), 0)
+                FROM Daily_Record dr
+                WHERE dr.user_id IN (
+                SELECT user_id FROM Crew_Member WHERE crew_id = c.id
+                )
+                AND DATE(dr.date) = CURDATE()
+            ))
+            )
+        </select>
+
 </mapper>

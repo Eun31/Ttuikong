@@ -1084,7 +1084,6 @@ const getCrewGoal = async (crewId) => {
   }
 };
 
-
 const stayOnTimer = () => { };
 
 function goToChat(crewId) {

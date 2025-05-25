@@ -103,4 +103,25 @@
       WHERE id = #{userId}
   </select>
 
+  <select id="didMeetRecommendation" resultType="boolean">
+    SELECT CASE 
+            WHEN (
+              SELECT IFNULL(SUM(distance), 0)
+              FROM Route
+              WHERE user_id = #{userId}
+                AND DATE(start_time) = CURDATE()
+            ) &gt;= (
+              SELECT recommended_distance
+              FROM Recommendations
+              WHERE user_id = #{userId}
+                AND DATE(created_at) = CURDATE()
+              ORDER BY created_at DESC
+              LIMIT 1
+            )
+            THEN TRUE
+            ELSE FALSE
+          END
+  </select>
+
+
 </mapper>

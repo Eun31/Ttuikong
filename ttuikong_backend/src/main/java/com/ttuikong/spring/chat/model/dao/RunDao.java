@@ -31,5 +31,7 @@ public interface RunDao {
 
     Map<String, Object> selectCrewGoalStats(int crewId);
 
-     Map<String, Object> selectMyRanking(int userId);
+    Map<String, Object> selectMyRanking(int userId);
+
+    Boolean didMeetRecommendation(@Param("userId") int userId);
 }

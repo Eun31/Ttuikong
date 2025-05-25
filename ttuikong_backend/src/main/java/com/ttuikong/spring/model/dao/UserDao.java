@@ -3,6 +3,7 @@ package com.ttuikong.spring.model.dao;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.ttuikong.spring.model.dto.User;
 
@@ -25,6 +26,8 @@ public interface UserDao {
     
     // 사용자 정보 수정
     void updateUser(User user);
+
+    void updateActivityLevel(@Param("userId") int userId, @Param("activityLevel") String activityLevel);
     
     // 사용자 삭제
     void deleteUser(int id);
