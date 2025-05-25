@@ -11,7 +11,6 @@
       </div>
     </div>
 
-    <!-- 카테고리 필터 -->
     <div class="category-filter">
       <button class="category-btn" :class="{ active: currentCategory === 'all' }"
         @click="filterByCategory('all')">전체</button>
@@ -66,8 +65,8 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
-import PostCard from '../components/PostCard.vue';
-import profileImg from '../assets/profile.png';
+import PostCard from '@/components/PostCard.vue';
+import profileImg from '@/assets/profile.png';
 
 const router = useRouter();
 const searchQuery = ref('');
@@ -111,7 +110,6 @@ function fetchPosts() {
               title || '',
             description: item.content || '',
             image: fullImageUrl,
-            tags: [],
             likes: 0,
             comments: 0,
             liked: false,
@@ -143,8 +141,7 @@ const filteredPosts = computed(() => {
     const query = searchQuery.value.toLowerCase().trim();
     result = result.filter(post =>
       (post.title && post.title.toLowerCase().includes(query)) ||
-      (post.description && post.description.toLowerCase().includes(query)) ||
-      (post.tags && post.tags.some(tag => tag.toLowerCase().includes(query)))
+      (post.description && post.description.toLowerCase().includes(query))
     );
   }
 
@@ -168,8 +165,6 @@ const totalPages = computed(() => {
 });
 
 function viewPostDetail(postId) {
-  console.log('클릭한 게시글 ID:', postId, typeof postId);
-
   if (postId === undefined || postId === null) {
     console.error('유효하지 않은 게시글 ID');
     return;
@@ -204,7 +199,7 @@ onMounted(() => {
 });
 </script>
 <style>
-@import '../assets/css/board.css';
+@import '@/assets/css/board.css';
 
 .loading-state {
   display: flex;

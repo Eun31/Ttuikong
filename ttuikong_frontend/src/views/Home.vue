@@ -67,18 +67,45 @@
           {{ isPopularFeed ? '팔로우 게시글 보기' : '인기 게시글 보기' }}
         </button>
       </div>
-      <div class="post-list">
-        <div class="post-card" v-for="post in currentFeed" :key="post.id">
-          <div class="post-header">
-            <img :src="post.authorAvatar" class="avatar" />
-            <span class="author">{{ post.author }}</span>
+      
+      <!-- 게시글 표시 영역 -->
+      <div class="post-display-container">
+        <div v-if="currentPost" class="single-post-container">
+          <button 
+            class="nav-btn prev-btn" 
+            :disabled="!canGoPrevious"
+            @click="previousPost"
+          >
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          
+          <!-- 게시글 카드 -->
+          <div class="post-wrapper">
+            <PostCard 
+              :key="currentPost.id" 
+              :post="currentPost"
+              @click="goToPost"
+            />
           </div>
-          <h4 class="title">{{ post.title }}</h4>
-          <p class="content">{{ post.content }}</p>
-          <div class="post-meta">
-            <span>❤️ {{ post.likes }}</span>
-            <span>💬 {{ post.comments }}</span>
-          </div>
+          
+          <!-- 다음 버튼 -->
+          <button 
+            class="nav-btn next-btn" 
+            :disabled="!canGoNext"
+            @click="nextPost"
+          >
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        
+        <div v-else class="no-posts">
+          <p>{{ isPopularFeed ? '인기 게시글이' : '팔로우 게시글이' }} 없습니다.</p>
+        </div>
+
+        <div v-if="currentFeed.length > 0" class="post-indicator">
+          <span class="current-number">{{ currentPostIndex + 1 }}</span>
+          <span class="divider">/</span>
+          <span class="total-number">{{ currentFeed.length }}</span>
         </div>
       </div>
     </div>
@@ -88,6 +115,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import PostCard from '@/components/PostCard.vue';
+import profileImg from '@/assets/profile.png';
 
 const router = useRouter();
 
@@ -133,61 +162,96 @@ const menus = ref([
   { label: '게시판', icon: '🖐️', path: '/board' }
 ]);
 const isPopularFeed = ref(true);
-const popularPosts = ref([
-  {
-    id: 1,
-    author: '러닝마스터',
-    authorAvatar: 'https://placehold.co/600x400',
-    title: '초보 러너를 위한 효과적인 훈련법',
-    content: '처음 러닝을 시작하시는 분들을 위한 팁을 공유합니다...',
-    likes: 42,
-    comments: 12
-  },
-  {
-    id: 2,
-    author: '마라톤조아',
-    authorAvatar: 'https://placehold.co/600x400',
-    title: '서울 근교 러닝 코스 추천',
-    content: '주말에 러닝하기 좋은 서울 근교 코스를 소개합니다...',
-    likes: 35,
-    comments: 8
-  }
-]);
-const followPosts = ref([
-  {
-    id: 3,
-    author: '달려라하니',
-    authorAvatar: 'https://placehold.co/600x400',
-    title: '오늘의 러닝 완료!',
-    content: '오늘도 5km 러닝 완료했습니다. 날씨가 정말 좋았어요!',
-    likes: 15,
-    comments: 3,
-    date: '1시간 전'
-  },
-  {
-    id: 4,
-    author: '조깅왕',
-    authorAvatar: 'https://placehold.co/600x400',
-    title: '챌린지 참여했어요',
-    content: '"30일 러닝 습관 만들기" 챌린지에 참여했습니다. 함께해요!',
-    likes: 22,
-    comments: 5,
-    date: '3시간 전'
-  }
-]);
+const popularPosts = ref([]);
+const followPosts = ref([]);
+const currentPostIndex = ref(0);
 
 // computed 속성
 const currentFeed = computed(() => {
   return isPopularFeed.value ? popularPosts.value : followPosts.value;
 });
 
-// 메서드
+const currentPost = computed(() => {
+  const feed = currentFeed.value;
+  return feed.length > 0 ? feed[currentPostIndex.value] : null;
+});
+
+const canGoPrevious = computed(() => currentPostIndex.value > 0);
+const canGoNext = computed(() => currentPostIndex.value < currentFeed.value.length - 1);
+
+const goToPost = (postId) => {
+  router.push(`/board/${postId}`);
+};
+
+const getPopularPosts = async () => {
+  try {
+    const response = await fetch('http://localhost:8080/api/board/popular?limit=10');
+    if (response.ok) {
+      const data = await response.json();
+      popularPosts.value = data.map(post => ({
+        id: post.postId,
+        title: post.title,
+        description: post.content,
+        user: {
+          id: post.userId,
+          name: post.userNickname,
+          avatar: profileImg
+        },
+        image: post.image || null,
+        date: formatDate(post.createdAt)
+      }));
+    }
+  } catch (error) {
+    console.error('인기 게시글 로드 실패:', error);
+  }
+};
+
+const getFollowingPosts = async () => {
+  if (!token.value) return;
+  
+  try {
+    const response = await fetch('http://localhost:8080/api/board/following?limit=10', {
+      headers: {
+        'Authorization': `Bearer ${token.value}`
+      }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      followPosts.value = data.map(post => ({
+        id: post.boardId,
+        title: post.title,
+        description: post.content,
+        user: {
+          id: post.userId,
+          name: post.userNickname,
+          avatar: profileImg
+        },
+        image: post.image || null,
+        tags: post.tags || [],
+        date: formatDate(post.createdAt)
+      }));
+    }
+  } catch (error) {
+    console.error('팔로우 게시글 로드 실패:', error);
+  }
+};
+
 function toggleFeedType() {
   isPopularFeed.value = !isPopularFeed.value;
+  currentPostIndex.value = 0;
 }
 
-function startRunning() {
-  router.push('/run');
+function previousPost() {
+  if (canGoPrevious.value) {
+    currentPostIndex.value--;
+  }
+}
+
+function nextPost() {
+  if (canGoNext.value) {
+    currentPostIndex.value++;
+  }
 }
 
 function formatTime(minutes) {
@@ -205,7 +269,29 @@ function formatTime(minutes) {
   }
 }
 
-/* user 불러오기 */
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  
+  const postDate = new Date(dateString);
+  const now = new Date();
+  const diffInMs = now - postDate;
+  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+  const diffInDays = Math.floor(diffInHours / 24);
+  
+  if (diffInHours < 1) {
+    return '방금 전';
+  } else if (diffInHours < 24) {
+    return `${diffInHours}시간 전`;
+  } else if (diffInDays < 7) {
+    return `${diffInDays}일 전`;
+  } else {
+    return postDate.toLocaleDateString('ko-KR', {
+      month: 'short',
+      day: 'numeric'
+    });
+  }
+};
+
 const getCurrentUser = async () => {
   const currentToken = localStorage.getItem('jwt');
 
@@ -233,7 +319,6 @@ const getCurrentUser = async () => {
 
 const getAIRecommendation = async () => {
   if (!token.value) return;
-
   try {
     isLoadingRecommendation.value = true;
     const response = await fetch('http://localhost:8080/api/my/running/recommendation', {
@@ -334,6 +419,10 @@ onMounted(async () => {
   await getAIRecommendation();
   await getDayRoutes();
   await loadBeanStatus();
+  await getPopularPosts();
+  if (token.value) {
+    await getFollowingPosts();
+  }
 });
 </script>
 
@@ -844,4 +933,310 @@ onMounted(async () => {
   color: #388e3c;
 }
 
+/* 게시글 표시 컨테이너 */
+.post-display-container {
+  position: relative;
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* 단일 게시글 컨테이너 */
+.single-post-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;  /* 양쪽 끝 정렬로 균형 맞춤 */
+  gap: 8px;
+  min-height: 200px;
+  position: relative;
+}
+
+/* 게시글 래퍼 */
+.post-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;         /* PostCard를 가운데 정렬 */
+  max-width: calc(100% - 64px);    /* 양쪽 화살표 영역 제외 */
+  margin: 0 8px;                   /* 좌우 여백 균등하게 */
+}
+
+/* 네비게이션 버튼 기본 스타일 */
+.nav-btn {
+  background: transparent;  /* 배경 제거 */
+  color: #FF7043;          /* 기본 화살표 색상 */
+  border: none;
+  border-radius: 0;        /* 원형 제거 */
+  width: 24px;             /* 36px → 24px */
+  height: 24px;            /* 36px → 24px */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 16px;         /* 20px → 16px */
+  box-shadow: none;        /* 그림자 제거 */
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* 버튼 호버 효과 */
+.nav-btn:hover:not(:disabled) {
+  color: #FF5722;          /* 호버시 더 진한 주황색 */
+  transform: scale(1.2);   /* 살짝 확대 */
+  background: rgba(255, 112, 67, 0.1);  /* 호버시 연한 배경 */
+  border-radius: 50%;      /* 호버시만 원형 배경 */
+}
+
+/* 버튼 활성화 효과 */
+.nav-btn:active:not(:disabled) {
+  transform: scale(1.1);
+  color: #E64A19;
+}
+
+/* 비활성화된 버튼 */
+.nav-btn:disabled {
+  background: transparent;
+  color: #BDBDBD;          /* 회색 화살표 */
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* 이전 버튼 */
+.prev-btn {
+  flex-shrink: 0;         /* 버튼 크기 고정 */
+}
+
+.prev-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;    /* 8px → 6px */
+  border-bottom: 6px solid transparent;
+  border-right: 8px solid currentColor; /* 10px → 8px */
+  transform: translate(-60%, -50%);
+  transition: transform 0.2s ease;
+}
+
+.prev-btn:hover:not(:disabled)::before {
+  transform: translate(-65%, -50%);
+}
+
+/* 다음 버튼 */
+.next-btn {
+  flex-shrink: 0;         /* 버튼 크기 고정 */
+}
+
+.next-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;    /* 8px → 6px */
+  border-bottom: 6px solid transparent;
+  border-left: 8px solid currentColor;  /* 10px → 8px */
+  transform: translate(-40%, -50%);
+  transition: transform 0.2s ease;
+}
+
+.next-btn:hover:not(:disabled)::before {
+  transform: translate(-35%, -50%);
+}
+
+/* 게시글 인디케이터 */
+.post-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  padding: 8px 16px;
+  background: rgba(255, 112, 67, 0.05);
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  gap: 6px;
+  border: 1px solid rgba(255, 112, 67, 0.1);
+}
+
+.current-number {
+  font-weight: 700;
+  color: #FF5722;
+  font-size: 16px;
+}
+
+.divider {
+  color: #FF7043;
+  font-weight: 400;
+  margin: 0 2px;
+}
+
+.total-number {
+  color: #666;
+  font-weight: 500;
+}
+
+/* 게시글 없을 때 */
+.no-posts {
+  text-align: center;
+  padding: 60px 20px;
+  color: #888;
+  font-size: 16px;
+  background: rgba(255, 112, 67, 0.02);
+  border-radius: 12px;
+  border: 2px dashed rgba(255, 112, 67, 0.2);
+}
+
+.no-posts::before {
+  content: '📝';
+  display: block;
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+/* 로딩 상태 */
+.loading-posts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 16px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 112, 67, 0.1);
+  border-top: 4px solid #FF7043;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.keyboard-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: #999;
+  opacity: 0.7;
+}
+
+.key-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.key {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-family: monospace;
+  font-size: 11px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .single-post-container {
+    gap: 6px;               /* 16px → 6px */
+  }
+  
+  .nav-btn {
+    width: 20px;            /* 32px → 20px */
+    height: 20px;           /* 32px → 20px */
+    font-size: 14px;        /* 12px → 14px */
+  }
+  
+  .post-wrapper {
+    margin: 0 4px;          /* 좌우 여백 동일하게 */
+  }
+  
+  .post-indicator {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+  
+  .current-number {
+    font-size: 15px;
+  }
+  
+  .keyboard-hint {
+    display: none; /* 모바일에서는 키보드 힌트 숨김 */
+  }
+}
+
+@media (max-width: 480px) {
+  .post-display-container {
+    padding: 16px;
+  }
+  
+  .single-post-container {
+    gap: 4px;               /* 12px → 4px */
+    min-height: 180px;
+  }
+  
+  .nav-btn {
+    width: 18px;            /* 28px → 18px */
+    height: 18px;           /* 28px → 18px */
+    font-size: 12px;        /* 11px → 12px */
+  }
+  
+  .post-wrapper {
+    margin: 0 2px;          /* 좌우 여백 동일하게 */
+  }
+  
+  .post-indicator {
+    margin-top: 16px;
+    font-size: 12px;
+  }
+  
+  .no-posts {
+    padding: 40px 16px;
+    font-size: 14px;
+  }
+  
+  .no-posts::before {
+    font-size: 36px;
+    margin-bottom: 12px;
+  }
+}
+
+/* 다크 모드 지원 (선택사항) */
+@media (prefers-color-scheme: dark) {
+  .post-display-container {
+    background: #2A2A2A;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+  
+  .post-indicator {
+    background: rgba(255, 112, 67, 0.1);
+    border-color: rgba(255, 112, 67, 0.2);
+  }
+  
+  .total-number {
+    color: #BBB;
+  }
+  
+  .no-posts {
+    color: #AAA;
+    background: rgba(255, 112, 67, 0.05);
+    border-color: rgba(255, 112, 67, 0.3);
+  }
+}
 </style>

@@ -177,9 +177,9 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
-import profileImg from '../assets/profile.png';
-import PostCard from '../components/PostCard.vue';
-import PasswordConfirmModal from '../components/PasswordConfirmModal.vue';
+import profileImg from '@/assets/profile.png';
+import PostCard from '@/components/PostCard.vue';
+import PasswordConfirmModal from '@/components/PasswordConfirmModal.vue';
 
 const props = defineProps({
   userId: {
@@ -256,39 +256,6 @@ const isMyProfile = computed(() => {
   return !props.userId || parseInt(props.userId) === currentUserId.value;
 });
 
-// 에러 처리 함수
-const handleApiError = (err) => {
-  console.error('API Error:', err);
-
-  if (err.response) {
-    const { status, data } = err.response;
-
-    switch (status) {
-      case 400:
-        return data.message || '잘못된 요청입니다.';
-      case 401:
-        return '인증이 필요합니다. 다시 로그인해주세요.';
-      case 403:
-        return '접근 권한이 없습니다.';
-      case 404:
-        return '요청한 정보를 찾을 수 없습니다.';
-      case 409:
-        return data.message || '이미 존재하는 데이터입니다.';
-      case 422:
-        return data.message || '입력 데이터가 올바르지 않습니다.';
-      case 500:
-        return '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-      default:
-        return data.message || '알 수 없는 오류가 발생했습니다.';
-    }
-  }
-
-  if (err.request) {
-    return '네트워크 연결을 확인해주세요.';
-  }
-
-  return err.message || '알 수 없는 오류가 발생했습니다.';
-};
 
 const getCurrentUser = async () => {
   if (!token) {
@@ -453,7 +420,6 @@ const getLikedPosts = async () => {
     const likedPosts = [];
     for (const likeData of likedBoardIds) {
       try {
-        // postId 필드에서 실제 게시글 ID 추출
         const actualPostId = likeData.postId;
         const postResponse = await axios.get(`${API_URL}/board/${actualPostId}`, {
           headers: authHeader.value
@@ -534,8 +500,6 @@ const loadProfileData = async () => {
         console.error('다른 사용자 프로필 조회 실패:', err);
         if (err.response?.status === 403 || err.response?.status === 404) {
           error.value = '존재하지 않는 사용자이거나 프로필 조회 권한이 없습니다.';
-        } else {
-          error.value = handleApiError(err);
         }
         return;
       }
@@ -566,7 +530,6 @@ const loadProfileData = async () => {
 
   } catch (err) {
     console.error('프로필 데이터 로드 실패:', err);
-    error.value = handleApiError(err);
   } finally {
     loading.value = false;
   }
@@ -587,14 +550,14 @@ const loadTabData = async (tabIndex) => {
       const likedData = await getLikedPosts();
       likedPosts.value = likedData;
     } else if (tabIndex === 2) {
-      // 팔로워 탭 - 이미 데이터가 있으면 로딩하지 않음
+      // 팔로워 탭 
       if (followers.value.length === 0) {
         followersLoading.value = true;
         const followersData = await getFollowers(targetUserId);
         followers.value = followersData.map(user => ({ ...user, loading: false }));
       }
     } else if (tabIndex === 3) {
-      // 팔로잉 탭 - 이미 데이터가 있으면 로딩하지 않음
+      // 팔로잉 탭 
       if (following.value.length === 0) {
         followingLoading.value = true;
         const followingData = await getFollowing(targetUserId);

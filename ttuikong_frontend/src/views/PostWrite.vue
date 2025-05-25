@@ -85,42 +85,6 @@
           </div>
         </div>
       </div>
-
-      <!-- 태그 입력 -->
-      <div class="form-group">
-        <div class="form-label">태그</div>
-        <div class="tag-input-container">
-          <div class="input-wrapper tag-input-wrapper">
-            <input 
-              type="text" 
-              v-model="tagInput" 
-              class="tag-input" 
-              placeholder="태그를 입력하세요 (최대 5개)"
-              @keypress.enter.prevent="addTag"
-            >
-          </div>
-          <button 
-            class="btn btn-primary tag-add-btn" 
-            :disabled="!canAddTag" 
-            @click="addTag"
-          >
-            추가
-          </button>
-        </div>
-        
-        <div class="tags-list">
-          <div 
-            v-for="(tag, index) in tags" 
-            :key="index" 
-            class="tag"
-          >
-            {{ tag }}
-            <span class="tag-remove" @click="removeTag(tag)">
-              <i class="ri-close-line"></i>
-            </span>
-          </div>
-        </div>
-      </div>
       
       <div class="form-actions">
         <button 
@@ -220,15 +184,6 @@ async function loadPostData() {
       }
     }
     
-    // 태그 처리
-    if (post.tags) {
-      if (typeof post.tags === 'string') {
-        tags.value = post.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
-      } else if (Array.isArray(post.tags)) {
-        tags.value = [...post.tags];
-      }
-    }
-    
     postId.value = parseInt(route.params.id, 10);
     
     // 초기 상태 설정
@@ -304,34 +259,6 @@ function removeImage() {
 
 function selectCategory(category) {
   selectedCategory.value = category;
-}
-
-function addTag() {
-  const tagText = tagInput.value.trim();
-  
-  if (!tagText) return;
-  
-  if (tags.value.length >= 5) {
-    alert('태그는 최대 5개까지만 추가할 수 있습니다.');
-    return;
-  }
-  
-  if (tags.value.includes(tagText)) {
-    alert('이미 추가된 태그입니다.');
-    return;
-  }
-
-  tags.value.push(tagText);
-  tagInput.value = '';
-
-  nextTick(() => {
-    const input = document.querySelector('.tag-input');
-    if (input) input.focus();
-  });
-}
-
-function removeTag(tag) {
-  tags.value = tags.value.filter(t => t !== tag);
 }
 
 async function submitPost() {
@@ -693,61 +620,6 @@ onMounted(async () => {
   font-weight: 500;
 }
 
-/* 태그 입력 */
-.tag-input-container {
-  display: flex;
-  margin-top: 12px;
-  gap: 10px;
-}
-
-.tag-input-wrapper {
-  flex: 1;
-  border-radius: var(--input-radius);
-}
-
-.tag-add-btn {
-  padding: 8px 16px;
-  border-radius: var(--input-radius);
-}
-
-.tags-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.tag {
-  background-color: rgba(255, 87, 34, 0.1);
-  color: var(--primary-color);
-  padding: 6px 28px 6px 12px;
-  border-radius: 16px;
-  font-size: 14px;
-  position: relative;
-}
-
-.tag-remove {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  width: 16px;
-  height: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(255, 87, 34, 0.2);
-  border-radius: 50%;
-  transition: var(--transition);
-}
-
-.tag-remove:hover {
-  background-color: var(--primary-color);
-  color: white;
-}
-
-/* 완료 버튼 스타일 */
 .form-actions {
   margin-top: 30px;
 }

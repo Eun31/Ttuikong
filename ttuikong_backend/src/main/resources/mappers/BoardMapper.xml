@@ -62,20 +62,53 @@
 	<select id="selectByUserId" parameterType="int"
 		resultType="Board">
 		SELECT
-		b.id as postId, b.user_id, b.title, b.content, b.category,
+		b.id as postId, b.user_id, b.title, b.content,
+		b.category,
 		b.created_at, b.updated_at, b.image_url,
-		u.nickname as user_nickname
+		u.nickname as
+		user_nickname
 		FROM board b
 		LEFT JOIN user u ON b.user_id = u.id
-		WHERE b.user_id = #{userId}
+		WHERE
+		b.user_id = #{userId}
 		ORDER BY b.created_at DESC;
 	</select>
 
-	<!-- 카테고리별 게시글 조회 -->
-	<select id="selectByCategory" parameterType="string"
-		resultType="Board">
-		SELECT * FROM Board WHERE category = #{category} ORDER BY
-		created_at DESC
+	<select id="selectPopularPosts">
+		SELECT
+		b.id as postId,
+		b.title,
+		b.content,
+		b.user_id,
+		b.created_at,
+		b.updated_at,
+		u.nickname as userNickname
+		FROM Board b
+		INNER JOIN User u ON b.user_id = u.id
+		LEFT JOIN (
+		SELECT board_id, COUNT(*) as count
+		FROM Board_Like
+		GROUP BY board_id
+		) like_count ON b.id = like_count.board_id
+		ORDER BY like_count.count DESC, b.created_at DESC
+		LIMIT #{limit}
 	</select>
 
+	<!-- 팔로우한 사용자들의 게시글 조회 -->
+	<select id="selectFollowingPosts">
+		SELECT
+		b.id as postId,
+		b.title,
+		b.content,
+		b.user_id,
+		b.created_at,
+		b.updated_at,
+		u.nickname as userNickname
+		FROM Board b
+		INNER JOIN User u ON b.user_id = u.id
+		INNER JOIN Follow f ON b.user_id = f.following_id
+		WHERE f.follower_id = #{id}
+		ORDER BY b.created_at DESC
+		LIMIT #{limit}
+	</select>
 </mapper>
