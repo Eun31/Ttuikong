@@ -5,7 +5,12 @@
       <div class="modal-box">
         <h3>러닝은 어땠나요?</h3>
         <div class="mood-options">
-          <button v-for="mood in moodOptions" :key="mood.label" class="mood-btn" @click="selectMood(mood.label)">
+          <button
+            v-for="mood in moodOptions"
+            :key="mood.label"
+            class="mood-btn"
+            @click="selectMood(mood.label)"
+          >
             <span class="emoji">{{ mood.emoji }}</span>
             <span class="label">{{ mood.label }}</span>
           </button>
@@ -18,28 +23,42 @@
         <div class="dog-zone">
           <div id="map-wrapper">
             <div id="map"></div>
+            <!-- 주소 텍스트 오버레이 -->
+            <div class="address-overlay">
+              {{ addressText || "주소 가져오는 중..." }}
+            </div>
             <svg id="route-overlay">
-              <polyline id="running-path" fill="none" stroke="red" stroke-width="4" />
+              <polyline
+                id="running-path"
+                fill="none"
+                stroke="red"
+                stroke-width="4"
+              />
             </svg>
             <!-- 타이머 -->
             <h2 class="time-head">현재 러닝 시간</h2>
             <div class="time">{{ formattedTime }}</div>
             <!-- 강아지 이미지 -->
-            <img class="dog-image" :src="isRunning ? dogRunImg : dogSitImg" alt="강아지 상태" />
+            <img
+              class="dog-image"
+              :src="isRunning ? dogRunImg : dogSitImg"
+              alt="강아지 상태"
+            />
           </div>
         </div>
       </div>
       <!-- 플레이 버튼 -->
       <button class="play-button" @click="toggleTimer">
-        {{ isRunning ? '■' : '▶' }}
+        {{ isRunning ? "■" : "▶" }}
       </button>
     </div>
-
 
     <div class="crew-list-section">
       <div class="crew-top">
         <h3>크루 목록</h3>
-        <button class="create-crew-btn" @click="toggleCrewForm">+ 크루 생성</button>
+        <button class="create-crew-btn" @click="toggleCrewForm">
+          + 크루 생성
+        </button>
       </div>
 
       <!-- 크루 생성-->
@@ -52,7 +71,10 @@
           </div>
           <div class="form-group">
             <label>소개</label>
-            <textarea v-model="newCrew.roomDescription" placeholder="크루 소개" />
+            <textarea
+              v-model="newCrew.roomDescription"
+              placeholder="크루 소개"
+            />
           </div>
           <div class="form-group">
             <label>목표 유형</label>
@@ -63,19 +85,50 @@
           </div>
           <div class="form-group">
             <label>목표 시간 (초)</label>
-            <div style="display: flex; gap: 8px; align-items: center;">
-              <input v-model.number="goalHours" type="number" min="0" max="23" placeholder="시" required />시
-              <input v-model.number="goalMinutes" type="number" min="0" max="59" placeholder="분" required />분
-              <input v-model.number="goalSeconds" type="number" min="0" max="59" placeholder="초" required />초
+            <div style="display: flex; gap: 8px; align-items: center">
+              <input
+                v-model.number="goalHours"
+                type="number"
+                min="0"
+                max="23"
+                placeholder="시"
+                required
+              />시
+              <input
+                v-model.number="goalMinutes"
+                type="number"
+                min="0"
+                max="59"
+                placeholder="분"
+                required
+              />분
+              <input
+                v-model.number="goalSeconds"
+                type="number"
+                min="0"
+                max="59"
+                placeholder="초"
+                required
+              />초
             </div>
           </div>
           <div class="form-group">
-          <label>시작일</label>
-            <input v-model="newCrew.startDate" type="date" :min="today" required />
+            <label>시작일</label>
+            <input
+              v-model="newCrew.startDate"
+              type="date"
+              :min="today"
+              required
+            />
           </div>
           <div class="form-group">
             <label>종료일</label>
-            <input v-model="newCrew.endDate" type="date" :min="newCrew.startDate" required />
+            <input
+              v-model="newCrew.endDate"
+              type="date"
+              :min="newCrew.startDate"
+              required
+            />
           </div>
           <button type="submit" class="submit-button">크루 생성하기</button>
         </form>
@@ -83,19 +136,58 @@
 
       <!--크루 검색-->
       <div class="group-search">
-        <input type="text" v-model="searchQuery" placeholder="크루 이름으로 검색..." class="search-input" />
+        <input
+          type="text"
+          v-model="searchQuery"
+          placeholder="크루 이름으로 검색..."
+          class="search-input"
+        />
       </div>
-      <div v-for="crew in paginatedCrews" :key="'search-' + crew.id" class="crew-card search-result">
-        <div class="crew-header"  @click="openCrewId = openCrewId === crew.id ? null : crew.id">
+      <div
+        v-for="crew in paginatedCrews"
+        :key="'search-' + crew.id"
+        class="crew-card search-result"
+      >
+        <div
+          class="crew-header"
+          @click="openCrewId = openCrewId === crew.id ? null : crew.id"
+        >
           <h4>{{ crew.roomName }}</h4>
           <span>
-            {{ crewMembers.find(c => c.crewId === crew.id)?.members.length || 0 }}명
-            <button v-if="new Date(crew.startDate) > new Date() && (crewMembers.find(c => c.crewId === crew.id)?.members.length || 0) < 10" class="join-btn" @click.stop="joinCrew(crew)">가입하기</button>
+            {{
+              crewMembers.find((c) => c.crewId === crew.id)?.members.length ||
+              0
+            }}명
+            <button
+              v-if="
+                new Date(crew.startDate) > new Date() &&
+                (crewMembers.find((c) => c.crewId === crew.id)?.members
+                  .length || 0) < 10
+              "
+              class="join-btn"
+              @click.stop="joinCrew(crew)"
+            >
+              가입하기
+            </button>
           </span>
         </div>
-        <p style="font-size: 1em; color: #f57c00; padding-top:5px; padding-bottom: 5px;">{{ crew.roomDescription }}</p>
-        <p class="crew-meta">챌린지일: {{ crew.startDate }} ~ {{ crew.endDate }}</p>
-        <p class="crew-meta">목표: {{ crew.goalType == 'SUM' ? '총합' : '평균' }} {{ formatDuration(crew.goalTime) }}</p>
+        <p
+          style="
+            font-size: 1em;
+            color: #f57c00;
+            padding-top: 5px;
+            padding-bottom: 5px;
+          "
+        >
+          {{ crew.roomDescription }}
+        </p>
+        <p class="crew-meta">
+          챌린지일: {{ crew.startDate }} ~ {{ crew.endDate }}
+        </p>
+        <p class="crew-meta">
+          목표: {{ crew.goalType == "SUM" ? "총합" : "평균" }}
+          {{ formatDuration(crew.goalTime) }}
+        </p>
       </div>
       <div class="pagination-controls">
         <button @click="prevPage" :disabled="page === 1">이전</button>
@@ -105,34 +197,145 @@
 
       <!-- 내 크루 목록 -->
       <h3>내가 속한 크루</h3>
-      <div v-for="crew in mypaginatedCrews" :key="crew.id" class="crew-card" @click="toggleCrew(crew.id)">
+      <div
+        v-for="crew in mypaginatedCrews"
+        :key="crew.id"
+        class="crew-card"
+        @click="toggleCrew(crew.id)"
+      >
         <div class="crew-header">
           <h4>{{ crew.roomName }}</h4>
-          <span>{{crewMembers.find(c => c.crewId === crew.id)?.members.length || 0}}명
-            <button v-if="crew.creatorId != userId" class="quit-btn" @click.stop="quitCrew(crew)">탈퇴하기</button>
-            <button v-else class="delete-btn" @click.stop="deleteCrew(crew)">삭제하기</button>
+          <span
+            >{{
+              crewMembers.find((c) => c.crewId === crew.id)?.members.length ||
+              0
+            }}명
+            <button
+              v-if="crew.creatorId != userId"
+              class="quit-btn"
+              @click.stop="quitCrew(crew)"
+            >
+              탈퇴하기
+            </button>
+            <button v-else class="delete-btn" @click.stop="deleteCrew(crew)">
+              삭제하기
+            </button>
           </span>
         </div>
-        <p style="font-size: 1em; color: #f57c00; padding-top:5px; padding-bottom: 5px;">{{ crew.roomDescription }}</p>
-        <p class="crew-meta">챌린지일: {{ crew.startDate }} ~ {{ crew.endDate }}</p>
-        <p class="crew-meta">목표: {{ crew.goalType == 'SUM' ? '총합' : '평균' }} {{ formatDuration(crew.goalTime) }}</p>
+        <p
+          style="
+            font-size: 1em;
+            color: #f57c00;
+            padding-top: 5px;
+            padding-bottom: 5px;
+          "
+        >
+          {{ crew.roomDescription }}
+        </p>
+        <p class="crew-meta">
+          챌린지일: {{ crew.startDate }} ~ {{ crew.endDate }}
+        </p>
+        <p class="crew-meta">
+          목표: {{ crew.goalType == "SUM" ? "총합" : "평균" }}
+          {{ formatDuration(crew.goalTime) }}
+        </p>
         <transition name="fade">
           <div v-show="expandedCrews.includes(crew.id)" class="crew-detail">
-            <p class="crew-meta">크루 생성일: {{ crew.createdAt.split("T")[0] }}</p>            
+            <p class="crew-meta">
+              크루 생성일: {{ crew.createdAt.split("T")[0] }}
+            </p>
             <div class="goal-status-box">
               <h4 class="title">
                 🏅 목표 달성률
-              <span class="percent-text" v-if="(crew.goalType == 'SUM' ? getPercent(crew.goalTime, crewStatusMap[crew.id]?.totalDuration) : getPercent(crew.goalTime, crewStatusMap[crew.id]?.averageDuration)) < 100 && (crew.goalType == 'SUM' ? getPercent(crew.goalTime, crewStatusMap[crew.id]?.totalDuration) : getPercent(crew.goalTime, crewStatusMap[crew.id]?.averageDuration)) >= 0" >
-                {{ crew.goalType == 'SUM' ? Percentage(crew.goalTime, crewStatusMap[crew.id]?.totalDuration) : Percentage(crew.goalTime, crewStatusMap[crew.id]?.averageDuration) }} 
-              </span>
+                <span
+                  class="percent-text"
+                  v-if="
+                    (crew.goalType == 'SUM'
+                      ? getPercent(
+                          crew.goalTime,
+                          crewStatusMap[crew.id]?.totalDuration
+                        )
+                      : getPercent(
+                          crew.goalTime,
+                          crewStatusMap[crew.id]?.averageDuration
+                        )) < 100 &&
+                    (crew.goalType == 'SUM'
+                      ? getPercent(
+                          crew.goalTime,
+                          crewStatusMap[crew.id]?.totalDuration
+                        )
+                      : getPercent(
+                          crew.goalTime,
+                          crewStatusMap[crew.id]?.averageDuration
+                        )) >= 0
+                  "
+                >
+                  {{
+                    crew.goalType == "SUM"
+                      ? Percentage(
+                          crew.goalTime,
+                          crewStatusMap[crew.id]?.totalDuration
+                        )
+                      : Percentage(
+                          crew.goalTime,
+                          crewStatusMap[crew.id]?.averageDuration
+                        )
+                  }}
+                </span>
               </h4>
               <!-- 게이지 바 -->
-              <div v-if="(crew.goalType == 'SUM' ? getPercent(crew.goalTime, crewStatusMap[crew.id]?.totalDuration) : getPercent(crew.goalTime, crewStatusMap[crew.id]?.averageDuration)) < 100 && (crew.goalType == 'SUM' ? getPercent(crew.goalTime, crewStatusMap[crew.id]?.totalDuration) : getPercent(crew.goalTime, crewStatusMap[crew.id]?.averageDuration)) >= 0" class="progress-bar-container">
+              <div
+                v-if="
+                  (crew.goalType == 'SUM'
+                    ? getPercent(
+                        crew.goalTime,
+                        crewStatusMap[crew.id]?.totalDuration
+                      )
+                    : getPercent(
+                        crew.goalTime,
+                        crewStatusMap[crew.id]?.averageDuration
+                      )) < 100 &&
+                  (crew.goalType == 'SUM'
+                    ? getPercent(
+                        crew.goalTime,
+                        crewStatusMap[crew.id]?.totalDuration
+                      )
+                    : getPercent(
+                        crew.goalTime,
+                        crewStatusMap[crew.id]?.averageDuration
+                      )) >= 0
+                "
+                class="progress-bar-container"
+              >
                 <div class="progress-bar-bg">
-                  <div class="progress-bar-fill" :style="{ width: crew.goalType == 'SUM' ? Percentage(crew.goalTime, crewStatusMap[crew.id]?.totalDuration) : Percentage(crew.goalTime, crewStatusMap[crew.id]?.averageDuration) }"></div>
+                  <div
+                    class="progress-bar-fill"
+                    :style="{
+                      width:
+                        crew.goalType == 'SUM'
+                          ? Percentage(
+                              crew.goalTime,
+                              crewStatusMap[crew.id]?.totalDuration
+                            )
+                          : Percentage(
+                              crew.goalTime,
+                              crewStatusMap[crew.id]?.averageDuration
+                            ),
+                    }"
+                  ></div>
                 </div>
                 <p class="progress-percent">
-                  {{ crew.goalType == 'SUM' ? getPercent(crew.goalTime, crewStatusMap[crew.id]?.totalDuration) : getPercent(crew.goalTime, crewStatusMap[crew.id]?.averageDuration) }}
+                  {{
+                    crew.goalType == "SUM"
+                      ? getPercent(
+                          crew.goalTime,
+                          crewStatusMap[crew.id]?.totalDuration
+                        )
+                      : getPercent(
+                          crew.goalTime,
+                          crewStatusMap[crew.id]?.averageDuration
+                        )
+                  }}
                 </p>
               </div>
               <div v-else class="goal-celebration">
@@ -141,30 +344,51 @@
 
               <!-- 수치 정보 -->
               <div class="goal-details">
-                <p><strong>📍 목표:</strong> {{ crew.goalType == 'SUM' ? '총합' : '평균' }} {{ formatDuration(crew.goalTime) }}</p>
                 <p>
-                  <strong>📍 시간 현황:</strong> {{ crew.goalType == 'SUM' ? '총합' : '평균' }}
-                  {{ crew.goalType == 'SUM' ? formatDuration(crewStatus.totalDuration) : formatDuration(crewStatus.averageDuration) }}
+                  <strong>📍 목표:</strong>
+                  {{ crew.goalType == "SUM" ? "총합" : "평균" }}
+                  {{ formatDuration(crew.goalTime) }}
+                </p>
+                <p>
+                  <strong>📍 시간 현황:</strong>
+                  {{ crew.goalType == "SUM" ? "총합" : "평균" }}
+                  {{
+                    crew.goalType == "SUM"
+                      ? formatDuration(crewStatus.totalDuration)
+                      : formatDuration(crewStatus.averageDuration)
+                  }}
                 </p>
               </div>
-          </div>
-            <hr style="border: none; border-top: 2px dashed tan; margin: 24px 0;">
+            </div>
+            <hr
+              style="border: none; border-top: 2px dashed tan; margin: 24px 0"
+            />
             <h3 class="sub-title">크루 멤버</h3>
             <div class="user-list">
-              <div v-for="member in crewMembersMap[crew.id] || []" :key="crew.id + '-' + member.nickname"
-                class="user-card">
-                <strong>{{ member.nickname }} <span v-if="crew.creatorId == userId">🔸</span> </strong>
+              <div
+                v-for="member in crewMembersMap[crew.id] || []"
+                :key="crew.id + '-' + member.nickname"
+                class="user-card"
+              >
+                <strong
+                  >{{ member.nickname }}
+                  <span v-if="crew.creatorId == userId">🔸</span>
+                </strong>
                 <span>{{ formatDuration(member.duration) }}</span>
               </div>
             </div>
-            <button class="talk-button" @click="goToChat(crew.id)">▶ 실시간 메신저</button>
+            <button class="talk-button" @click="goToChat(crew.id)">
+              ▶ 실시간 메신저
+            </button>
           </div>
         </transition>
       </div>
       <div class="pagination-controls">
         <button @click="myprevPage" :disabled="mypage === 1">이전</button>
         <span>{{ mytotalPages == 0 ? 0 : mypage }} / {{ mytotalPages }}</span>
-        <button @click="mynextPage" :disabled="mypage === mytotalPages">다음</button>
+        <button @click="mynextPage" :disabled="mypage === mytotalPages">
+          다음
+        </button>
       </div>
     </div>
 
@@ -181,13 +405,21 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, defineEmits, nextTick, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import dogRun from '@/assets/dog_run.gif';
-import dogSit from '@/assets/dog_sit.gif';
+import {
+  ref,
+  computed,
+  onMounted,
+  onBeforeUnmount,
+  defineEmits,
+  nextTick,
+  watch,
+} from "vue";
+import { useRoute, useRouter } from "vue-router";
+import dogRun from "@/assets/dog_run.gif";
+import dogSit from "@/assets/dog_sit.gif";
 import html2canvas from "html2canvas";
 
-const emit = defineEmits(['navigate']);
+const emit = defineEmits(["navigate"]);
 const router = useRouter();
 
 // 토큰 관리 상수 및 유틸리티 함수
@@ -200,19 +432,18 @@ const removeStoredToken = () => localStorage.removeItem(TOKEN_KEY);
 const removeStoredUserId = () => localStorage.removeItem(USER_ID_KEY);
 
 // 상태 변수들
-const searchQuery = ref('');
+const searchQuery = ref("");
 const seconds = ref(0);
 const timer = ref(null);
 const isRunning = ref(false);
-const STORAGE_KEY = 'run-timer-start'
-const status = ref('ended');
+const STORAGE_KEY = "run-timer-start";
 const map = ref(null);
 const kakaoMapLoaded = ref(false);
-const infoText = ref('러닝을 시작하려면 ▶를 누르세요');
+const infoText = ref("러닝을 시작하려면 ▶를 누르세요");
 const positions = ref([]);
 const distance = ref(0);
 const expandedCrews = ref([]);
-const startTime = ref('');
+const startTime = ref("");
 const endTime = ref(null);
 const duration = ref(0);
 const token = ref(getStoredToken());
@@ -221,23 +452,23 @@ const showCrewForm = ref(false);
 const crews = ref([]);
 const crewMembers = ref([]);
 const newCrew = ref({
-  roomName: '',
-  roomDescription: '',
-  goalType: 'SUM',
+  roomName: "",
+  roomDescription: "",
+  goalType: "SUM",
   goalTime: 0,
-  startDate: '',
-  endDate: ''
+  startDate: "",
+  endDate: "",
 });
 const moodOptions = [
-  { label: '기쁨', emoji: '😊' },
-  { label: '뿌듯함', emoji: '💪' },
-  { label: '아쉬움', emoji: '😕' },
-  { label: '화남', emoji: '😠' },
-  { label: '슬픔', emoji: '😢' },
-  { label: '쏘쏘', emoji: '😐' }
+  { label: "기쁨", emoji: "😊" },
+  { label: "뿌듯함", emoji: "💪" },
+  { label: "아쉬움", emoji: "😕" },
+  { label: "화남", emoji: "😠" },
+  { label: "슬픔", emoji: "😢" },
+  { label: "쏘쏘", emoji: "😐" },
 ];
 const calories = ref(0);
-const selectedMood = ref('');
+const selectedMood = ref("");
 const showMoodModal = ref(false);
 const crewMembersMap = ref({});
 const crewStatus = ref({});
@@ -245,7 +476,7 @@ const crewStatusMap = ref({});
 const goalHours = ref(0);
 const goalMinutes = ref(0);
 const goalSeconds = ref(0);
-const today = new Date().toISOString().split('T')[0];
+const today = new Date().toISOString().split("T")[0];
 const page = ref(1);
 const perPage = 4;
 const mypage = ref(1);
@@ -288,12 +519,12 @@ const myprevPage = () => {
 
 /* 크루 생성 */
 const goalTime = computed(() => {
-  return goalHours.value * 3600 + goalMinutes.value * 60 + goalSeconds.value
+  return goalHours.value * 3600 + goalMinutes.value * 60 + goalSeconds.value;
 });
 
 watch(goalTime, (newVal) => {
-  newCrew.value.goalTime = newVal
-})
+  newCrew.value.goalTime = newVal;
+});
 
 const toggleCrewForm = () => {
   showCrewForm.value = !showCrewForm.value;
@@ -302,18 +533,18 @@ const toggleCrewForm = () => {
 const submitCrew = async () => {
   if (!token.value) {
     alert("로그인이 필요합니다.");
-    router.push('/login');
+    router.push("/login");
     return;
   }
 
   try {
-    const response = await fetch('/api/crew', {
-      method: 'POST',
+    const response = await fetch("/api/crew", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token.value}`
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token.value}`,
       },
-      body: JSON.stringify(newCrew.value)
+      body: JSON.stringify(newCrew.value),
     });
 
     const message = await response.text();
@@ -322,12 +553,12 @@ const submitCrew = async () => {
     if (response.ok) {
       showCrewForm.value = false;
       newCrew.value = {
-        roomName: '',
-        roomDescription: '',
-        goalType: 'SUM',
+        roomName: "",
+        roomDescription: "",
+        goalType: "SUM",
         goalTime: goalTime.value,
-        startDate: '',
-        endDate: ''
+        startDate: "",
+        endDate: "",
       };
       // 크루 목록 새로고침
       await fetchCrewsAndMembers();
@@ -341,17 +572,20 @@ const submitCrew = async () => {
 const joinCrew = async (crew) => {
   if (!token.value || !userId.value) {
     alert("로그인이 필요합니다.");
-    router.push('/login');
+    router.push("/login");
     return;
   }
 
   try {
-    const res = await fetch(`/api/crew/${crew.id}/join?userId=${userId.value}`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token.value}`
+    const res = await fetch(
+      `/api/crew/${crew.id}/join?userId=${userId.value}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
       }
-    });
+    );
 
     const message = await res.text();
     alert(message);
@@ -370,16 +604,16 @@ const joinCrew = async (crew) => {
 const deleteCrew = async (crew) => {
   if (!token.value || !userId.value) {
     alert("로그인이 필요합니다.");
-    router.push('/login');
+    router.push("/login");
     return;
   }
 
   try {
     const res = await fetch(`/api/crew/${crew.id}?creatorId=${userId.value}`, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: {
-        Authorization: `Bearer ${token.value}`
-      }
+        Authorization: `Bearer ${token.value}`,
+      },
     });
 
     const message = await res.text();
@@ -398,8 +632,8 @@ const deleteCrew = async (crew) => {
 const silentDeleteCrew = async (crew) => {
   try {
     const res = await fetch(`/api/crew/${crew.id}?creatorId=${userId.value}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token.value}` }
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token.value}` },
     });
 
     if (res.ok) {
@@ -410,21 +644,23 @@ const silentDeleteCrew = async (crew) => {
   }
 };
 
-
 const quitCrew = async (crew) => {
   if (!token.value || !userId.value) {
     alert("로그인이 필요합니다.");
-    router.push('/login');
+    router.push("/login");
     return;
   }
 
   try {
-    const res = await fetch(`/api/crew/${crew.id}/leave?userId=${userId.value}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token.value}`
+    const res = await fetch(
+      `/api/crew/${crew.id}/leave?userId=${userId.value}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
       }
-    });
+    );
 
     const message = await res.text();
     alert(message);
@@ -448,7 +684,7 @@ const fetchCrewsAndMembers = async () => {
 
   try {
     const res = await fetch("/api/crew", {
-      headers: { Authorization: `Bearer ${token.value}` }
+      headers: { Authorization: `Bearer ${token.value}` },
     });
 
     if (!res.ok) {
@@ -462,10 +698,10 @@ const fetchCrewsAndMembers = async () => {
     const data = await res.json();
     crews.value = data;
 
-    const memberPromises = data.map(async crew => {
+    const memberPromises = data.map(async (crew) => {
       try {
         const res = await fetch(`/api/crew/${crew.id}/members`, {
-          headers: { Authorization: `Bearer ${token.value}` }
+          headers: { Authorization: `Bearer ${token.value}` },
         });
 
         if (!res.ok) {
@@ -484,7 +720,6 @@ const fetchCrewsAndMembers = async () => {
 
     const memberResults = await Promise.all(memberPromises);
     crewMembers.value = memberResults;
-
   } catch (error) {
     console.error("크루 또는 멤버 불러오는 중 오류:", error);
   }
@@ -492,7 +727,7 @@ const fetchCrewsAndMembers = async () => {
 
 const toggleCrew = async (id) => {
   if (expandedCrews.value.includes(id)) {
-    expandedCrews.value = expandedCrews.value.filter(cid => cid !== id);
+    expandedCrews.value = expandedCrews.value.filter((cid) => cid !== id);
   } else {
     await getCrewRun(id);
     await getCrewGoal(id);
@@ -501,11 +736,13 @@ const toggleCrew = async (id) => {
 };
 
 const myCrews = computed(() => {
-  return crews.value.filter(crew => {
+  return crews.value.filter((crew) => {
     return (
       crew &&
       (crew.creatorId == userId.value ||
-        crewMembers.value.find(c => c.crewId === crew.id)?.members?.some(m => m.id == userId.value))
+        crewMembers.value
+          .find((c) => c.crewId === crew.id)
+          ?.members?.some((m) => m.id == userId.value))
     );
   });
 });
@@ -514,14 +751,16 @@ const myCrews = computed(() => {
 const formattedTime = computed(() => {
   const min = Math.floor(seconds.value / 60);
   const sec = seconds.value % 60;
-  return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+  return `${min.toString().padStart(2, "0")}:${sec
+    .toString()
+    .padStart(2, "0")}`;
 });
 
 /* 크루 필터링 */
 const filteredCrews = computed(() => {
   const query = searchQuery.value.trim().toLowerCase();
   if (!query) return crews.value;
-  return crews.value.filter(c => c.roomName.toLowerCase().includes(query));
+  return crews.value.filter((c) => c.roomName.toLowerCase().includes(query));
 });
 
 /* 토큰 만료 처리 */
@@ -531,23 +770,93 @@ const handleTokenExpired = () => {
   token.value = null;
   userId.value = null;
   alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
-  router.push('/login');
+  router.push("/login");
 };
 
 /* 카카오 API */
+let watchId = null;
+let prevLat = null;
+let prevLng = null;
+const addressText = ref("");
+
+// 거리 계산 함수
+function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
+  const R = 6371000; // 지구 반지름(m)
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * (Math.PI / 180)) *
+      Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+// ✅ 위치 추적 함수 대체 (updateLocation 함수 대신)
+function startTrackingLocation() {
+  if (!navigator.geolocation) {
+    console.error("이 브라우저는 geolocation을 지원하지 않습니다.");
+    return;
+  }
+
+  watchId = navigator.geolocation.watchPosition(
+    (position) => {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      console.log("현재 위치:", lat, lng);
+
+      const newLatLng = new kakao.maps.LatLng(lat, lng);
+
+      const geocoder = new window.kakao.maps.services.Geocoder();
+      geocoder.coord2RegionCode(lng, lat, function (result, status) {
+        if (status === window.kakao.maps.services.Status.OK) {
+          addressText.value = result[0].address_name;
+          console.log("주소 변환 결과:", addressText.value); // 로그로 확인!
+        } else {
+          console.warn("주소 변환 실패:", status);
+        }
+      });
+
+      if (prevLat !== null && prevLng !== null) {
+        const dist = getDistanceFromLatLonInMeters(prevLat, prevLng, lat, lng);
+        if (dist > 1) {
+          distance.value += dist;
+          positions.value.push(newLatLng);
+          map.value?.setCenter(newLatLng);
+        }
+      } else {
+        positions.value.push(newLatLng);
+      }
+
+      prevLat = lat;
+      prevLng = lng;
+    },
+    (error) => {
+      console.error("위치 추적 실패:", error);
+    },
+    {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 10000,
+    }
+  );
+}
+
+/* 기존 */
 const loadKakaoMapScript = () => {
-  const existingScript = document.getElementById('kakao-map-sdk');
+  const existingScript = document.getElementById("kakao-map-sdk");
   if (existingScript) {
     waitForKakao();
     return;
   }
 
   fetch("/api/config/kakao-map-key")
-    .then(res => res.text())
-    .then(apiKey => {
+    .then((res) => res.text())
+    .then((apiKey) => {
       const script = document.createElement("script");
       script.id = "kakao-map-sdk";
-      script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&autoload=false`;
+      script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&autoload=false&libraries=services`;
       script.async = true;
       script.onload = () => {
         if (window.kakao && window.kakao.maps) {
@@ -559,9 +868,9 @@ const loadKakaoMapScript = () => {
       };
       document.head.appendChild(script);
     })
-    .catch(error => {
+    .catch((error) => {
       console.error("Kakao map key fetch error", error);
-      infoText.value = 'API 키를 가져오는 중 오류가 발생했습니다.';
+      infoText.value = "API 키를 가져오는 중 오류가 발생했습니다.";
     });
 };
 
@@ -577,12 +886,12 @@ const waitForKakao = () => {
 };
 
 const initMap = () => {
-  const mapContainer = document.getElementById('map');
+  const mapContainer = document.getElementById("map");
   if (!mapContainer) return;
 
   const mapOption = {
     center: new window.kakao.maps.LatLng(37.566826, 126.9786567),
-    level: 3
+    level: 3,
   };
 
   map.value = new window.kakao.maps.Map(mapContainer, mapOption);
@@ -595,30 +904,65 @@ const initMap = () => {
         map.value.setCenter(new window.kakao.maps.LatLng(lat, lng));
       },
       (err) => {
-        console.error('Geolocation error', err);
-        infoText.value = '위치 정보를 가져올 수 없습니다.';
+        console.error("Geolocation error", err);
+        infoText.value = "위치 정보를 가져올 수 없습니다.";
       }
     );
   } else {
-    infoText.value = '이 브라우저에서는 위치 기능을 지원하지 않습니다.';
+    infoText.value = "이 브라우저에서는 위치 기능을 지원하지 않습니다.";
   }
 };
 
 /* 지도 표시 */
+const prevPosition = ref(null); // 이전 위치 기억용
 function updateLocation() {
   if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(position => {
-      const lat = position.coords.latitude;
-      const lng = position.coords.longitude;
-      console.log(`현재 위치: ${lat}, ${lng}`);
-    }, error => {
-      console.error("위치 추적 실패:", error);
-    });
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        console.log(`현재 위치: ${lat}, ${lng}`);
+
+        const newLatLng = new window.kakao.maps.LatLng(lat, lng);
+
+        // 거리 계산
+        if (!prevPosition.value) {
+          prevPosition.value = newLatLng;
+          positions.value.push(newLatLng);
+        } else {
+          const dist =
+            window.kakao.maps.geometry.spherical.computeDistanceBetween(
+              prevPosition.value,
+              newLatLng
+            );
+          if (dist > 0.1) {
+            distance.value += dist;
+            positions.value.push(newLatLng);
+            prevPosition.value = newLatLng;
+          }
+        }
+
+        // 지도 중심 이동
+        if (map.value) {
+          map.value.setCenter(newLatLng);
+        }
+      },
+      (error) => {
+        console.error("위치 추적 실패:", error);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
   } else {
     console.error("이 브라우저는 geolocation을 지원하지 않습니다.");
   }
 }
 
+const startPoint = ref(null);
+const endPoint = ref(null);
 const drawPolylineOnSVG = () => {
   if (!map.value || positions.value.length === 0) return;
 
@@ -626,12 +970,52 @@ const drawPolylineOnSVG = () => {
   const polyline = document.getElementById("running-path");
   const projection = map.value.getProjection();
 
-  const path = positions.value.map(latlng => {
-    const point = projection.containerPointFromCoords(latlng);
-    return `${point.x},${point.y}`;
-  }).join(" ");
+  const path = positions.value
+    .map((latlng) => {
+      const point = projection.containerPointFromCoords(latlng);
+      return `${point.x},${point.y}`;
+    })
+    .join(" ");
 
   polyline.setAttribute("points", path);
+  // 시작/도착 포인트 계산
+  startPoint.value = projection.containerPointFromCoords(positions.value[0]);
+  endPoint.value = projection.containerPointFromCoords(
+    positions.value[positions.value.length - 1]
+  );
+
+  // 기존 아이콘 지우기
+  const oldStart = document.getElementById("start-icon");
+  const oldEnd = document.getElementById("end-icon");
+  if (oldStart) oldStart.remove();
+  if (oldEnd) oldEnd.remove();
+
+  // 시작 아이콘
+  const startIcon = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "text"
+  );
+  startIcon.setAttribute("id", "start-icon");
+  startIcon.setAttribute("x", startPoint.value.x);
+  startIcon.setAttribute("y", startPoint.value.y - 5);
+  startIcon.setAttribute("font-size", "14");
+  startIcon.setAttribute("fill", "green");
+  startIcon.textContent = "🔸";
+
+  // 도착 아이콘
+  const endIcon = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "text"
+  );
+  endIcon.setAttribute("id", "end-icon");
+  endIcon.setAttribute("x", endPoint.value.x);
+  endIcon.setAttribute("y", endPoint.value.y - 5);
+  endIcon.setAttribute("font-size", "14");
+  endIcon.setAttribute("fill", "red");
+  endIcon.textContent = "🏁";
+
+  svg.appendChild(startIcon);
+  svg.appendChild(endIcon);
 };
 
 const uploadMapImage = async () => {
@@ -641,7 +1025,9 @@ const uploadMapImage = async () => {
   }
 
   try {
-    drawPolylineOnSVG();
+    await fitMapToBounds(); // 지도 축소
+    await new Promise((resolve) => setTimeout(resolve, 500)); // 지도 반영 대기
+    drawPolylineOnSVG(); // SVG
 
     const mapContainer = document.getElementById("map-wrapper");
     const svgElement = document.getElementById("route-overlay");
@@ -652,10 +1038,10 @@ const uploadMapImage = async () => {
     }
 
     await nextTick();
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     const canvas = await html2canvas(mapContainer, {
-      backgroundColor: null,
+      backgroundColor: "white",
       useCORS: false,
       allowTaint: false,
       scale: 1,
@@ -665,15 +1051,17 @@ const uploadMapImage = async () => {
       foreignObjectRendering: false,
       ignoreElements: function (element) {
         return (
-          element.tagName === 'IFRAME' ||
-          element.classList.contains('dog-image') ||
-          element.classList.contains('time') ||
-          element.classList.contains('time-head')
+          element.tagName === "IFRAME" ||
+          element.classList.contains("dog-image") ||
+          element.classList.contains("time") ||
+          element.classList.contains("time-head")
         );
-      }
+      },
     });
 
-    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png', 0.8));
+    const blob = await new Promise((resolve) =>
+      canvas.toBlob(resolve, "image/png", 0.8)
+    );
 
     if (!blob) {
       console.error("canvas.toBlob 실패");
@@ -688,7 +1076,7 @@ const uploadMapImage = async () => {
     const res = await fetch("/api/runs/upload-map-image", {
       method: "POST",
       headers: { Authorization: `Bearer ${token.value}` },
-      body: formData
+      body: formData,
     });
 
     if (!res.ok) {
@@ -701,7 +1089,6 @@ const uploadMapImage = async () => {
     } else {
       console.log("러닝 경로 이미지 업로드 완료");
     }
-
   } catch (error) {
     console.error("맵 이미지 업로드 중 오류:", error);
     try {
@@ -715,7 +1102,7 @@ const uploadMapImage = async () => {
         const res = await fetch("/api/runs/upload-map-image", {
           method: "POST",
           headers: { Authorization: `Bearer ${token.value}` },
-          body: formData
+          body: formData,
         });
 
         if (res.ok) {
@@ -736,15 +1123,17 @@ const convertSvgToBlob = async () => {
     if (!svgElement) return null;
 
     const svgData = new XMLSerializer().serializeToString(svgElement);
-    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const svgBlob = new Blob([svgData], {
+      type: "image/svg+xml;charset=utf-8",
+    });
 
     const url = URL.createObjectURL(svgBlob);
     const img = new Image();
 
     return new Promise((resolve) => {
       img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
 
         canvas.width = 400;
         canvas.height = 400;
@@ -754,7 +1143,7 @@ const convertSvgToBlob = async () => {
         canvas.toBlob((blob) => {
           URL.revokeObjectURL(url);
           resolve(blob);
-        }, 'image/png');
+        }, "image/png");
       };
 
       img.onerror = () => {
@@ -781,13 +1170,14 @@ const saveRunningData = async () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token.value}`
+        Authorization: `Bearer ${token.value}`,
       },
       body: JSON.stringify({
         startTime: startTime.value,
         endTime: endTime.value,
-        distance: (distance.value / 1000).toFixed(2)
-      })
+        // distance: (distance.value / 1000).toFixed(4)
+        distance: distance.value,
+      }),
     });
 
     if (res.status === 401) {
@@ -795,13 +1185,38 @@ const saveRunningData = async () => {
       return;
     }
 
-    infoText.value = `러닝 완료! ${(distance.value / 1000).toFixed(2)}km를 ${formattedTime.value} 동안 달렸습니다.`;
+    infoText.value = `러닝 완료! ${
+      distance.value >= 1000
+        ? (distance.value / 1000).toFixed(2) + "km"
+        : Math.round(distance.value) + "m"
+    }를 ${formattedTime.value} 동안 달렸습니다.`;
   } catch (error) {
     console.error("러닝 데이터 저장 중 오류:", error);
   }
 };
 
 /* 타이머 기능 */
+const fitMapToBounds = async () => {
+  if (!positions.value.length || !map.value) return;
+
+  const bounds = new window.kakao.maps.LatLngBounds();
+  positions.value.forEach((pos) => bounds.extend(pos));
+  map.value.setBounds(bounds);
+
+  // 마커 표시
+  const startMarker = new window.kakao.maps.Marker({
+    position: positions.value[0],
+    map: map.value,
+    title: "출발",
+  });
+
+  const endMarker = new window.kakao.maps.Marker({
+    position: positions.value[positions.value.length - 1],
+    map: map.value,
+    title: "도착",
+  });
+};
+
 const toggleTimer = async () => {
   if (!token.value) {
     alert("로그인이 필요합니다.");
@@ -811,6 +1226,11 @@ const toggleTimer = async () => {
   if (isRunning.value) {
     // 종료 분기
     try {
+      // 종료 시 watchPosition 해제
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+      }
       endTime.value = new Date().toISOString();
       duration.value = seconds.value;
 
@@ -822,17 +1242,17 @@ const toggleTimer = async () => {
         startTime: startTime.value,
         endTime: endTime.value,
         duration: duration.value,
-        distance: (distance.value / 1000).toFixed(2),
-        status: "ended"
+        distance: distance.value,
+        status: "ended",
       });
 
       const res = await fetch("/api/runs/running-status", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token.value}`
+          Authorization: `Bearer ${token.value}`,
         },
-        body: endJsonData
+        body: endJsonData,
       });
 
       if (res.status === 401) {
@@ -861,16 +1281,16 @@ const toggleTimer = async () => {
 
       const startJsonData = JSON.stringify({
         startTime: startTime.value,
-        status: "running"
+        status: "running",
       });
 
       const res = await fetch("/api/runs/running-status", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token.value}`
+          Authorization: `Bearer ${token.value}`,
         },
-        body: startJsonData
+        body: startJsonData,
       });
 
       if (res.status === 401) {
@@ -885,12 +1305,13 @@ const toggleTimer = async () => {
 
       isRunning.value = true;
       infoText.value = "달리는 중...";
+
+      startTrackingLocation();
     } catch (error) {
       console.error("러닝 시작 요청 중 에러 발생:", error);
     }
   }
 };
-
 
 /* 유저 불러오기 */
 const getCurrentUser = async () => {
@@ -899,7 +1320,7 @@ const getCurrentUser = async () => {
 
   if (!currentToken) {
     alert("로그인이 필요합니다.");
-    router.push('/login');
+    router.push("/login");
     return;
   }
 
@@ -909,8 +1330,8 @@ const getCurrentUser = async () => {
   try {
     const res = await fetch("/api/users/me", {
       headers: {
-        Authorization: `Bearer ${currentToken}`
-      }
+        Authorization: `Bearer ${currentToken}`,
+      },
     });
 
     if (!res.ok) {
@@ -923,11 +1344,10 @@ const getCurrentUser = async () => {
 
     const data = await res.json();
     userId.value = data.user.id;
-
   } catch (err) {
     console.error("사용자 정보 요청 실패:", err);
     alert("로그인이 필요합니다.");
-    router.push('/login');
+    router.push("/login");
   }
 };
 
@@ -945,14 +1365,13 @@ const fetchLatestRoute = async (routeId) => {
   try {
     const res = await fetch(`/api/my/route/${routeId}`, {
       headers: {
-        Authorization: `Bearer ${token.value}`
-      }
+        Authorization: `Bearer ${token.value}`,
+      },
     });
 
     const data = await res.json();
     distance.value = data.distance;
-    if (data.calories == null)
-      data.calories = 0;
+    if (data.calories == null) data.calories = 0;
     calories.value = data.calories;
 
     // console.log("가장 최근 러닝 기록 불러오기 성공:", data);
@@ -964,11 +1383,11 @@ const fetchLatestRoute = async (routeId) => {
 const getRouteId = async () => {
   try {
     const res = await fetch(`/api/my/route/latest-route-id`, {
-      method: 'GET',
+      method: "GET",
       headers: {
         Authorization: `Bearer ${token.value}`,
-        'Content-Type': 'application/json'
-      }
+        "Content-Type": "application/json",
+      },
     });
     const data = await res.json();
     // console.log("route id 불러오기", data);
@@ -982,30 +1401,25 @@ const getRouteId = async () => {
 const calDailyRun = async (routeId) => {
   if (!token.value || !userId.value) {
     alert("로그인이 필요합니다.");
-    router.push('/login');
+    router.push("/login");
     return;
   }
 
-  console.log(
-        routeId,
-        distance.value,
-        calories.value,
-        selectedMood.value
-  );
+  console.log(routeId, distance.value, calories.value, selectedMood.value);
 
   try {
     const res = await fetch(`/api/runs/user/${userId.value}/day-time`, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
         Authorization: `Bearer ${token.value}`,
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         routeId,
         distance: distance.value,
         calories: calories.value,
-        mood: selectedMood.value
-      })
+        mood: selectedMood.value,
+      }),
     });
 
     const data = await res.json();
@@ -1043,17 +1457,17 @@ const getPercent = (goal, now) => {
 
 const Percentage = (goal, now) => {
   const percent = getPercent(goal, now);
-  if (percent >= 100 || percent < 0) return "🎉목표를 이미 달성했습니다.🎉";
-  return `${percent.toFixed(2)}%`;
+  if (percent >= 100 || percent < 0) return "🎉목표를 이미 달성했습니다🎉";
+  return `${percent.toFixed(4)}%`;
 };
 
 const getCrewRun = async (crewId) => {
   try {
     const res = await fetch(`/api/runs/crew/${crewId}`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        Authorization: `Bearer ${token.value}`
-      }
+        Authorization: `Bearer ${token.value}`,
+      },
     });
 
     if (!res.ok) throw new Error("서버 응답 오류");
@@ -1061,13 +1475,12 @@ const getCrewRun = async (crewId) => {
     const data = await res.json();
     // console.log("크루 멤버 러닝 시간:", data);
 
-    data.forEach(member => {
+    data.forEach((member) => {
       if (member.duration == null) member.duration = 0;
     });
 
     // 여기서 객체에 직접 세팅
     crewMembersMap.value[crewId] = data;
-
   } catch (err) {
     console.error("getCrewRun 오류:", err);
   }
@@ -1077,10 +1490,10 @@ const getCrewRun = async (crewId) => {
 const getCrewGoal = async (crewId) => {
   try {
     const res = await fetch(`/api/runs/crew/${crewId}/time`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        Authorization: `Bearer ${token.value}`
-      }
+        Authorization: `Bearer ${token.value}`,
+      },
     });
 
     if (!res.ok) throw new Error("서버 응답 오류");
@@ -1090,24 +1503,23 @@ const getCrewGoal = async (crewId) => {
 
     crewStatus.value = data;
     crewStatusMap.value[crewId] = data;
-
   } catch (err) {
     console.error("크루 시간 현황:", err);
   }
 };
 
-const stayOnTimer = () => { };
+const stayOnTimer = () => {};
 
 function goToChat(crewId) {
   router.push(`/chat/${crewId}`);
 }
 
-const navigateToRank = () => emit('navigate', 'RunWithRank');
+const navigateToRank = () => emit("navigate", "RunWithRank");
 
 onMounted(async () => {
-  getCurrentUser();
-  loadKakaoMapScript();
-  fetchCrewsAndMembers();
+  await getCurrentUser();
+  await loadKakaoMapScript();
+  await fetchCrewsAndMembers();
 
   // 종료일이 지난 크루 자동 삭제
   const now = new Date();
@@ -1129,8 +1541,10 @@ onMounted(async () => {
 
     timer.value = setInterval(() => {
       seconds.value++;
-      if (kakaoMapLoaded.value) updateLocation();
+      updateLocation();
     }, 1000);
+
+    startTrackingLocation();
   }
 });
 
@@ -1145,17 +1559,17 @@ const dogSitImg = dogSit;
 <style scoped>
 .run-container {
   padding: 16px;
-  background-color: #FFF8F2;
+  background-color: #fff8f2;
   font-family: sans-serif;
 }
 
 .run-container {
   padding: 16px;
-  background-color: #FFF8F2;
+  background-color: #fff8f2;
 }
 
 .timer-card,
-.section>#info {
+.section > #info {
   position: fixed;
   top: 0;
   left: 0;
@@ -1171,7 +1585,7 @@ body {
 
 .timer-card {
   color: orange;
-  background-color: #FFE3D6;
+  background-color: #ffe3d6;
   text-align: center;
   border-radius: 20px;
   display: flex;
@@ -1197,7 +1611,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  background: linear-gradient(135deg, #FFF5E1 60%, #FFD1A1 100%);
+  background: linear-gradient(135deg, #fff5e1 60%, #ffd1a1 100%);
   box-shadow: 0 6px 20px rgba(255, 112, 67, 0.15);
   position: relative;
   width: 100%;
@@ -1206,14 +1620,13 @@ body {
   align-items: stretch;
 }
 
-
 #map-wrapper {
   position: relative;
   width: 100%;
   height: auto;
   border-radius: 16px;
   overflow: hidden;
-  background-color: #ddd;
+  background-color: #fff;
   min-height: 450px;
 }
 
@@ -1222,7 +1635,6 @@ body {
     min-height: 200px;
   }
 }
-
 
 #map,
 #route-overlay {
@@ -1253,7 +1665,6 @@ body {
   z-index: 3;
 }
 
-
 .dog-image {
   position: absolute;
   top: calc(15% + 40px);
@@ -1262,7 +1673,6 @@ body {
   width: 20%;
   z-index: 3;
 }
-
 
 @media screen and (max-width: 768px) {
   .dog-image {
@@ -1276,7 +1686,7 @@ body {
 }
 
 .play-button {
-  background: linear-gradient(135deg, #FFB172, #FF7043);
+  background: linear-gradient(135deg, #ffb172, #ff7043);
   color: #fff;
   border: none;
   width: 100%;
@@ -1299,9 +1709,8 @@ body {
   color: #333;
 }
 
-
 .crew-list-section {
-  background: #FAF3ED;
+  background: #faf3ed;
   border-radius: 16px;
   padding: 20px;
 }
@@ -1312,7 +1721,7 @@ body {
 }
 
 .join-btn {
-  background: linear-gradient(135deg, #FF9F69, #FF7043);
+  background: linear-gradient(135deg, #ff9f69, #ff7043);
   color: white;
   padding: 6px 14px;
   margin-left: 4px;
@@ -1325,7 +1734,7 @@ body {
 }
 
 .join-btn:hover {
-  background: #FF8A65;
+  background: #ff8a65;
   transform: scale(1.05);
 }
 
@@ -1354,7 +1763,7 @@ body {
 }
 
 .nav-btn.active {
-  background: #FF7E47;
+  background: #ff7e47;
   color: white;
 }
 
@@ -1363,10 +1772,8 @@ body {
 }
 
 .nav-btn.active:hover {
-  background: #FF7E47;
+  background: #ff7e47;
 }
-
-
 
 /* 그룹 검색 */
 .group-search {
@@ -1385,7 +1792,7 @@ body {
   border: 1px solid #ffd9c1;
   border-radius: 999px;
   background-color: #fffdfb;
-  background-image: url('https://cdn-icons-png.flaticon.com/512/622/622669.png');
+  background-image: url("https://cdn-icons-png.flaticon.com/512/622/622669.png");
   background-size: 18px;
   background-repeat: no-repeat;
   background-position: 14px center;
@@ -1399,7 +1806,7 @@ body {
   padding: 0 20px;
   font-size: 14px;
   font-weight: 600;
-  background: linear-gradient(135deg, #FF9F69, #FF7043);
+  background: linear-gradient(135deg, #ff9f69, #ff7043);
   color: white;
   border: none;
   border-radius: 999px;
@@ -1410,14 +1817,13 @@ body {
 }
 
 .group-search button:hover {
-  background: #FF7E47;
+  background: #ff7e47;
   transform: scale(1.03);
 }
 
-
 .create-crew-btn {
-  background: #FFD5BD;
-  color: #FF5722;
+  background: #ffd5bd;
+  color: #ff5722;
   border: none;
   padding: 8px 16px;
   font-weight: 600;
@@ -1429,7 +1835,7 @@ body {
 }
 
 .create-crew-btn:hover {
-  background: #FFBFA2;
+  background: #ffbfa2;
 }
 
 .crew-top {
@@ -1461,18 +1867,18 @@ body {
 
 /* 크루 생성 css */
 .form-box {
-  background-color: #FFF3EC;
-  border: 2px solid #FFD5BD;
+  background-color: #fff3ec;
+  border: 2px solid #ffd5bd;
   border-radius: 20px;
   padding: 24px;
   margin: 20px 0;
   box-shadow: 0 4px 12px rgba(255, 112, 67, 0.15);
-  font-family: 'Pretendard', sans-serif;
+  font-family: "Pretendard", sans-serif;
   max-width: 100%;
 }
 
 .form-box h2 {
-  color: #FF7043;
+  color: #ff7043;
   margin-bottom: 20px;
   font-size: 20px;
   text-align: center;
@@ -1518,7 +1924,7 @@ textarea {
 .submit-button {
   width: 100%;
   padding: 12px;
-  background: linear-gradient(135deg, #FF9F69, #FF7043);
+  background: linear-gradient(135deg, #ff9f69, #ff7043);
   color: white;
   font-weight: bold;
   font-size: 16px;
@@ -1530,7 +1936,7 @@ textarea {
 }
 
 .submit-button:hover {
-  background: #FF7E47;
+  background: #ff7e47;
   transform: scale(1.02);
 }
 
@@ -1727,7 +2133,8 @@ textarea {
   opacity: 0;
 }
 
-.more-btn-wrapper, .pagination-controls {
+.more-btn-wrapper,
+.pagination-controls {
   text-align: center;
   margin-top: 12px;
 }
@@ -1811,4 +2218,16 @@ textarea {
   font-weight: normal;
 }
 
+.address-overlay {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #333;
+  z-index: 5;
+  pointer-events: none;
+}
 </style>
