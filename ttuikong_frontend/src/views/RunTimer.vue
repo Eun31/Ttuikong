@@ -99,7 +99,7 @@
       </div>
       <div class="pagination-controls">
         <button @click="prevPage" :disabled="page === 1">이전</button>
-        <span>{{ totalPages == 0 ? 0 : mypage }} / {{ totalPages }}</span>
+        <span>{{ totalPages == 0 ? 0 : page }} / {{ totalPages }}</span>
         <button @click="nextPage" :disabled="page === totalPages">다음</button>
       </div>
 
