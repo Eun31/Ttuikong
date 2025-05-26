@@ -21,7 +21,11 @@ export default defineConfig({
     allowedHosts: ['.ngrok-free.app'],
     proxy: {
       '/api': {
+<<<<<<< Updated upstream
         target: 'http://192.168.176.13:8080',
+=======
+        target: 'http://192.168.219.101:8080',
+>>>>>>> Stashed changes
         changeOrigin: true,
         secure: false,
         logLevel: 'debug'  // 프록시 로그 확인용
