@@ -21,10 +21,14 @@ export default defineConfig({
     allowedHosts: ['.ngrok-free.app'],
     proxy: {
       '/api': {
-        target: 'http://192.168.176.13:8080',
+        target: 'http://192.168.219.104:8080',
         changeOrigin: true,
         secure: false,
         logLevel: 'debug'  // 프록시 로그 확인용
+      },
+      '/uploads': { 
+        target: 'http://localhost:8080',
+        changeOrigin: true
       }
     }
   }

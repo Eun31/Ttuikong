@@ -1,5 +1,16 @@
 <template>
   <div class="container">
+    <div class="header">
+      <button class="header-back-btn" @click="goBack">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15,18 9,12 15,6"></polyline>
+        </svg>
+      </button>
+      <div class="header-center">
+        <h1 class="header-title">게시글</h1>
+      </div>
+      <div class="header-spacer"></div>
+    </div>
     <div v-if="loading" class="loading-container">
       <div class="spinner"></div>
       <p>게시글을 불러오는 중...</p>
@@ -25,8 +36,7 @@
             <div class="post-time">{{ formatDate(post.createdAt) }}</div>
           </div>
           <div v-if="isAuthor" class="post-options">
-            <button class="post-options-btn" @click="toggleOptions">
-            </button>
+            <button class="post-options-btn" @click="toggleOptions"></button>
             <div class="options-menu" :class="{ show: showOptions }">
               <div class="option-item edit-option" @click="editPost">
                 <span>수정하기</span>
@@ -41,13 +51,9 @@
         <div class="post-content">
           <h2 class="post-title">{{ post.title }}</h2>
           <div class="post-body">{{ post.content }}</div>
-          
+
           <div v-if="validImageUrl" class="post-image">
-            <img 
-              :src="validImageUrl" 
-              @error="handleImageError"
-              :alt="post.title"
-            >
+            <img :src="validImageUrl" @error="handleImageError" :alt="post.title">
           </div>
 
           <div v-if="post.category" class="post-tags">
@@ -55,19 +61,17 @@
           </div>
 
           <div class="post-actions">
-            <button 
-              class="heart-btn" 
-              :class="{ liked: isLiked, disabled: !token }"
-              @click="toggleLike"
-              :disabled="likeLoading"
-            >
-              <span v-if="likeLoading" class="spinning">🔄</span>
+            <button class="heart-btn" :class="{ liked: isLiked, disabled: !token }" @click="toggleLike"
+              :disabled="likeLoading">
+              <div v-if="likeLoading" class="loading-container">
+                <div class="spinner"></div>
+              </div>
               <span v-else-if="isLiked" class="heart-emoji liked">❤️</span>
               <span v-else class="heart-emoji">♡</span>
             </button>
-            
+
             <div class="like-text-container">
-              <span class="like-status-text clickable" @click="openLikeUsersModal" >
+              <span class="like-status-text clickable" @click="openLikeUsersModal">
                 {{ likeCount }}명이 이 게시글을 좋아합니다
               </span>
             </div>
@@ -81,23 +85,23 @@
             <h3>좋아요한 사용자</h3>
             <button @click="closeLikeUsersModal" class="modal-close-btn">✕</button>
           </div>
-          
+
           <div class="modal-content">
             <div v-if="loadingLikeUsers" class="modal-loading">
               <div class="spinner"></div>
               <p>사용자 목록을 불러오는 중...</p>
             </div>
-            
+
             <div v-else-if="likeUsers.length === 0" class="modal-empty">
               <div class="empty-icon">💔</div>
               <p>좋아요한 사용자 정보를 불러올 수 없습니다.</p>
             </div>
-            
+
             <div v-else class="like-users-grid">
               <div v-for="user in likeUsers" :key="user.id" class="like-user-card">
                 <img :src="getProfileImage()" alt="프로필" class="user-card-avatar">
                 <div class="user-card-info">
-                  <div class="user-card-name" @click.stop="goToUserProfile(user.id)">{{ user.nickname}}</div>
+                  <div class="user-card-name" @click.stop="goToUserProfile(user.id)">{{ user.nickname }}</div>
                 </div>
                 <div class="user-card-heart">❤️</div>
               </div>
@@ -116,26 +120,14 @@
             <img :src="getProfileImage()" alt="프로필" class="comment-user-avatar">
             <div class="comment-input-container">
               <div class="comment-input-row">
-                <textarea 
-                  v-model="newComment"
-                  placeholder="댓글을 입력하세요..."
-                  class="comment-input"
-                  rows="1"
-                  @input="autoResize"
-                  @keydown.enter="handleEnterKey"
-                  ref="commentTextarea"
-                ></textarea>
-                <button 
-                  @click="submitComment" 
-                  :disabled="!newComment.trim() || submittingComment"
-                  class="submit-comment-btn"
-                >
+                <textarea v-model="newComment" placeholder="댓글을 입력하세요..." class="comment-input" rows="1"
+                  @input="autoResize" @keydown.enter="handleEnterKey" ref="commentTextarea"></textarea>
+                <button @click="submitComment" :disabled="!newComment.trim() || submittingComment"
+                  class="submit-comment-btn">
                   <span v-if="submittingComment">
                     <span class="spinning">🔄</span>
                   </span>
-                  <span v-else>
-                  </span>
-                  등록
+                  <span v-else>등록</span>
                 </button>
               </div>
             </div>
@@ -158,24 +150,17 @@
           </div>
 
           <div v-else>
-            <div 
-              v-for="comment in comments" 
-              :key="comment.id"
-              class="comment-item"
-            >
+            <div v-for="comment in comments" :key="comment.id" class="comment-item">
               <img :src="getProfileImage()" alt="프로필" class="comment-avatar">
               <div class="comment-content">
                 <div class="comment-header">
-                  <span class="comment-author" @click.stop="goToUserProfile(comment.userId)">{{ comment.userNickname }}</span>
+                  <span class="comment-author" @click.stop="goToUserProfile(comment.userId)">{{ comment.userNickname
+                  }}</span>
                   <span class="comment-time">{{ formatDate(comment.createdAt) }}</span>
-                  
+
                   <div v-if="isCommentAuthor(comment)" class="comment-options">
-                    <button class="comment-options-btn" @click="toggleCommentOptions(comment.id)">
-                    </button>
-                    <div 
-                      class="comment-options-menu" 
-                      :class="{ show: comment.showOptions }"
-                    >
+                    <button class="comment-options-btn" @click="toggleCommentOptions(comment.id)"></button>
+                    <div class="comment-options-menu" :class="{ show: comment.showOptions }">
                       <div class="comment-option-item" @click="startEditComment(comment)">
                         <span>수정</span>
                       </div>
@@ -191,11 +176,7 @@
                 </div>
 
                 <div v-else class="comment-edit-form">
-                  <textarea 
-                    v-model="comment.editContent"
-                    class="comment-edit-input"
-                    rows="2"
-                  ></textarea>
+                  <textarea v-model="comment.editContent" class="comment-edit-input" rows="2"></textarea>
                   <div class="comment-edit-actions">
                     <button @click="saveEditComment(comment)" class="save-btn">저장</button>
                     <button @click="cancelEditComment(comment)" class="cancel-btn">취소</button>
@@ -208,13 +189,22 @@
       </div>
     </div>
   </div>
+
+  <ConfirmModal :show="showDeleteConfirm" title="게시글 삭제" message="정말 이 게시글을 삭제하시겠습니까?" warning="삭제된 게시글은 복구할 수 없습니다."
+    confirm-text="삭제" cancel-text="취소" :is-danger="true" :loading="deletingPost" @confirm="confirmDeletePost"
+    @cancel="cancelDeletePost" />
+
+  <ConfirmModal :show="showCommentDeleteConfirm" title="댓글 삭제" message="정말 이 댓글을 삭제하시겠습니까?"
+    warning="삭제된 댓글은 복구할 수 없습니다." confirm-text="삭제" cancel-text="취소" :is-danger="true" :loading="deletingComment"
+    @confirm="confirmDeleteComment" @cancel="cancelDeleteComment" />
 </template>
 
 <script setup>
-import { ref, computed, onMounted} from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import axios from 'axios';
 import profileImg from '../assets/profile.png';
+import ConfirmModal from '@/components/ConfirmModal.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -231,7 +221,7 @@ const isValidPostId = computed(() => {
 const goToUserProfile = (userId) => {
   if (userId === currentUser.value.id) {
     router.push('/profile');
-  } 
+  }
   else {
     router.push(`/profile/${userId}`);
   }
@@ -254,17 +244,22 @@ const newComment = ref('');
 const loadingComments = ref(false);
 const submittingComment = ref(false);
 const commentTextarea = ref(null);
+const showDeleteConfirm = ref(false);
+const showCommentDeleteConfirm = ref(false);
+const deletingPost = ref(false);
+const deletingComment = ref(false);
+const commentToDelete = ref(null);
 
 const currentUser = ref({
   id: null,
   nickname: '',
-  token: localStorage.getItem('jwt') 
+  token: localStorage.getItem('jwt')
 });
 
 const API_URL = '/api';
 
 const authHeader = computed(() => {
-  return currentUser.value.token ? 
+  return currentUser.value.token ?
     { 'Authorization': `Bearer ${currentUser.value.token}` } : {};
 });
 
@@ -280,17 +275,17 @@ const validImageUrl = computed(() => {
   if (!post.value?.imageUrl) {
     return null;
   }
-  
+
   const imageUrl = post.value.imageUrl || post.value.image_url;
-  
+
   if (!imageUrl || imageUrl.trim() === '') {
     return null;
   }
-  
+
   if (imageUrl.startsWith('/uploads/')) {
     return `${API_URL.replace('/api', '')}${imageUrl}`;
   }
-  
+
   return imageUrl;
 });
 
@@ -301,11 +296,11 @@ const handleImageError = (event) => {
 
 function getFullImageUrl(imageUrl) {
   if (!imageUrl) return '';
-  
+
   if (imageUrl.startsWith('http')) {
     return imageUrl;
   }
-  
+
   return `${imageUrl}`;
 }
 
@@ -314,25 +309,25 @@ async function toggleLike() {
     alert('로그인이 필요한 기능입니다.');
     return;
   }
-  
+
   if (likeLoading.value) return;
-  
+
   likeLoading.value = true;
-  
+
   try {
     await axios.post(`${API_URL}/board/${postId.value}/like`, {}, {
       headers: authHeader.value
     });
-    
+
     await Promise.all([
       checkLikeStatus(),
       fetchLikeCount()
     ]);
-    
+
     console.log('좋아요 토글 완료');
   } catch (err) {
     console.error('좋아요 처리 중 오류가 발생했습니다:', err);
-    
+
     if (err.response && err.response.status === 401) {
       alert('로그인이 만료되었습니다. 다시 로그인해 주세요.');
       localStorage.removeItem('jwt');
@@ -351,7 +346,7 @@ async function checkLikeStatus() {
     isLiked.value = false;
     return;
   }
-  
+
   try {
     const response = await axios.get(`${API_URL}/board/${postId.value}/like/status`, {
       headers: authHeader.value
@@ -388,10 +383,10 @@ async function fetchLikeUsers() {
 
 async function openLikeUsersModal() {
   if (likeCount.value === 0) return;
-  
+
   showLikeUsersModal.value = true;
   loadingLikeUsers.value = true;
-  
+
   try {
     const users = await fetchLikeUsers();
     likeUsers.value = users;
@@ -413,17 +408,17 @@ async function fetchCurrentUser() {
     console.log('로그인되지 않은 사용자입니다.');
     return;
   }
-  
+
   try {
     const response = await axios.get(`${API_URL}/users/me`, {
       headers: authHeader.value
     });
 
     const userData = response.data.user || response.data;
-    
+
     currentUser.value.id = userData.id;
     currentUser.value.nickname = userData.nickname || userData.email || '사용자';
-    
+
   } catch (err) {
     console.error('사용자 정보를 불러오는 중 오류가 발생했습니다:', err);
     console.error('오류 상세:', err.response?.data);
@@ -440,13 +435,13 @@ async function fetchCurrentUser() {
 async function fetchPostDetail() {
   loading.value = true;
   error.value = null;
-  
+
   if (!isValidPostId.value) {
     error.value = '유효하지 않은 게시글 ID입니다.';
     loading.value = false;
     return;
   }
-  
+
   try {
     const apiUrl = `${API_URL}/board/${postId.value}`;
     const response = await axios.get(apiUrl);
@@ -454,7 +449,7 @@ async function fetchPostDetail() {
     if (!response.data) {
       throw new Error('게시글 데이터가 없습니다.');
     }
-    
+
     post.value = response.data;
 
     const imageUrl = response.data.imageUrl || response.data.image_url;
@@ -462,7 +457,7 @@ async function fetchPostDetail() {
       console.log('원본 이미지 URL:', imageUrl);
       console.log('변환된 이미지 URL:', getFullImageUrl(imageUrl));
     }
-   
+
   } catch (err) {
     console.error('게시글 조회 중 오류가 발생했습니다:', err);
   } finally {
@@ -472,7 +467,7 @@ async function fetchPostDetail() {
 
 async function fetchComments() {
   loadingComments.value = true;
-  
+
   try {
     const response = await axios.get(`${API_URL}/board/${postId.value}/comment`);
     comments.value = response.data.map(comment => ({
@@ -491,24 +486,24 @@ async function fetchComments() {
 
 async function submitComment() {
   if (!newComment.value.trim() || submittingComment.value) return;
-  
+
   submittingComment.value = true;
-  
+
   try {
     await axios.post(`${API_URL}/board/${postId.value}/comment`, {
       content: newComment.value.trim()
     }, {
       headers: authHeader.value
     });
-  
+
     await fetchComments();
-    
+
     newComment.value = '';
 
     if (commentTextarea.value) {
       commentTextarea.value.style.height = 'auto';
     }
-    
+
     console.log('댓글 작성 및 목록 갱신 완료');
   } catch (err) {
     console.error('댓글 작성 중 오류가 발생했습니다:', err);
@@ -547,17 +542,17 @@ function startEditComment(comment) {
 
 async function saveEditComment(comment) {
   if (!comment.editContent.trim()) return;
-  
+
   try {
     await axios.put(`${API_URL}/board/${postId.value}/comment/${comment.id}`, {
       content: comment.editContent.trim()
     }, {
       headers: authHeader.value
     });
-    
+
     comment.content = comment.editContent.trim();
     comment.isEditing = false;
-    
+
     console.log('댓글 수정 완료:', comment);
   } catch (err) {
     console.error('댓글 수정 중 오류가 발생했습니다:', err);
@@ -571,21 +566,36 @@ function cancelEditComment(comment) {
 }
 
 async function deleteComment(commentId) {
-  if (!confirm('정말 이 댓글을 삭제하시겠습니까?')) return;
-  
+  commentToDelete.value = commentId;
+  showCommentDeleteConfirm.value = true;
+}
+
+async function confirmDeleteComment() {
+  if (!commentToDelete.value) return;
+
+  deletingComment.value = true;
+
   try {
-    await axios.delete(`${API_URL}/board/${postId.value}/comment/${commentId}`, {
+    await axios.delete(`${API_URL}/board/${postId.value}/comment/${commentToDelete.value}`, {
       headers: authHeader.value
     });
-    
-    comments.value = comments.value.filter(comment => comment.id !== commentId);
-    console.log('댓글 삭제 완료:', commentId);
+
+    comments.value = comments.value.filter(comment => comment.id !== commentToDelete.value);
+    showCommentDeleteConfirm.value = false;
+    commentToDelete.value = null;
+    console.log('댓글 삭제 완료');
   } catch (err) {
     console.error('댓글 삭제 중 오류가 발생했습니다:', err);
     alert('댓글 삭제에 실패했습니다. 다시 시도해 주세요.');
+  } finally {
+    deletingComment.value = false;
   }
 }
 
+function cancelDeleteComment() {
+  showCommentDeleteConfirm.value = false;
+  commentToDelete.value = null;
+}
 function toggleOptions() {
   showOptions.value = !showOptions.value;
 }
@@ -606,75 +616,85 @@ function goToLogin() {
 
 async function deletePost() {
   console.log('삭제 버튼 클릭됨');
-  console.log('현재 사용자 ID:', currentUser.value.id);
-  console.log('토큰 존재:', !!token);
-  
+
   if (!token) {
     alert('로그인이 필요한 기능입니다.');
     return;
   }
-  
-  if (confirm('정말 이 게시글을 삭제하시겠습니까?')) {
-    try {
-      await axios.delete(`${API_URL}/board/${postId.value}`, {
-        headers: authHeader.value
-      });
-      alert('게시글이 삭제되었습니다.');
-      goBack();
-    } catch (err) {
-      console.error('게시글 삭제 중 오류가 발생했습니다:', err);
-      
-      if (err.response && err.response.status === 401) {
-        alert('로그인이 만료되었습니다. 다시 로그인해 주세요.');
-        localStorage.removeItem('jwt');
-        router.push('/login');
-      } else {
-        alert('게시글 삭제에 실패했습니다. 다시 시도해 주세요.');
-      }
+
+  showDeleteConfirm.value = true;
+  toggleOptions(); // 옵션 메뉴 닫기
+}
+
+async function confirmDeletePost() {
+  deletingPost.value = true;
+
+  try {
+    await axios.delete(`${API_URL}/board/${postId.value}`, {
+      headers: authHeader.value
+    });
+
+    showDeleteConfirm.value = false;
+    alert('게시글이 삭제되었습니다.');
+    goBack();
+  } catch (err) {
+    console.error('게시글 삭제 중 오류가 발생했습니다:', err);
+
+    if (err.response && err.response.status === 401) {
+      alert('로그인이 만료되었습니다. 다시 로그인해 주세요.');
+      localStorage.removeItem('jwt');
+      router.push('/login');
+    } else {
+      alert('게시글 삭제에 실패했습니다. 다시 시도해 주세요.');
     }
+  } finally {
+    deletingPost.value = false;
   }
-  toggleOptions();
+}
+
+function cancelDelete() {
+  showDeleteConfirm.value = false;
 }
 
 // 날짜 형식 변환
 function formatDate(dateString) {
   if (!dateString) return '';
-  
+
   const now = new Date();
   const date = new Date(dateString);
-  
+
   // 날짜 차이 계산 (밀리초)
   const diff = now - date;
-  
+
   // 1분 미만
   if (diff < 60 * 1000) {
     return '방금 전';
   }
-  
+
   // 1시간 미만
   if (diff < 60 * 60 * 1000) {
     const minutes = Math.floor(diff / (60 * 1000));
     return `${minutes}분 전`;
   }
-  
+
   // 오늘
   if (date.toDateString() === now.toDateString()) {
     return `오늘 ${date.getHours()}시 ${date.getMinutes()}분`;
   }
-  
+
   // 어제
   const yesterday = new Date(now);
   yesterday.setDate(yesterday.getDate() - 1);
   if (date.toDateString() === yesterday.toDateString()) {
     return `어제 ${date.getHours()}시 ${date.getMinutes()}분`;
   }
-  
+
   // 1주일 이내
   if (diff < 7 * 24 * 60 * 60 * 1000) {
     const days = Math.floor(diff / (24 * 60 * 60 * 1000));
     return `${days}일 전`;
   }
-  
+
   // 그 외 날짜 형식
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
@@ -688,7 +708,7 @@ onMounted(async () => {
   console.log('ID 파라미터:', route.params.id);
   console.log('사용 가능한 토큰:', !!token);
   console.log('토큰 값 (일부):', token ? token.substring(0, 20) + '...' : 'null');
-  
+
   // postId 유효성 검사
   if (!isValidPostId.value) {
     error.value = '유효하지 않은 게시글 ID입니다.';
@@ -725,35 +745,47 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 40px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 20px;
+  padding: 16px 20px;
+  background: white;
+  border-bottom: 1px solid #f0f0f0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-.header-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: white;
-  border: 1px solid #e0e0e0;
+.header-back-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  color: #757575;
+  color: #495057;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
-.header-btn:hover {
+.header-back-btn:hover {
+  background: #FF7E47;
   border-color: #FF7E47;
-  color: #FF7E47;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(255, 126, 71, 0.2);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 126, 71, 0.3);
 }
 
-.header-btn:active {
+.header-back-btn:active {
   transform: translateY(0);
+}
+
+.header-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
 }
 
 .options-btn {
@@ -777,7 +809,7 @@ onMounted(async () => {
   height: 4px;
   background: #757575;
   border-radius: 50%;
-  box-shadow: 
+  box-shadow:
     0 -6px 0 #757575,
     0 6px 0 #757575;
   transition: all 0.2s ease;
@@ -791,23 +823,16 @@ onMounted(async () => {
 
 .options-btn:hover::before {
   background: #FF7E47;
-  box-shadow: 
+  box-shadow:
     0 -6px 0 #FF7E47,
     0 6px 0 #FF7E47;
 }
 
-.header-center {
-  flex: 1;
-  text-align: center;
-}
-
 .header-title {
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 600;
   color: #FF7E47;
   margin: 0;
-  position: relative;
-  display: inline-block;
 }
 
 .header-title::after {
@@ -822,11 +847,10 @@ onMounted(async () => {
   border-radius: 2px;
 }
 
-.header-subtitle {
-  font-size: 12px;
-  color: #757575;
-  font-weight: 400;
-  margin-top: 8px;
+.header-spacer {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
 }
 
 .post-card {
@@ -844,6 +868,7 @@ onMounted(async () => {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -921,7 +946,7 @@ onMounted(async () => {
   height: 3px;
   background: #757575;
   border-radius: 50%;
-  box-shadow: 
+  box-shadow:
     0 -5px 0 #757575,
     0 5px 0 #757575;
   transition: all 0.2s ease;
@@ -935,7 +960,7 @@ onMounted(async () => {
 
 .post-options-btn:hover::before {
   background: #FF7E47;
-  box-shadow: 
+  box-shadow:
     0 -5px 0 #FF7E47,
     0 5px 0 #FF7E47;
 }
@@ -965,6 +990,7 @@ onMounted(async () => {
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1167,9 +1193,17 @@ onMounted(async () => {
 }
 
 @keyframes heartBeat {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.3); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.3);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 .spinning {
@@ -1178,8 +1212,13 @@ onMounted(async () => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* 좋아요 개수 클릭 가능한 텍스트 스타일 */
@@ -1254,7 +1293,8 @@ onMounted(async () => {
   min-height: 40px;
   max-height: 120px;
   padding: 10px 14px 10px 14px;
-  padding-right: 80px; /* 버튼 공간 확보 */
+  padding-right: 80px;
+  /* 버튼 공간 확보 */
   border: 1px solid var(--border-color);
   border-radius: 20px;
   resize: none;
@@ -1418,7 +1458,8 @@ onMounted(async () => {
 }
 
 .comment-author:hover {
-  color: var(--primary-color); /* 추가 */
+  color: var(--primary-color);
+  /* 추가 */
 }
 
 .comment-time {
@@ -1456,7 +1497,7 @@ onMounted(async () => {
   height: 3px;
   background: #999;
   border-radius: 50%;
-  box-shadow: 
+  box-shadow:
     0 -5px 0 #999,
     0 5px 0 #999;
   transition: all 0.2s ease;
@@ -1469,7 +1510,7 @@ onMounted(async () => {
 
 .comment-options-btn:hover::before {
   background: var(--primary-color);
-  box-shadow: 
+  box-shadow:
     0 -5px 0 var(--primary-color),
     0 5px 0 var(--primary-color);
 }
@@ -1555,7 +1596,8 @@ onMounted(async () => {
   margin-top: 8px;
 }
 
-.save-btn, .cancel-btn {
+.save-btn,
+.cancel-btn {
   padding: 6px 12px;
   border: none;
   border-radius: 6px;
@@ -1617,7 +1659,8 @@ onMounted(async () => {
   gap: 16px;
 }
 
-.retry-btn, .back-btn {
+.retry-btn,
+.back-btn {
   padding: 10px 20px;
   border: 1px solid var(--primary-color);
   border-radius: 8px;
@@ -1627,7 +1670,8 @@ onMounted(async () => {
   transition: all 0.2s ease;
 }
 
-.retry-btn:hover, .back-btn:hover {
+.retry-btn:hover,
+.back-btn:hover {
   background: var(--primary-color);
   color: white;
 }
@@ -1635,26 +1679,29 @@ onMounted(async () => {
 /* 모바일 반응형 */
 @media (max-width: 480px) {
   .comment-input {
-    padding-right: 70px; /* 모바일에서 버튼 공간 조정 */
+    padding-right: 70px;
+    /* 모바일에서 버튼 공간 조정 */
   }
-  
+
   .submit-comment-btn {
     min-width: 55px;
     padding: 6px 10px;
     font-size: 11px;
     gap: 2px;
   }
-  
+
   .btn-text {
-    display: none; /* 모바일에서 텍스트 숨김 */
+    display: none;
+    /* 모바일에서 텍스트 숨김 */
   }
 }
 
 @media (max-width: 360px) {
   .comment-input {
-    padding-right: 50px; /* 더 작은 화면에서 조정 */
+    padding-right: 50px;
+    /* 더 작은 화면에서 조정 */
   }
-  
+
   .submit-comment-btn {
     min-width: 40px;
     padding: 6px 8px;
@@ -1677,6 +1724,7 @@ onMounted(async () => {
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1792,24 +1840,24 @@ onMounted(async () => {
   .like-users-header {
     padding: 14px 16px;
   }
-  
+
   .like-users-header h4 {
     font-size: 15px;
   }
-  
+
   .like-users-list {
     padding: 12px 16px;
   }
-  
+
   .like-user-item {
     padding: 10px 0;
   }
-  
+
   .like-user-avatar {
     width: 32px;
     height: 32px;
   }
-  
+
   .like-user-name {
     font-size: 13px;
   }
@@ -1865,6 +1913,29 @@ onMounted(async () => {
   box-shadow: none;
 }
 
+.heart-btn .loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  padding: 4px;
+}
+
+.heart-btn .loading-container .spinner {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+  margin-bottom: 2px;
+}
+
+.heart-btn .loading-container p {
+  font-size: 8px;
+  margin: 0;
+  color: var(--primary-color);
+  white-space: nowrap;
+}
+
 /* 하트 이모지 스타일 */
 .heart-emoji {
   font-size: 20px;
@@ -1881,9 +1952,17 @@ onMounted(async () => {
 }
 
 @keyframes heartBeat {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.3); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.3);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* 좋아요 텍스트 컨테이너 */
@@ -1927,8 +2006,13 @@ onMounted(async () => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* 좋아요 사용자 모달 */
@@ -1948,6 +2032,7 @@ onMounted(async () => {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -2091,8 +2176,13 @@ onMounted(async () => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* 반응형 */
@@ -2100,49 +2190,49 @@ onMounted(async () => {
   .post-actions {
     gap: 12px;
   }
-  
+
   .heart-btn {
     width: 36px;
     height: 36px;
   }
-  
+
   .heart-emoji {
     font-size: 18px;
   }
-  
+
   .like-status-text {
     font-size: 13px;
   }
-  
+
   .modal-overlay {
     padding: 16px;
   }
-  
+
   .like-users-modal {
     border-radius: 16px;
   }
-  
+
   .modal-header {
     padding: 16px 20px;
   }
-  
+
   .modal-header h3 {
     font-size: 16px;
   }
-  
+
   .modal-content {
     padding: 16px 20px;
   }
-  
+
   .like-user-card {
     padding: 10px;
   }
-  
+
   .user-card-avatar {
     width: 36px;
     height: 36px;
   }
-  
+
   .user-card-name {
     font-size: 13px;
   }
@@ -2153,11 +2243,11 @@ onMounted(async () => {
     width: 32px;
     height: 32px;
   }
-  
+
   .heart-emoji {
     font-size: 16px;
   }
-  
+
   .like-status-text {
     font-size: 12px;
   }

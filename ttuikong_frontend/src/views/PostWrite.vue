@@ -1,11 +1,15 @@
 <template>
   <div class="container">
-    <!-- 헤더 -->
     <header class="header">
-      <button class="back-btn" @click="confirmGoBack">
-        <i class="icon-arrow-left"></i>
+      <button class="header-back-btn" @click="confirmGoBack">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15,18 9,12 15,6"></polyline>
+        </svg>
       </button>
-      <h1 class="header-title">{{ isEditMode ? '게시글 수정' : '게시글 작성' }}</h1>
+      <div class="header-center">
+        <h1 class="header-title">{{ isEditMode ? '게시글 수정' : '게시글 작성' }}</h1>
+      </div>
+      <div class="header-spacer"></div>
     </header>
 
     <!-- 로딩 상태 -->
@@ -20,78 +24,46 @@
       <div class="form-group">
         <label for="title" class="form-label">제목</label>
         <div class="input-wrapper">
-          <input 
-            type="text" 
-            id="title"
-            v-model="title" 
-            placeholder="제목을 입력하세요" 
-            maxlength="100"
-          >
+          <input type="text" id="title" v-model="title" placeholder="제목을 입력하세요" maxlength="100">
         </div>
       </div>
-      
+
       <!-- 내용 입력 -->
       <div class="form-group">
         <label for="content" class="form-label">내용</label>
         <div class="textarea-wrapper">
-          <textarea 
-            id="content"
-            v-model="content" 
-            placeholder="내용을 입력하세요..."
-          ></textarea>
+          <textarea id="content" v-model="content" placeholder="내용을 입력하세요..."></textarea>
         </div>
-        
+
         <!-- 이미지 업로드 -->
         <div class="image-upload">
-          <div 
-            v-show="!imagePreviewUrl" 
-            class="image-placeholder" 
-            @click="triggerImageUpload"
-          >
+          <div v-show="!imagePreviewUrl" class="image-placeholder" @click="triggerImageUpload">
             <i class="ri-camera-line"></i>
             <span>사진 추가</span>
           </div>
-          <div 
-            v-show="imagePreviewUrl" 
-            class="image-preview"
-          >
+          <div v-show="imagePreviewUrl" class="image-preview">
             <img :src="imagePreviewUrl" alt="미리보기">
             <button class="image-remove" @click="removeImage">
               <i class="ri-delete-bin-line"></i>
             </button>
           </div>
-          <input 
-            type="file" 
-            ref="imageInput" 
-            accept="image/*" 
-            style="display: none;" 
-            @change="handleImageUpload"
-          >
+          <input type="file" ref="imageInput" accept="image/*" style="display: none;" @change="handleImageUpload">
         </div>
       </div>
-      
+
       <!-- 카테고리 선택 -->
       <div class="form-group">
         <div class="form-label">카테고리</div>
         <div class="category-options">
-          <div 
-            v-for="category in categories" 
-            :key="category.value"
-            class="category-option" 
-            :class="{ active: selectedCategory === category.value }"
-            @click="selectCategory(category.value)"
-          >
+          <div v-for="category in categories" :key="category.value" class="category-option"
+            :class="{ active: selectedCategory === category.value }" @click="selectCategory(category.value)">
             {{ category.label }}
           </div>
         </div>
       </div>
-      
+
       <div class="form-actions">
-        <button 
-          class="btn btn-primary submit-btn" 
-          :disabled="!isFormValid || isSubmitting" 
-          @click="submitPost"
-        >
+        <button class="btn btn-primary submit-btn" :disabled="!isFormValid || isSubmitting" @click="submitPost">
           {{ isSubmitting ? (isEditMode ? '수정 중...' : '등록 중...') : (isEditMode ? '게시글 수정' : '게시글 등록') }}
         </button>
       </div>
@@ -151,45 +123,45 @@ const canAddTag = computed(() => {
 });
 
 const hasUnsavedChanges = computed(() => {
-  return title.value.trim() || 
-         content.value.trim() || 
-         tags.value.length > 0 || 
-         imageFile.value !== null
+  return title.value.trim() ||
+    content.value.trim() ||
+    tags.value.length > 0 ||
+    imageFile.value !== null
 });
 
 // 편집 모드일 때 기존 게시글 데이터 로드
 async function loadPostData() {
   if (!isEditMode.value) return;
-  
+
   loading.value = true;
-  
+
   try {
     const response = await axios.get(`${API_URL}/board/${route.params.id}`);
     const post = response.data;
-    
+
     // 폼에 기존 데이터 채우기
     title.value = post.title || '';
     content.value = post.content || '';
     selectedCategory.value = post.category || '자유';
-    
+
     // 이미지 처리
     if (post.imageUrl || post.image_url) {
       const imageUrl = post.imageUrl || post.image_url;
       originalImageUrl.value = imageUrl;
-      
+
       if (imageUrl.startsWith('/uploads/')) {
         imagePreviewUrl.value = `${API_URL.replace('/api', '')}${imageUrl}`;
       } else {
         imagePreviewUrl.value = imageUrl;
       }
     }
-    
+
     postId.value = parseInt(route.params.id, 10);
-    
+
     // 초기 상태 설정
     imageFile.value = null;
     imageRemoved.value = false;
-    
+
   } catch (error) {
     console.error('게시글 로드 중 오류:', error);
     alert('게시글을 불러오는데 실패했습니다.');
@@ -224,21 +196,21 @@ function triggerImageUpload() {
 function handleImageUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
-  
+
   // 이미지 타입 확인
   if (!file.type.match('image.*')) {
     alert('이미지 파일만 업로드할 수 있습니다.');
     return;
   }
-  
+
   // 이미지 크기 확인 (5MB 제한)
   if (file.size > 5 * 1024 * 1024) {
     alert('이미지 크기는 5MB 이하여야 합니다.');
     return;
   }
-  
+
   imageFile.value = file;
-  
+
   // 이미지 미리보기 생성
   const reader = new FileReader();
   reader.onload = (e) => {
@@ -251,7 +223,7 @@ function removeImage() {
   imageFile.value = null;
   imagePreviewUrl.value = '';
   imageRemoved.value = true; // 명시적으로 삭제 의도 표시
-  
+
   if (imageInput.value) {
     imageInput.value.value = '';
   }
@@ -266,36 +238,36 @@ async function submitPost() {
     alert('제목을 입력해주세요.');
     return;
   }
-  
+
   if (!content.value.trim()) {
     alert('내용을 입력해주세요.');
     return;
   }
-  
+
   isSubmitting.value = true;
-  
+
   try {
     const boardData = {
       title: title.value.trim(),
       content: content.value.trim(),
       category: selectedCategory.value
     };
-    
+
     if (tags.value.length > 0) {
       boardData.tags = tags.value;
     }
-  
+
     let response;
-    
+
     if (isEditMode.value) {
       const formData = new FormData();
-      formData.append('board', new Blob([JSON.stringify(boardData)], {type: "application/json"}));
-      
+      formData.append('board', new Blob([JSON.stringify(boardData)], { type: "application/json" }));
+
       // 새 이미지가 있는 경우 (삭제 후 새 이미지 포함)
       if (imageFile.value) {
         console.log('케이스: 새 이미지 업로드');
         formData.append('image', imageFile.value);
-      } 
+      }
       // 이미지 삭제만 하는 경우 (새 이미지 없음)
       else if (imageRemoved.value && originalImageUrl.value) {
         console.log('케이스: 기존 이미지 삭제만');
@@ -305,7 +277,7 @@ async function submitPost() {
       else {
         console.log('케이스: 이미지 변경 없음');
       }
-      
+
       // FormData 내용 확인
       console.log('=== FormData 내용 ===');
       for (let [key, value] of formData.entries()) {
@@ -317,40 +289,40 @@ async function submitPost() {
           console.log(`${key}:`, value);
         }
       }
-      
+
       response = await axios.put(`${API_URL}/board/${postId.value}`, formData, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
-      
+
       alert('게시글이 수정되었습니다.');
       router.push(`/board/${postId.value}`);
-      
+
     } else {
       // 작성 모드
       console.log('케이스: 새 게시글 작성');
       const formData = new FormData();
-      formData.append('board', new Blob([JSON.stringify(boardData)], {type: "application/json"}));
-      
+      formData.append('board', new Blob([JSON.stringify(boardData)], { type: "application/json" }));
+
       if (imageFile.value) {
         formData.append('image', imageFile.value);
         console.log('새 게시글에 이미지 추가:', imageFile.value.name);
       }
-      
+
       response = await axios.post(`${API_URL}/board/post`, formData, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
-      
+
       alert('게시글이 작성되었습니다.');
       router.push('/board');
     }
-    
+
   } catch (error) {
     console.error('에러:', error);
-    
+
     if (error.response) {
       const status = error.response.status;
       const message = error.response.data?.message || error.response.data;
@@ -406,8 +378,13 @@ onMounted(async () => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* 헤더 스타일 */
@@ -416,22 +393,59 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  padding: 16px 20px;
+  background: white;
+  border-bottom: 1px solid #f0f0f0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-.back-btn {
-  font-size: 24px;
-  color: var(--primary-color);
-  padding: 8px;
-  background: none;
-  border: none;
+.header-back-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #495057;
   cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.header-back-btn:hover {
+  background: #FF7E47;
+  border-color: #FF7E47;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 126, 71, 0.3);
+}
+
+.header-back-btn:active {
+  transform: translateY(0);
+}
+
+.header-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
 }
 
 .header-title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
-  color: var(--dark-text);
-  margin: 0 auto; /* 중앙 정렬 */
+  color: #FF7E47;
+  margin: 0;
+}
+
+.header-spacer {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
 }
 
 /* 작성 폼 카드 */
@@ -450,6 +464,7 @@ onMounted(async () => {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

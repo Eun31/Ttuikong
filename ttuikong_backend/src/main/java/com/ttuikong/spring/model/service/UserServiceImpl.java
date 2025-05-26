@@ -70,6 +70,7 @@ public class UserServiceImpl implements UserService {
 		if (user.getPassword() != null && !user.getPassword().trim().isEmpty()) {
 	        user.setPassword(passwordEncoder.encode(user.getPassword()));
 	    }
+		userDao.updateUser(user);
 	}
 
 	@Transactional

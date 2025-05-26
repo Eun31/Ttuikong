@@ -1,10 +1,10 @@
 <template>
-    <div class="app-container">
-      <div class="header-content">
-        <div class="header-title-section">
-          <h1 class="header-title">My 루트 찾기</h1>
-          <p class="header-subtitle">코스 정보를 미리 확인하고 달려요!</p>
-        </div>
+  <div class="app-container">
+    <div class="header-content">
+      <div class="header-title-section">
+        <h1 class="header-title">My 루트 찾기</h1>
+        <p class="header-subtitle">코스 정보를 미리 확인하고 달려요!</p>
+      </div>
     </div>
 
     <div v-if="showFeedback && feedbackMessage" class="feedback-card" :class="feedbackType">
@@ -50,10 +50,10 @@
         <button @click="searchEndAddress" :disabled="!endAddress || isSearching">검색</button>
       </div>
     </div>
-<div class="buttons-container">
-  <button class="reset-btn" @click="getCurrentLocationAsStart">
-    🏃‍♀️ 현재 위치에서 시작
-  </button>
+    <div class="buttons-container">
+      <button class="reset-btn" @click="getCurrentLocationAsStart">
+        🏃‍♀️ 현재 위치에서 시작
+      </button>
       <button class="reset-btn" @click="resetSelection">경로 다시 선택</button>
     </div>
 
@@ -97,7 +97,7 @@ const coords = ref({
   end: null
 })
 const routePolyline = ref(null)
-const selectionState = ref('start') 
+const selectionState = ref('start')
 const totalDistance = ref(0)
 const walkTime = ref('0분')
 const caloriesBurned = ref('0 kcal')
@@ -137,7 +137,7 @@ const getCurrentUser = async () => {
   const currentToken = localStorage.getItem('jwt');
 
   try {
-    const res = await fetch(`http://localhost:8080/api/users/me`, {
+    const res = await fetch(`/api/users/me`, {
       headers: {
         Authorization: `Bearer ${currentToken}`
       }
@@ -205,14 +205,14 @@ const checkDistanceAndProvideFeedback = () => {
 
   setTimeout(() => {
     showFeedback.value = false;
-  }, 3000);
+  }, 8000);
 };
 
 watch(routeCalculated, (newValue) => {
   if (newValue) {
     setTimeout(() => {
       checkDistanceAndProvideFeedback();
-    }, 1000); 
+    }, 1000);
   }
 });
 
@@ -295,7 +295,7 @@ const handleMapTouch = (e) => {
 
 const getCurrentLocation = () => {
   isGettingLocation.value = true
-  
+
   // 브라우저가 Geolocation API를 지원하는지 확인
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
@@ -307,7 +307,7 @@ const getCurrentLocation = () => {
         )
         console.log("현재 위치:", currentPos.toString())
         map.value.setCenter(currentPos)
-        
+
         getAddressFromCoords(currentPos, (address) => {
           console.log("현재 위치 주소:", address)
         })
@@ -316,8 +316,8 @@ const getCurrentLocation = () => {
         isGettingLocation.value = false
         console.error("위치 정보를 가져오는데 실패했습니다:", error)
         let errorMessage = ""
-        
-        switch(error.code) {
+
+        switch (error.code) {
           case error.PERMISSION_DENIED:
             errorMessage = "위치 정보 접근이 거부되었습니다. 위치 권한을 허용해주세요."
             break
@@ -331,7 +331,7 @@ const getCurrentLocation = () => {
             errorMessage = "알 수 없는 오류가 발생했습니다."
             break
         }
-      
+
         console.warn(errorMessage)
       }
     )
@@ -343,7 +343,7 @@ const getCurrentLocation = () => {
 
 const getAddressFromCoords = (position, callback) => {
   const apiUrl = "https://apis.openapi.sk.com/tmap/geo/reversegeocoding?version=1&format=json"
-  
+
   const reqParams = {
     appKey: apiKey,
     coordType: "WGS84GEO",
@@ -351,11 +351,11 @@ const getAddressFromCoords = (position, callback) => {
     lon: position.lng(),
     lat: position.lat()
   }
-  
+
   const queryString = Object.keys(reqParams)
     .map(key => `${key}=${encodeURIComponent(reqParams[key])}`)
     .join('&')
-  
+
   fetch(`${apiUrl}&${queryString}`)
     .then(response => response.json())
     .then(data => {
@@ -406,50 +406,50 @@ const calculateRoute = () => {
       },
       body: JSON.stringify(params)
     })
-    .then(response => response.json())
-    .then(data => {
-      if (data.features && data.features.length > 0) {
-        totalDistance.value = data.features[0].properties.totalDistance
-        const totalTimeSeconds = data.features[0].properties.totalTime
-        walkTime.value = formatTimeFromSeconds(totalTimeSeconds)
-        const calories = Math.round(totalDistance.value / 1000 * calorieRate.value * averageWeight.value)
-        caloriesBurned.value = `${calories} kcal`
-        let lineArray = []
+      .then(response => response.json())
+      .then(data => {
+        if (data.features && data.features.length > 0) {
+          totalDistance.value = data.features[0].properties.totalDistance
+          const totalTimeSeconds = data.features[0].properties.totalTime
+          walkTime.value = formatTimeFromSeconds(totalTimeSeconds)
+          const calories = Math.round(totalDistance.value / 1000 * calorieRate.value * averageWeight.value)
+          caloriesBurned.value = `${calories} kcal`
+          let lineArray = []
 
-        for (let i in data.features) {
-          const feature = data.features[i]
-          
-          if (feature.geometry.type === "LineString") {
-            for (let j in feature.geometry.coordinates) {
-              const coordinates = feature.geometry.coordinates[j]
-              const convertedCoords = new Tmapv2.LatLng(coordinates[1], coordinates[0])
-              lineArray.push(convertedCoords)
+          for (let i in data.features) {
+            const feature = data.features[i]
+
+            if (feature.geometry.type === "LineString") {
+              for (let j in feature.geometry.coordinates) {
+                const coordinates = feature.geometry.coordinates[j]
+                const convertedCoords = new Tmapv2.LatLng(coordinates[1], coordinates[0])
+                lineArray.push(convertedCoords)
+              }
             }
           }
+
+          // 경로 그리기
+          routePolyline.value = new Tmapv2.Polyline({
+            path: lineArray,
+            strokeColor: "#FF7043",
+            strokeWeight: 8,
+            map: map.value
+          })
+
+          routeCalculated.value = true
+          const bounds = new Tmapv2.LatLngBounds()
+          for (let i in lineArray) {
+            bounds.extend(lineArray[i])
+          }
+          map.value.fitBounds(bounds)
+        } else {
+          error.value = "경로를 찾을 수 없습니다."
         }
-        
-        // 경로 그리기
-        routePolyline.value = new Tmapv2.Polyline({
-          path: lineArray,
-          strokeColor: "#FF7043",
-          strokeWeight: 8,
-          map: map.value
-        })
-        
-        routeCalculated.value = true
-        const bounds = new Tmapv2.LatLngBounds()
-        for (let i in lineArray) {
-          bounds.extend(lineArray[i])
-        }
-        map.value.fitBounds(bounds)
-      } else {
-        error.value = "경로를 찾을 수 없습니다."
-      }
-    })
-    .catch(e => {
-      error.value = "경로 계산 API 오류: " + e.message
-      console.error("경로 계산 API 오류:", e)
-    })
+      })
+      .catch(e => {
+        error.value = "경로 계산 API 오류: " + e.message
+        console.error("경로 계산 API 오류:", e)
+      })
   } catch (e) {
     error.value = "경로 계산 오류: " + e.message
     console.error("경로 계산 오류:", e)
@@ -475,26 +475,26 @@ const resetSelection = () => {
   // 좌표 초기화
   coords.value.start = null
   coords.value.end = null
-  
+
   // 경로 제거
   if (routePolyline.value) {
     routePolyline.value.setMap(null)
     routePolyline.value = null
   }
-  
+
   // 거리, 시간, 칼로리 초기화
   totalDistance.value = 0
   walkTime.value = '0분'
   caloriesBurned.value = '0 kcal'
   routeCalculated.value = false
-  
+
   // 주소 입력 초기화
   startAddress.value = ''
   endAddress.value = ''
-  
+
   // 에러 메시지 초기화
   error.value = null
-  
+
   // 피드백 숨기기
   showFeedback.value = false
 }
@@ -502,7 +502,7 @@ const resetSelection = () => {
 // 현재 위치를 출발지로 설정하는 새 함수 추가
 const getCurrentLocationAsStart = () => {
   isGettingLocation.value = true
-  
+
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -511,18 +511,18 @@ const getCurrentLocationAsStart = () => {
           position.coords.latitude,
           position.coords.longitude
         )
-        
+
         console.log("현재 위치를 출발지로 설정:", currentPos.toString())
-        
+
         // 현재 위치를 출발지로 설정
         setStartPosition(currentPos)
-        
+
         // 지도 중심을 현재 위치로 이동
         if (map.value) {
           map.value.setCenter(currentPos)
           map.value.setZoom(16)
         }
-        
+
         // 현재 위치 주소를 출발지 주소로 설정
         getAddressFromCoords(currentPos, (address) => {
           if (address) {
@@ -530,17 +530,17 @@ const getCurrentLocationAsStart = () => {
             console.log("출발지로 설정된 현재 위치:", address)
           }
         })
-        
+
         // 출발지가 설정되었으므로 도착지 선택 모드로 전환
         selectionState.value = 'end'
-        
+
       },
       (error) => {
         isGettingLocation.value = false
         console.error("위치 정보를 가져오는데 실패했습니다:", error)
-        
+
         let errorMessage = ""
-        switch(error.code) {
+        switch (error.code) {
           case error.PERMISSION_DENIED:
             errorMessage = "위치 정보 접근이 거부되었습니다. 위치 권한을 허용해주세요."
             break
@@ -554,10 +554,10 @@ const getCurrentLocationAsStart = () => {
             errorMessage = "알 수 없는 오류가 발생했습니다."
             break
         }
-        
+
         console.warn(errorMessage)
         error.value = errorMessage
-        
+
         // 위치 정보를 가져올 수 없는 경우 기본 위치(서울시청)로 설정
         if (map.value) {
           map.value.setCenter(new Tmapv2.LatLng(37.566, 126.978))
@@ -574,7 +574,7 @@ const getCurrentLocationAsStart = () => {
     isGettingLocation.value = false
     console.error("이 브라우저는 Geolocation을 지원하지 않습니다.")
     error.value = "이 브라우저는 위치 서비스를 지원하지 않습니다."
-    
+
     // Geolocation을 지원하지 않는 경우 기본 위치로 설정
     if (map.value) {
       map.value.setCenter(new Tmapv2.LatLng(37.566, 126.978))
@@ -586,35 +586,35 @@ const getCurrentLocationAsStart = () => {
 // 주소로 검색하는 기능 - 출발지
 const searchStartAddress = () => {
   if (!startAddress.value || isSearching.value) return
-  
+
   isSearching.value = true
   error.value = null
-  
+
   const apiUrl = "https://apis.openapi.sk.com/tmap/pois?version=1&format=json&callback=result"
-  
+
   fetch(`${apiUrl}&appKey=${apiKey}&searchKeyword=${encodeURIComponent(startAddress.value)}`)
     .then(response => response.json())
     .then(data => {
       isSearching.value = false
-      
+
       if (data.searchPoiInfo && data.searchPoiInfo.pois && data.searchPoiInfo.pois.poi && data.searchPoiInfo.pois.poi.length > 0) {
         // 첫 번째 검색 결과 사용
         const poi = data.searchPoiInfo.pois.poi[0]
         const position = new Tmapv2.LatLng(poi.frontLat, poi.frontLon)
-        
+
         // 출발지 설정
         setStartPosition(position)
-        
+
         // 지도 이동
         map.value.setCenter(position)
         map.value.setZoom(16)
-        
+
         // 다음 단계로 진행
         if (selectionState.value === 'start') {
           selectionState.value = 'end'
           console.log("출발지 주소 설정 완료, 도착지 선택 모드로 전환")
         }
-        
+
         // 출발지와 도착지가 모두 설정되면 경로 계산
         if (coords.value.start && coords.value.end) {
           calculateRoute()
@@ -633,35 +633,35 @@ const searchStartAddress = () => {
 // 주소로 검색하는 기능 - 도착지
 const searchEndAddress = () => {
   if (!endAddress.value || isSearching.value) return
-  
+
   isSearching.value = true
   error.value = null
-  
+
   const apiUrl = "https://apis.openapi.sk.com/tmap/pois?version=1&format=json&callback=result"
-  
+
   fetch(`${apiUrl}&appKey=${apiKey}&searchKeyword=${encodeURIComponent(endAddress.value)}`)
     .then(response => response.json())
     .then(data => {
       isSearching.value = false
-      
+
       if (data.searchPoiInfo && data.searchPoiInfo.pois && data.searchPoiInfo.pois.poi && data.searchPoiInfo.pois.poi.length > 0) {
         // 첫 번째 검색 결과 사용
         const poi = data.searchPoiInfo.pois.poi[0]
         const position = new Tmapv2.LatLng(poi.frontLat, poi.frontLon)
-        
+
         // 도착지 설정
         setEndPosition(position)
-        
+
         // 지도 이동
         map.value.setCenter(position)
         map.value.setZoom(16)
-        
+
         // 다음 단계로 진행
         if (selectionState.value === 'end') {
           selectionState.value = 'complete'
           console.log("도착지 주소 설정 완료")
         }
-        
+
         // 출발지와 도착지가 모두 설정되면 경로 계산
         if (coords.value.start && coords.value.end) {
           calculateRoute()
@@ -696,7 +696,8 @@ onMounted(async () => {
   font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
 }
 
-html, body {
+html,
+body {
   background-color: #FFF8F2;
   color: #333;
   margin: 0;
@@ -735,7 +736,8 @@ html, body {
   top: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
-  width: calc(100% - 120px); /* 양쪽 버튼 공간 확보 */
+  width: calc(100% - 120px);
+  /* 양쪽 버튼 공간 확보 */
 }
 
 .header-title {
@@ -799,6 +801,7 @@ html, body {
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -882,7 +885,7 @@ html, body {
   display: flex;
   align-items: center;
   flex: 1;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .stat-icon {
@@ -995,7 +998,7 @@ html, body {
   position: relative;
   background-color: #FFF3ED;
   padding: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 #map_div {
@@ -1055,7 +1058,7 @@ html, body {
 .save-btn:hover:not(:disabled) {
   background-color: #FF5722;
   transform: translateY(-2px);
-  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 
 .save-btn:disabled {
@@ -1083,7 +1086,7 @@ html, body {
 .reset-btn:hover {
   background-color: #E0E0E0;
   transform: translateY(-2px);
-  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 
 .reset-btn:first-child {
@@ -1114,7 +1117,7 @@ html, body {
   padding: 12px 20px;
   border-radius: 50px;
   z-index: 10;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
 }
 
 .map-instruction {
@@ -1174,14 +1177,29 @@ html, body {
 }
 
 @keyframes pinDrop {
-  0% { transform: translate(-50%, -150%); opacity: 0; }
-  100% { transform: translate(-50%, -100%); opacity: 1; }
+  0% {
+    transform: translate(-50%, -150%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translate(-50%, -100%);
+    opacity: 1;
+  }
 }
 
 @keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
+  0% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.6;
+  }
 }
 
 /* 모바일 반응형 디자인 */
@@ -1193,25 +1211,26 @@ html, body {
   .header-title {
     font-size: 20px;
   }
-  
+
   .header-subtitle {
     font-size: 13px;
   }
-  
+
   .header-title-section {
-    width: calc(100% - 104px); /* 작은 화면에서 버튼 공간 조정 */
+    width: calc(100% - 104px);
+    /* 작은 화면에서 버튼 공간 조정 */
   }
-  
+
   .input-with-button input {
     padding: 12px 8px;
   }
-  
+
   .input-with-button button {
     min-width: 48px;
     padding: 0 8px;
     font-size: 13px;
   }
-  
+
   .address-input-box {
     margin-left: 12px;
     margin-right: 12px;
@@ -1221,7 +1240,7 @@ html, body {
     padding: 14px 8px;
     font-size: 13px;
   }
-  
+
   .buttons-container {
     gap: 8px;
     margin: 20px 12px 12px 12px;
@@ -1246,16 +1265,16 @@ html, body {
   .header-title {
     font-size: 18px;
   }
-  
+
   .header-subtitle {
     font-size: 12px;
   }
-  
+
   .address-input-box label {
     font-size: 12px;
     width: 36px;
   }
-  
+
   .input-with-button button {
     min-width: 40px;
     font-size: 12px;
