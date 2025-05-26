@@ -1162,6 +1162,20 @@ const saveRunningData = async () => {
     return;
   }
 
+  const runningData = {
+    startTime: startTime.value,
+    endTime: endTime.value,
+    distance: distance.value,
+  };
+
+  // distance가 0 이상이면 calories 추가
+  if (distance.value > 0) {
+    const calories = Math.round(
+      (distance.value / 1000) * calorieRate * averageWeight.value
+    );
+    runningData.calories = calories;
+  }
+
   try {
     const res = await fetch("/api/runs/track-location", {
       method: "POST",
@@ -1169,12 +1183,7 @@ const saveRunningData = async () => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token.value}`,
       },
-      body: JSON.stringify({
-        startTime: startTime.value,
-        endTime: endTime.value,
-        // distance: (distance.value / 1000).toFixed(4)
-        distance: distance.value,
-      }),
+      body: JSON.stringify(runningData),
     });
 
     if (res.status === 401) {
@@ -1311,6 +1320,9 @@ const toggleTimer = async () => {
 };
 
 /* 유저 불러오기 */
+const calorieRate = 1.2;
+const averageWeight = ref(50);
+
 const getCurrentUser = async () => {
   const currentToken = getStoredToken();
   const currentUserId = getStoredUserId();
@@ -1341,6 +1353,7 @@ const getCurrentUser = async () => {
 
     const data = await res.json();
     userId.value = data.user.id;
+    averageWeight.value = data.user?.user?.weight || 50;
   } catch (err) {
     console.error("사용자 정보 요청 실패:", err);
     alert("로그인이 필요합니다.");

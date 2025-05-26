@@ -9,19 +9,24 @@
     <div class="profile-card">
       <div class="profile-info">
         <div class="profile-avatar">
-          <img :src="profile" alt="프로필 이미지">
+          <img :src="profile" alt="프로필 이미지" />
         </div>
         <div class="profile-details">
           <h2 class="profile-name">{{ userName }}</h2>
           <p class="profile-level">{{ userInfo.activityLevel }}</p>
           <div class="profile-stats">
             <div class="stat">
-              <span class="stat-label">총 거리</span>
+              <span class="stat-label">전체 거리</span>
               <span class="stat-value">{{ userInfo.totalDistance }}km</span>
             </div>
             <div class="stat">
-              <span class="stat-label">목표</span>
-              <span class="stat-value">{{ userInfo.activityGoal }}</span>
+              <span class="stat-label">전체 칼로리 소모</span>
+              <span class="stat-value"
+                >{{
+                  Math.round(userInfo.totalDistance * 1.2 * userInfo.weight)
+                }}
+                kcal</span
+              >
             </div>
           </div>
         </div>
@@ -49,6 +54,21 @@
             <span class="stat-label">총 시간</span>
           </div>
         </div>
+        <div class="stat-item">
+          <span class="stat-icon">🔥</span>
+          <div class="stat-content">
+            <span class="stat-value"
+              >{{
+                Math.round(
+                  parseFloat(monthlyStats.monthdistance.replace("km", "")) *
+                    1.2 *
+                    userInfo.weight
+                )
+              }}kcal</span
+            >
+            <span class="stat-label">총 칼로리 소모</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -74,13 +94,21 @@
 
       <!-- 일자 그리드 -->
       <div class="calendar-days">
-        <div v-for="(day, index) in calendarDays" :key="index" class="calendar-day" :class="{
-          'empty': !day.date,
-          'has-run': day.hasRun,
-          'active': day.isActive,
-          'today': day.isToday
-        }" @click="day.date && selectDay(day)">
-          <span v-if="day.date" class="day-number">{{ day.date.getDate() }}</span>
+        <div
+          v-for="(day, index) in calendarDays"
+          :key="index"
+          class="calendar-day"
+          :class="{
+            empty: !day.date,
+            'has-run': day.hasRun,
+            active: day.isActive,
+            today: day.isToday,
+          }"
+          @click="day.date && selectDay(day)"
+        >
+          <span v-if="day.date" class="day-number">{{
+            day.date.getDate()
+          }}</span>
           <span v-if="day.hasRun" class="run-indicator"></span>
         </div>
       </div>
@@ -94,7 +122,11 @@
       </div>
 
       <!-- 러닝 정보 카드 -->
-      <div class="run-card" v-for="(run, index) in selectedDayRuns" :key="index">
+      <div
+        class="run-card"
+        v-for="(run, index) in selectedDayRuns"
+        :key="index"
+      >
         <div class="run-header">
           <h3 class="run-title">{{ run.mood }} {{ findEmoji(run.mood) }}</h3>
         </div>
@@ -103,12 +135,19 @@
           <div class="run-stat">
             <span class="stat-icon">📏</span>
             <span class="stat-label">거리:</span>
-            <span class="stat-value">{{ run.distance.toFixed(2) }}km</span>
+            <span class="stat-value"
+              >{{ (run.distance / 1000).toFixed(2) }}km</span
+            >
           </div>
           <div class="run-stat">
             <span class="stat-icon">⏱️</span>
             <span class="stat-label">시간:</span>
             <span class="stat-value">{{ formatDuration(run.duration) }}</span>
+          </div>
+          <div v-if="run.calories > 0" class="run-stat">
+            <span class="stat-icon">🔥</span>
+            <span class="stat-label">칼로리:</span>
+            <span class="stat-value">{{ run.calories }}kcal</span>
           </div>
         </div>
       </div>
@@ -129,7 +168,11 @@
   </div>
 
   <!-- 루트 모음 모달 -->
-  <div v-if="showRouteCollection" class="modal-overlay" @click="showRouteCollection = false">
+  <div
+    v-if="showRouteCollection"
+    class="modal-overlay"
+    @click="showRouteCollection = false"
+  >
     <div class="modal-content" @click.stop>
       <div class="modal-header">
         <h2 class="modal-title">내 러닝 기록 모음</h2>
@@ -141,21 +184,44 @@
       <div class="routes-grid">
         <div v-for="(route, index) in routes" :key="index" class="route-item">
           <div class="route-image-container">
-            <img :src="route.imageUrl ? 'http://localhost:8080' + run.imageUrl : defaultImage" alt="러닝 루트"
-              class="route-thumbnail" />
+            <img
+              :src="
+                route.imageUrl
+                  ? 'http://localhost:8080' + run.imageUrl
+                  : defaultImage
+              "
+              alt="러닝 루트"
+              class="route-thumbnail"
+            />
           </div>
           <div class="route-info">
             <h3 class="route-name">
-              <span>[{{ route.startTime.slice(0, 10) }}] {{ route.routeName }}</span>
+              <span
+                >[{{ route.startTime.slice(0, 10) }}]
+                {{ route.routeName }}</span
+              >
               <span>{{ findEmoji(route.mood) }}</span>
             </h3>
             <div class="route-meta">
-              <span>거리 {{ route.distance }}km</span>
+              <span>거리 {{ (route.distance / 1000).toFixed(2) }}km</span>
               <span class="route-separator">•</span>
-              <span>시간 {{ route.startTime.slice(11, 19).replace('T', ' ') }}</span>
+              <span
+                >시간
+                {{ route.startTime.slice(11, 19).replace("T", " ") }}</span
+              >
               <span class="route-separator">~</span>
-              <span>{{ route.endTime == null ? '-' : route.endTime.slice(11, 19).replace('T', ' ') }}</span>
-              <span>{{ route.endTime == null ? '' : ' (' + formatDuration(route.duration) + ')' }} </span>
+              <span>{{
+                route.endTime == null
+                  ? "-"
+                  : route.endTime.slice(11, 19).replace("T", " ")
+              }}</span>
+              <span
+                >{{
+                  route.endTime == null
+                    ? ""
+                    : " (" + formatDuration(route.duration) + ")"
+                }}
+              </span>
             </div>
           </div>
         </div>
@@ -165,26 +231,26 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import profileImg from '../assets/profile.png';
-import defaultImage from '@/assets/default-map2.png';
+import { ref, computed, onMounted } from "vue";
+import profileImg from "../assets/profile.png";
+import defaultImage from "@/assets/default-map2.png";
 
 // 반응형 상태 정의
 const profile = ref(profileImg);
-const token = ref('');
+const token = ref("");
 const userId = ref(null);
-const userName = ref('');
+const userName = ref("");
 const userInfo = ref({});
 
 const currentDate = ref(new Date());
 const selectedDate = ref(new Date());
 const selectedDay = ref(null);
 const monthlyStats = ref({
-  monthdistance: '',
-  monthduration: ''
+  monthdistance: "",
+  monthduration: "",
 });
 
-const weekdays = ref(['일', '월', '화', '수', '목', '금', '토']);
+const weekdays = ref(["일", "월", "화", "수", "목", "금", "토"]);
 const showRouteCollection = ref(false);
 const calendarDays = ref([]);
 
@@ -194,18 +260,46 @@ const routes = ref([]);
 
 // Computed 속성
 const currentMonth = computed(() => {
-  const months = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
+  const months = [
+    "1월",
+    "2월",
+    "3월",
+    "4월",
+    "5월",
+    "6월",
+    "7월",
+    "8월",
+    "9월",
+    "10월",
+    "11월",
+    "12월",
+  ];
   return months[selectedDate.value.getMonth()];
 });
 
 const currentMonthYear = computed(() => {
-  const months = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
-  return `${months[selectedDate.value.getMonth()]} ${selectedDate.value.getFullYear()}`;
+  const months = [
+    "1월",
+    "2월",
+    "3월",
+    "4월",
+    "5월",
+    "6월",
+    "7월",
+    "8월",
+    "9월",
+    "10월",
+    "11월",
+    "12월",
+  ];
+  return `${
+    months[selectedDate.value.getMonth()]
+  } ${selectedDate.value.getFullYear()}`;
 });
 
 const selectedDayRuns = computed(() => {
   if (!selectedDay.value) return [];
-  const run = runningData.value.find(data =>
+  const run = runningData.value.find((data) =>
     isSameDay(data.date, selectedDay.value.date)
   );
   return run ? [run] : [];
@@ -236,7 +330,7 @@ function generateCalendar() {
     const currentDateObj = new Date(year, month, i);
 
     // 러닝 기록 확인
-    const hasRun = runningData.value.some(data =>
+    const hasRun = runningData.value.some((data) =>
       isSameDay(data.date, currentDateObj)
     );
 
@@ -244,7 +338,9 @@ function generateCalendar() {
       date: currentDateObj,
       hasRun: hasRun,
       isToday: isSameDay(currentDateObj, currentDate.value),
-      isActive: selectedDay.value ? isSameDay(currentDateObj, selectedDay.value.date) : false
+      isActive: selectedDay.value
+        ? isSameDay(currentDateObj, selectedDay.value.date)
+        : false,
     });
   }
 
@@ -269,35 +365,41 @@ async function changeMonth(delta) {
 async function selectDay(day) {
   selectedDay.value = day;
   // 활성화 상태 업데이트
-  calendarDays.value = calendarDays.value.map(d => ({
+  calendarDays.value = calendarDays.value.map((d) => ({
     ...d,
-    isActive: d.date && day.date ? isSameDay(d.date, day.date) : false
+    isActive: d.date && day.date ? isSameDay(d.date, day.date) : false,
   }));
 }
 
 function isSameDay(date1, date2) {
   const d1 = new Date(date1);
   const d2 = new Date(date2);
-  return d1.getFullYear() === d2.getFullYear() &&
+  return (
+    d1.getFullYear() === d2.getFullYear() &&
     d1.getMonth() === d2.getMonth() &&
-    d1.getDate() === d2.getDate();
+    d1.getDate() === d2.getDate()
+  );
 }
 
-
 function formatDate(date) {
-  const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
-  return date.toLocaleDateString('ko-KR', options);
+  const options = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    weekday: "long",
+  };
+  return date.toLocaleDateString("ko-KR", options);
 }
 
 /* user 불러오기 */
 const getCurrentUser = async () => {
-  const currentToken = localStorage.getItem('jwt');
+  const currentToken = localStorage.getItem("jwt");
 
   try {
     const res = await fetch(`/api/users/me`, {
       headers: {
-        Authorization: `Bearer ${currentToken}`
-      }
+        Authorization: `Bearer ${currentToken}`,
+      },
     });
 
     const data = await res.json();
@@ -307,10 +409,9 @@ const getCurrentUser = async () => {
     token.value = currentToken;
     userId.value = user.id;
     userName.value = user.nickname;
-
   } catch (err) {
-    console.error('사용자 정보 요청 실패:', err);
-    alert('로그인이 필요합니다.');
+    console.error("사용자 정보 요청 실패:", err);
+    alert("로그인이 필요합니다.");
   }
 };
 
@@ -325,22 +426,28 @@ const getMonthlyStats = async (userId) => {
       `/api/users/${userId}/records?year=${year}&month=${month}`,
       {
         headers: {
-          Authorization: `Bearer ${token.value}`
-        }
+          Authorization: `Bearer ${token.value}`,
+        },
       }
     );
 
     const data = await res.json();
     if (Array.isArray(data)) {
-      const totalDistance = data.reduce((sum, rec) => sum + (rec.distance || 0), 0);
-      const totalDuration = data.reduce((sum, rec) => sum + (rec.duration || 0), 0);
+      const totalDistance = data.reduce(
+        (sum, rec) => sum + (rec.distance || 0),
+        0
+      );
+      const totalDuration = data.reduce(
+        (sum, rec) => sum + (rec.duration || 0),
+        0
+      );
 
-      monthlyStats.value.monthdistance = totalDistance.toFixed(1) + 'km';
+      monthlyStats.value.monthdistance =
+        (totalDistance / 1000).toFixed(1) + "km";
       monthlyStats.value.monthduration = formatDuration(totalDuration);
     } else {
       console.warn("예상과 다른 응답 구조:", data);
     }
-
   } catch (err) {
     console.error("월별 러닝 정보 조회 실패:", err);
   }
@@ -384,60 +491,55 @@ const getDayRoutes = async () => {
       `/api/users/${userId.value}/records?year=${year}&month=${month}`,
       {
         headers: {
-          Authorization: `Bearer ${token.value}`
-        }
+          Authorization: `Bearer ${token.value}`,
+        },
       }
     );
 
     const data = await res.json();
     runningData.value = data;
-
   } catch (err) {
     console.error("하루 러닝 정보 조회 실패:", err);
   }
 };
 
-
 /* 유저의 모든 러닝 기록 */
 const getAllRoutes = async () => {
   try {
-    const res = await fetch(
-      `/api/my/route`,
-      {
-        headers: {
-          Authorization: `Bearer ${token.value}`
-        }
-      }
-    );
+    const res = await fetch(`/api/my/route`, {
+      headers: {
+        Authorization: `Bearer ${token.value}`,
+      },
+    });
 
     const data = await res.json();
     routes.value = data;
-
   } catch (err) {
     console.error("모든 러닝 정보 조회 실패:", err);
   }
 };
 
 const findEmoji = (label) => {
-  if (!label) return '';
+  if (!label) return "";
   const moodOptions = [
-    { label: '기쁨', emoji: '😊' },
-    { label: '뿌듯함', emoji: '💪' },
-    { label: '아쉬움', emoji: '😕' },
-    { label: '화남', emoji: '😠' },
-    { label: '슬픔', emoji: '😢' },
-    { label: '쏘쏘', emoji: '😐' }
+    { label: "기쁨", emoji: "😊" },
+    { label: "뿌듯함", emoji: "💪" },
+    { label: "아쉬움", emoji: "😕" },
+    { label: "화남", emoji: "😠" },
+    { label: "슬픔", emoji: "😢" },
+    { label: "쏘쏘", emoji: "😐" },
   ];
-  const found = moodOptions.find(option => option.label.trim() === label.trim());
-  return found ? found.emoji : '';
+  const found = moodOptions.find(
+    (option) => option.label.trim() === label.trim()
+  );
+  return found ? found.emoji : "";
 };
-
 
 const reversedRoute = ref([]);
 const reverseRoutes = async (routes) => {
   const reversedRoutes = computed(() => [...routes.value].reverse());
   return reversedRoutes;
-}
+};
 
 // 컴포넌트 마운트 시 실행
 onMounted(async () => {
@@ -449,8 +551,8 @@ onMounted(async () => {
   generateCalendar();
 
   // 오늘 날짜에 러닝 기록이 있는지 확인하고 선택
-  const today = calendarDays.value.find(day =>
-    day.date && isSameDay(day.date, currentDate.value)
+  const today = calendarDays.value.find(
+    (day) => day.date && isSameDay(day.date, currentDate.value)
   );
 
   if (today && today.hasRun) {
@@ -463,7 +565,7 @@ onMounted(async () => {
 .container {
   max-width: 100%;
   margin: 0 auto;
-  background-color: var(--background-color, #F5F5F5);
+  background-color: var(--background-color, #f5f5f5);
   min-height: 100vh;
   padding: 16px;
   animation: fadeIn 0.4s ease-out;
@@ -540,7 +642,7 @@ onMounted(async () => {
 
 .profile-level {
   font-size: 14px;
-  color: var(--primary-color, #FF5722);
+  color: var(--primary-color, #ff5722);
   margin-bottom: 12px;
 }
 
@@ -589,7 +691,7 @@ onMounted(async () => {
 
 .card-subtitle {
   font-size: 14px;
-  color: var(--primary-color, #FF5722);
+  color: var(--primary-color, #ff5722);
 }
 
 .stats-grid {
@@ -634,7 +736,7 @@ onMounted(async () => {
 .month-btn {
   background: none;
   border: none;
-  color: var(--primary-color, #FF5722);
+  color: var(--primary-color, #ff5722);
   cursor: pointer;
   font-size: 20px;
   width: 30px;
@@ -660,7 +762,7 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   margin-bottom: 8px;
-  border-bottom: 1px solid var(--border-color, #EEE);
+  border-bottom: 1px solid var(--border-color, #eee);
   padding-bottom: 8px;
 }
 
@@ -700,12 +802,12 @@ onMounted(async () => {
 }
 
 .calendar-day.active {
-  background-color: #FF5722;
+  background-color: #ff5722;
   color: white;
 }
 
 .calendar-day.today {
-  border: 2px solid #FF5722;
+  border: 2px solid #ff5722;
   box-sizing: border-box;
 }
 
@@ -725,7 +827,6 @@ onMounted(async () => {
   }
 }
 
-
 .calendar-day.empty {
   visibility: hidden;
 }
@@ -738,7 +839,7 @@ onMounted(async () => {
 .run-indicator {
   width: 6px;
   height: 6px;
-  background-color: #FF5722;
+  background-color: #ff5722;
   border-radius: 50%;
   position: absolute;
   bottom: 2px;
@@ -756,7 +857,7 @@ onMounted(async () => {
   align-items: center;
   font-weight: 600;
   margin-bottom: 12px;
-  color: var(--primary-color, #FF5722);
+  color: var(--primary-color, #ff5722);
 }
 
 .run-date .icon {
@@ -834,7 +935,7 @@ onMounted(async () => {
   position: absolute;
   bottom: 12px;
   right: 12px;
-  background-color: var(--primary-color, #FF5722);
+  background-color: var(--primary-color, #ff5722);
   color: white;
   border: none;
   padding: 6px 12px;
@@ -849,7 +950,7 @@ onMounted(async () => {
 }
 
 .view-route-btn:hover {
-  background-color: var(--primary-dark, #E64A19);
+  background-color: var(--primary-dark, #e64a19);
 }
 
 /* 러닝 기록 없음 메시지 */
@@ -880,7 +981,7 @@ onMounted(async () => {
 }
 
 .route-collection-btn {
-  background-color: var(--primary-color, #FF5722);
+  background-color: var(--primary-color, #ff5722);
   color: white;
   border: none;
   padding: 12px 24px;
@@ -897,7 +998,7 @@ onMounted(async () => {
 }
 
 .route-collection-btn:hover {
-  background-color: var(--primary-dark, #E64A19);
+  background-color: var(--primary-dark, #e64a19);
   transform: translateY(-2px);
   box-shadow: var(--shadow-lg, 0 4px 12px rgba(0, 0, 0, 0.15));
 }
@@ -957,7 +1058,7 @@ onMounted(async () => {
   align-items: center;
   margin-bottom: 20px;
   padding-bottom: 12px;
-  border-bottom: 1px solid var(--border-color, #EEE);
+  border-bottom: 1px solid var(--border-color, #eee);
 }
 
 .modal-title {
@@ -983,7 +1084,7 @@ onMounted(async () => {
 
 .close-modal-btn:hover {
   background-color: rgba(0, 0, 0, 0.05);
-  color: var(--primary-color, #FF5722);
+  color: var(--primary-color, #ff5722);
 }
 
 /* 루트 그리드 */
