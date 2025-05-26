@@ -80,7 +80,7 @@
     <select id="selectCrewGoalStats" resultType="map">
         SELECT
             c.goal_type,
-            AVG(dr.duration) AS averageDuration,
+            (SUM(dr.duration) * 1.0 / COUNT(DISTINCT cm.user_id)) AS averageDuration,
             SUM(dr.duration) AS totalDuration
         FROM crew c
         JOIN crew_member cm ON c.id = cm.crew_id

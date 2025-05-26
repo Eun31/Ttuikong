@@ -5,29 +5,38 @@
       <h2 id="crewTitle">크루 채팅방</h2>
     </div>
     <div class="chat-box" ref="chatBox">
-      <div v-for="(chat, index) in messages" :key="index"
-        :class="['chat-message', chat.senderId === myUserId ? 'me' : 'other']">
+      <div
+        v-for="(chat, index) in messages"
+        :key="index"
+        :class="['chat-message', chat.senderId === myUserId ? 'me' : 'other']"
+      >
         <span class="avatar">{{ getAvatar(chat.senderId) }}</span>
         <div class="bubble">{{ chat.message }}</div>
       </div>
     </div>
     <div class="chat-input-area">
-      <input type="text" v-model="chatInput" id="chatInput" placeholder="메시지를 입력하세요..." @keydown.enter="sendMessage" />
+      <input
+        type="text"
+        v-model="chatInput"
+        id="chatInput"
+        placeholder="메시지를 입력하세요..."
+        @keydown.enter="sendMessage"
+      />
       <button id="sendBtn" @click="sendMessage">전송</button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
+import { useRouter, useRoute } from "vue-router";
 
 const router = useRouter();
 const route = useRoute();
 const crewId = ref(route.params.crewId);
 
 const messages = ref([]);
-const chatInput = ref('');
+const chatInput = ref("");
 const myUserId = ref(1);
 let fetchInterval = null;
 const chatBox = ref(null);
@@ -37,32 +46,32 @@ function goBack() {
 }
 
 function getAvatar(senderId) {
-  const avatars = ['🐱', '🐶', '🐰', '🦊', '🐼', '🐨', '🐯', '🐸', '🦁', '🐻'];
+  const avatars = ["🐱", "🐶", "🐰", "🦊", "🐼", "🐨", "🐯", "🐸", "🦁", "🐻"];
   return avatars[senderId % avatars.length];
 }
 
 // API 기본 URL 설정
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = "";
 
 async function fetchUserId() {
   try {
-    const token = localStorage.getItem('jwt');
+    const token = localStorage.getItem("jwt");
 
     if (!token) {
-      console.error('JWT 토큰이 없습니다.');
-      router.push('/login');
+      console.error("JWT 토큰이 없습니다.");
+      router.push("/login");
       return;
     }
 
     const res = await fetch(`${API_BASE_URL}/api/users/me`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}` },
     });
 
     if (!res.ok) {
-      console.error('사용자 정보 조회 실패:', res.status);
+      console.error("사용자 정보 조회 실패:", res.status);
       if (res.status === 401) {
-        localStorage.removeItem('jwt');
-        router.push('/login');
+        localStorage.removeItem("jwt");
+        router.push("/login");
         return;
       }
     }
@@ -70,44 +79,44 @@ async function fetchUserId() {
     const data = await res.json();
     myUserId.value = data.user?.id ?? data.id;
   } catch (error) {
-    console.error('사용자 정보 조회 중 오류:', error);
+    console.error("사용자 정보 조회 중 오류:", error);
   }
 }
 
 async function fetchMessages() {
   try {
-    const token = localStorage.getItem('jwt');
+    const token = localStorage.getItem("jwt");
 
     if (!token) {
-      console.error('JWT 토큰이 없습니다.');
-      router.push('/login');
+      console.error("JWT 토큰이 없습니다.");
+      router.push("/login");
       return;
     }
 
     const res = await fetch(`${API_BASE_URL}/api/chat/${crewId.value}`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     });
 
-    const contentType = res.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      console.error('JSON이 아닌 응답을 받았습니다:', contentType);
-      console.error('응답 텍스트:', await res.text());
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      console.error("JSON이 아닌 응답을 받았습니다:", contentType);
+      console.error("응답 텍스트:", await res.text());
 
       if (res.status === 401) {
-        localStorage.removeItem('jwt');
-        router.push('/login');
+        localStorage.removeItem("jwt");
+        router.push("/login");
       }
       return;
     }
 
     if (!res.ok) {
-      console.error('메시지 조회 실패:', res.status);
+      console.error("메시지 조회 실패:", res.status);
       if (res.status === 401) {
-        localStorage.removeItem('jwt');
-        router.push('/login');
+        localStorage.removeItem("jwt");
+        router.push("/login");
         return;
       }
     }
@@ -119,7 +128,7 @@ async function fetchMessages() {
       if (chatBox.value) chatBox.value.scrollTop = chatBox.value.scrollHeight;
     });
   } catch (error) {
-    console.error('메시지 조회 중 오류:', error);
+    console.error("메시지 조회 중 오류:", error);
   }
 }
 
@@ -127,36 +136,38 @@ function sendMessage() {
   const message = chatInput.value.trim();
   if (!message) return;
 
-  const token = localStorage.getItem('jwt');
+  const token = localStorage.getItem("jwt");
 
   if (!token) {
-    console.error('JWT 토큰이 없습니다.');
-    router.push('/login');
+    console.error("JWT 토큰이 없습니다.");
+    router.push("/login");
     return;
   }
 
   fetch(`${API_BASE_URL}/api/chat/${crewId.value}`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ message })
-  }).then(async (res) => {
-    if (!res.ok) {
-      console.error('메시지 전송 실패:', res.status);
-      if (res.status === 401) {
-        localStorage.removeItem('jwt');
-        router.push('/login');
-        return;
+    body: JSON.stringify({ message }),
+  })
+    .then(async (res) => {
+      if (!res.ok) {
+        console.error("메시지 전송 실패:", res.status);
+        if (res.status === 401) {
+          localStorage.removeItem("jwt");
+          router.push("/login");
+          return;
+        }
       }
-    }
 
-    chatInput.value = '';
-    await fetchMessages();
-  }).catch(error => {
-    console.error('메시지 전송 중 오류:', error);
-  });
+      chatInput.value = "";
+      await fetchMessages();
+    })
+    .catch((error) => {
+      console.error("메시지 전송 중 오류:", error);
+    });
 }
 
 onMounted(async () => {
@@ -174,9 +185,9 @@ onBeforeUnmount(() => {
 /* 전체 페이지 배경 */
 :root {
   --main-bg-color: #fffbf9;
-  --header-bg-color: #FF7043;
-  --send-button-color: #FF7043;
-  --send-button-hover: #FF7043;
+  --header-bg-color: #ff7043;
+  --send-button-color: #ff7043;
+  --send-button-hover: #ff7043;
   --my-bubble-color: #fbd8bb;
   --other-bubble-color: #feeee1;
   --chat-box-bg: #fffbf9;
@@ -187,11 +198,22 @@ onBeforeUnmount(() => {
 
 body {
   background-color: var(--main-bg-color);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-image:
-    radial-gradient(circle at 50% 50%, rgba(238, 189, 144, 0.15) 10%, transparent 10.5%),
-    radial-gradient(circle at 70% 20%, rgba(238, 189, 144, 0.15) 15%, transparent 15.5%),
-    radial-gradient(circle at 20% 80%, rgba(238, 189, 144, 0.15) 8%, transparent 8.5%);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-image: radial-gradient(
+      circle at 50% 50%,
+      rgba(238, 189, 144, 0.15) 10%,
+      transparent 10.5%
+    ),
+    radial-gradient(
+      circle at 70% 20%,
+      rgba(238, 189, 144, 0.15) 15%,
+      transparent 15.5%
+    ),
+    radial-gradient(
+      circle at 20% 80%,
+      rgba(238, 189, 144, 0.15) 8%,
+      transparent 8.5%
+    );
   background-size: 60px 60px, 80px 80px, 70px 70px;
   background-position: 0 0, 30px 40px, 50px 20px;
 }
@@ -211,7 +233,7 @@ body {
 }
 
 .chat-container:before {
-  content: '';
+  content: "";
   position: absolute;
   top: -10px;
   left: 50%;
@@ -233,14 +255,17 @@ body {
 }
 
 .chat-header:after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -8px;
   left: 0;
   right: 0;
   height: 8px;
-  background-image:
-    linear-gradient(45deg, transparent 50%, var(--header-bg-color) 50%),
+  background-image: linear-gradient(
+      45deg,
+      transparent 50%,
+      var(--header-bg-color) 50%
+    ),
     linear-gradient(-45deg, transparent 50%, var(--header-bg-color) 50%);
   background-size: 16px 16px;
   background-position: 0 0, 8px 0;
@@ -258,7 +283,7 @@ body {
 
 .chat-header h2:before,
 .chat-header h2:after {
-  content: '🏃‍➡️';
+  content: "🏃‍➡️";
   margin: 0 10px;
   font-size: 1.2rem;
 }
@@ -275,7 +300,7 @@ body {
 }
 
 .chat-box:before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -305,7 +330,7 @@ body {
   font-size: 1.5rem;
   background: none;
   border: none;
-  color: #FF7043;
+  color: #ff7043;
   cursor: pointer;
   z-index: 10;
   padding: 0;
@@ -383,7 +408,7 @@ body {
 }
 
 .me .bubble:after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   right: -10px;
@@ -404,7 +429,7 @@ body {
 }
 
 .other .bubble:after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: -10px;
@@ -427,7 +452,7 @@ body {
 }
 
 .chat-input-area:before {
-  content: '';
+  content: "";
   position: absolute;
   top: -2px;
   left: 0;
@@ -465,7 +490,7 @@ body {
 }
 
 #sendBtn {
-  background-color: #FF7043;
+  background-color: #ff7043;
   color: white;
   border: none;
   border-radius: 24px;
@@ -477,6 +502,7 @@ body {
   box-shadow: 0 2px 6px rgba(255, 139, 44, 0.884);
   position: relative;
   overflow: hidden;
+  z-index: 1;
 }
 
 #sendBtn:before {
@@ -486,15 +512,19 @@ body {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(120deg,
-      transparent,
-      rgba(255, 255, 255, 0.3),
-      transparent);
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
   transition: all 0.6s;
+  z-index: 0;
+  pointer-events: none;
 }
 
 #sendBtn:hover {
-  background-color: var(--send-button-hover);
+  background-color: #ff865e;
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(255, 139, 44, 0.884);
 }
@@ -529,7 +559,7 @@ body {
 
 /* 꾸밈 요소 */
 .chat-container:after {
-  content: '🍀';
+  content: "🍀";
   position: absolute;
   bottom: -15px;
   right: 20px;

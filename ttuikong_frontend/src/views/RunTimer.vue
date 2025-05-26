@@ -160,7 +160,7 @@
             }}명
             <button
               v-if="
-                new Date(crew.startDate) > new Date() &&
+                toKST(crew.startDate) > toKST(new Date()) &&
                 (crewMembers.find((c) => c.crewId === crew.id)?.members
                   .length || 0) < 10
               "
@@ -370,10 +370,7 @@
                 :key="crew.id + '-' + member.nickname"
                 class="user-card"
               >
-                <strong
-                  >{{ member.nickname }}
-                  <span v-if="crew.creatorId == userId">🔸</span>
-                </strong>
+                <strong>{{ member.nickname }}</strong>
                 <span>{{ formatDuration(member.duration) }}</span>
               </div>
             </div>
@@ -476,7 +473,7 @@ const crewStatusMap = ref({});
 const goalHours = ref(0);
 const goalMinutes = ref(0);
 const goalSeconds = ref(0);
-const today = new Date().toISOString().split("T")[0];
+const today = toKST(new Date()).toISOString().split("T")[0];
 const page = ref(1);
 const perPage = 4;
 const mypage = ref(1);
@@ -1071,7 +1068,7 @@ const uploadMapImage = async () => {
     const formData = new FormData();
     formData.append("image", blob);
     formData.append("startTime", startTime.value);
-    formData.append("endTime", new Date().toISOString());
+    formData.append("endTime", toKST(new Date()).toISOString());
 
     const res = await fetch("/api/runs/upload-map-image", {
       method: "POST",
@@ -1097,7 +1094,7 @@ const uploadMapImage = async () => {
         const formData = new FormData();
         formData.append("image", alternativeBlob);
         formData.append("startTime", startTime.value);
-        formData.append("endTime", new Date().toISOString());
+        formData.append("endTime", toKST(new Date()).toISOString());
 
         const res = await fetch("/api/runs/upload-map-image", {
           method: "POST",
@@ -1231,7 +1228,7 @@ const toggleTimer = async () => {
         navigator.geolocation.clearWatch(watchId);
         watchId = null;
       }
-      endTime.value = new Date().toISOString();
+      endTime.value = toKST(new Date()).toISOString();
       duration.value = seconds.value;
 
       if (!startTime.value) {
@@ -1276,7 +1273,7 @@ const toggleTimer = async () => {
   } else {
     // 시작 분기
     try {
-      startTime.value = new Date().toISOString();
+      startTime.value = toKST(new Date()).toISOString();
       localStorage.setItem(STORAGE_KEY, startTime.value);
 
       const startJsonData = JSON.stringify({
@@ -1452,7 +1449,7 @@ const formatDuration = (seconds) => {
 
 const getPercent = (goal, now) => {
   if (!(goal || now)) return 0;
-  return ((goal - now) / goal) * 100;
+  return (now / goal) * 100;
 };
 
 const Percentage = (goal, now) => {
@@ -1516,15 +1513,20 @@ function goToChat(crewId) {
 
 const navigateToRank = () => emit("navigate", "RunWithRank");
 
+function toKST(dateStringOrDate) {
+  const date = new Date(dateStringOrDate);
+  return new Date(date.getTime() + 9 * 60 * 60000); // 9시간 더하기
+}
+
 onMounted(async () => {
   await getCurrentUser();
   await loadKakaoMapScript();
   await fetchCrewsAndMembers();
 
   // 종료일이 지난 크루 자동 삭제
-  const now = new Date();
+  const now = toKST(new Date());
   for (const crew of crews.value) {
-    const end = new Date(crew.endDate);
+    const end = toKST(crew.endDate);
     end.setDate(end.getDate() + 1);
 
     if (end <= now && crew.creatorId == userId.value) {
@@ -1536,7 +1538,9 @@ onMounted(async () => {
   const savedStart = localStorage.getItem(STORAGE_KEY);
   if (savedStart) {
     startTime.value = savedStart;
-    seconds.value = Math.floor((new Date() - new Date(savedStart)) / 1000);
+    seconds.value = Math.floor(
+      (toKST(new Date()) - new Date(savedStart)) / 1000
+    );
     isRunning.value = true;
 
     timer.value = setInterval(() => {

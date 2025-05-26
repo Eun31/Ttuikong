@@ -1,6 +1,5 @@
 <template>
   <div class="home-container">
-
     <!-- 상단 헤더 영역 -->
     <div class="welcome-header">
       <h1 class="greeting">안녕하세요,</h1>
@@ -14,7 +13,9 @@
           <p class="recommend-text">AI가 분석 중...</p>
         </div>
         <div v-else-if="recommendationData" class="recommendation-info">
-          <p class="recommend-text">{{ recommendationData.recommendedDistance }}km 달려보세요!</p>
+          <p class="recommend-text">
+            {{ recommendationData.recommendedDistance }}km 달려보세요!
+          </p>
           <div class="sub-info">
             <span>{{ formattedTime }}</span>
             <span>{{ recommendationData.estimatedCalories }}kcal</span>
@@ -37,23 +38,34 @@
 
     <!-- 콩 성장률 -->
     <div class="bean-section">
-      <h3>        
+      <h3>
         <span v-if="growthRate >= 100">🌳</span>
         <span v-else-if="growthRate >= 60">🌿</span>
         <span v-else-if="growthRate >= 30">🌱</span>
         <span v-else>🫘</span>
-        콩이 자라고 있어요!
+        콩이 자라고 있어요
+        <span v-if="growthRate >= 100">🌳</span>
+        <span v-else-if="growthRate >= 60">🌿</span>
+        <span v-else-if="growthRate >= 30">🌱</span>
+        <span v-else>🫘</span>
       </h3>
-      <!-- <p>오늘의 미션: <strong>{{ recommendation }}km 달리기</strong></p> -->
       <div class="progress-bar">
         <div class="progress-fill" :style="{ width: growthRate + '%' }"></div>
       </div>
-      <p class="progress-percent">{{ growthRate.toFixed(1) }}%</p>
+      <p class="progress-percent">
+        {{ growthRate.toFixed(1) }}%
+        <span class="emoji">{{ levelEmojis[activityLevel] }}</span>
+      </p>
     </div>
 
     <!-- 메인 메뉴 -->
     <div class="main-menu">
-      <router-link v-for="menu in menus" :key="menu.label" :to="menu.path" class="menu-item">
+      <router-link
+        v-for="menu in menus"
+        :key="menu.label"
+        :to="menu.path"
+        class="menu-item"
+      >
         <div class="menu-icon">{{ menu.icon }}</div>
         <div class="menu-label">{{ menu.label }}</div>
       </router-link>
@@ -64,42 +76,44 @@
       <div class="section-header">
         <h3>🔥 게시판</h3>
         <button class="toggle-btn" @click="toggleFeedType">
-          {{ isPopularFeed ? '팔로우 게시글 보기' : '인기 게시글 보기' }}
+          {{ isPopularFeed ? "팔로우 게시글 보기" : "인기 게시글 보기" }}
         </button>
       </div>
-      
+
       <!-- 게시글 표시 영역 -->
       <div class="post-display-container">
         <div v-if="currentPost" class="single-post-container">
-          <button 
-            class="nav-btn prev-btn" 
+          <button
+            class="nav-btn prev-btn"
             :disabled="!canGoPrevious"
             @click="previousPost"
           >
             <i class="fas fa-chevron-left"></i>
           </button>
-          
+
           <!-- 게시글 카드 -->
           <div class="post-wrapper">
-            <PostCard 
-              :key="currentPost.id" 
+            <PostCard
+              :key="currentPost.id"
               :post="currentPost"
               @click="goToPost"
             />
           </div>
-          
+
           <!-- 다음 버튼 -->
-          <button 
-            class="nav-btn next-btn" 
+          <button
+            class="nav-btn next-btn"
             :disabled="!canGoNext"
             @click="nextPost"
           >
             <i class="fas fa-chevron-right"></i>
           </button>
         </div>
-        
+
         <div v-else class="no-posts">
-          <p>{{ isPopularFeed ? '인기 게시글이' : '팔로우 게시글이' }} 없습니다.</p>
+          <p>
+            {{ isPopularFeed ? "인기 게시글이" : "팔로우 게시글이" }} 없습니다.
+          </p>
         </div>
 
         <div v-if="currentFeed.length > 0" class="post-indicator">
@@ -113,53 +127,59 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import PostCard from '@/components/PostCard.vue';
-import profileImg from '@/assets/profile.png';
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import PostCard from "@/components/PostCard.vue";
+import profileImg from "@/assets/profile.png";
 
 const router = useRouter();
 
-const token = ref('');
+const token = ref("");
 const userId = ref(null);
-const userName = ref('');
+const userName = ref("");
 const isLoadingRecommendation = ref(false);
 const recommendation = ref(5);
 const recommendationData = ref(null);
 const formattedTime = ref(null);
 const beanCount = ref(null);
 const growthRate = ref(0);
-const activityLevel = ref('');
+const activityLevel = ref("");
 const runningData = ref([]);
 
 const stats = computed(() => {
-  const totalDistance = runningData.value.reduce((sum, run) => sum + (run.distance || 0), 0);
-  const totalDuration = runningData.value.reduce((sum, run) => sum + (run.duration || 0), 0);
+  const totalDistance = runningData.value.reduce(
+    (sum, run) => sum + (run.distance || 0),
+    0
+  );
+  const totalDuration = runningData.value.reduce(
+    (sum, run) => sum + (run.duration || 0),
+    0
+  );
   const runCount = runningData.value.length;
 
   return [
     {
-      label: '총 거리',
+      label: "총 거리",
       value: `${totalDistance.toFixed(1)} km`,
-      icon: '📏'
+      icon: "📏",
     },
     {
-      label: '총 시간',
+      label: "총 시간",
       value: formatDuration(totalDuration),
-      icon: '⏱️'
+      icon: "⏱️",
     },
     {
-      label: '러닝 횟수',
+      label: "러닝 횟수",
       value: `${runCount}회`,
-      icon: '🏃‍♂️'
-    }
+      icon: "🏃‍♂️",
+    },
   ];
 });
 const menus = ref([
-  { label: '챌린지', icon: '👟', path: '/run' },
-  { label: '캘린더', icon: '📝', path: '/calendar' },
-  { label: '루트 찾기', icon: '👥', path: '/routes' },
-  { label: '게시판', icon: '🖐️', path: '/board' }
+  { label: "챌린지", icon: "👟", path: "/run" },
+  { label: "캘린더", icon: "📝", path: "/calendar" },
+  { label: "루트 찾기", icon: "👥", path: "/routes" },
+  { label: "게시판", icon: "🖐️", path: "/board" },
 ]);
 const isPopularFeed = ref(true);
 const popularPosts = ref([]);
@@ -177,7 +197,9 @@ const currentPost = computed(() => {
 });
 
 const canGoPrevious = computed(() => currentPostIndex.value > 0);
-const canGoNext = computed(() => currentPostIndex.value < currentFeed.value.length - 1);
+const canGoNext = computed(
+  () => currentPostIndex.value < currentFeed.value.length - 1
+);
 
 const goToPost = (postId) => {
   router.push(`/board/${postId}`);
@@ -185,55 +207,55 @@ const goToPost = (postId) => {
 
 const getPopularPosts = async () => {
   try {
-    const response = await fetch('/api/board/popular?limit=10');
+    const response = await fetch("/api/board/popular?limit=10");
     if (response.ok) {
       const data = await response.json();
-      popularPosts.value = data.map(post => ({
+      popularPosts.value = data.map((post) => ({
         id: post.postId,
         title: post.title,
         description: post.content,
         user: {
           id: post.userId,
           name: post.userNickname,
-          avatar: profileImg
+          avatar: profileImg,
         },
         image: post.image || null,
-        date: formatDate(post.createdAt)
+        date: formatDate(post.createdAt),
       }));
     }
   } catch (error) {
-    console.error('인기 게시글 로드 실패:', error);
+    console.error("인기 게시글 로드 실패:", error);
   }
 };
 
 const getFollowingPosts = async () => {
   if (!token.value) return;
-  
+
   try {
-    const response = await fetch('/api/board/following?limit=10', {
+    const response = await fetch("/api/board/following?limit=10", {
       headers: {
-        'Authorization': `Bearer ${token.value}`
-      }
+        Authorization: `Bearer ${token.value}`,
+      },
     });
-    
+
     if (response.ok) {
       const data = await response.json();
-      followPosts.value = data.map(post => ({
+      followPosts.value = data.map((post) => ({
         id: post.postId,
         title: post.title,
         description: post.content,
         user: {
           id: post.userId,
           name: post.userNickname,
-          avatar: profileImg
+          avatar: profileImg,
         },
         image: post.image || null,
         tags: post.tags || [],
-        date: formatDate(post.createdAt)
+        date: formatDate(post.createdAt),
       }));
     }
   } catch (error) {
-    console.error('팔로우 게시글 로드 실패:', error);
+    console.error("팔로우 게시글 로드 실패:", error);
   }
 };
 
@@ -270,36 +292,36 @@ function formatTime(minutes) {
 }
 
 const formatDate = (dateString) => {
-  if (!dateString) return '';
-  
+  if (!dateString) return "";
+
   const postDate = new Date(dateString);
   const now = new Date();
   const diffInMs = now - postDate;
   const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
   const diffInDays = Math.floor(diffInHours / 24);
-  
+
   if (diffInHours < 1) {
-    return '방금 전';
+    return "방금 전";
   } else if (diffInHours < 24) {
     return `${diffInHours}시간 전`;
   } else if (diffInDays < 7) {
     return `${diffInDays}일 전`;
   } else {
-    return postDate.toLocaleDateString('ko-KR', {
-      month: 'short',
-      day: 'numeric'
+    return postDate.toLocaleDateString("ko-KR", {
+      month: "short",
+      day: "numeric",
     });
   }
 };
 
 const getCurrentUser = async () => {
-  const currentToken = localStorage.getItem('jwt');
+  const currentToken = localStorage.getItem("jwt");
 
   try {
     const res = await fetch(`/api/users/me`, {
       headers: {
-        Authorization: `Bearer ${currentToken}`
-      }
+        Authorization: `Bearer ${currentToken}`,
+      },
     });
 
     const data = await res.json();
@@ -308,12 +330,11 @@ const getCurrentUser = async () => {
     userId.value = user.id;
     userName.value = user.nickname;
 
-    localStorage.setItem('nickname', user.nickname);
-
+    localStorage.setItem("nickname", user.nickname);
   } catch (err) {
-    console.error('사용자 정보 요청 실패:', err);
-    alert('로그인이 필요합니다.');
-    router.push('login');
+    console.error("사용자 정보 요청 실패:", err);
+    alert("로그인이 필요합니다.");
+    router.push("login");
   }
 };
 
@@ -321,10 +342,10 @@ const getAIRecommendation = async () => {
   if (!token.value) return;
   try {
     isLoadingRecommendation.value = true;
-    const response = await fetch('/api/my/running/recommendation', {
+    const response = await fetch("/api/my/running/recommendation", {
       headers: {
-        'Authorization': `Bearer ${token.value}`
-      }
+        Authorization: `Bearer ${token.value}`,
+      },
     });
 
     if (response.ok) {
@@ -333,7 +354,7 @@ const getAIRecommendation = async () => {
       formattedTime.value = formatTime(recommendationData.value.estimatedTime);
     }
   } catch (error) {
-    console.error('AI 추천 로드 실패:', error);
+    console.error("AI 추천 로드 실패:", error);
     // 실패시 기본값 유지
   } finally {
     isLoadingRecommendation.value = false;
@@ -371,15 +392,14 @@ const getDayRoutes = async () => {
       `/api/users/${userId.value}/records?year=${year}&month=${month}`,
       {
         headers: {
-          Authorization: `Bearer ${token.value}`
-        }
+          Authorization: `Bearer ${token.value}`,
+        },
       }
     );
 
     const data = await res.json();
     runningData.value = data;
-    console.log(runningData.value)
-
+    console.log(runningData.value);
   } catch (err) {
     console.error("하루 러닝 정보 조회 실패:", err);
   }
@@ -390,39 +410,72 @@ const fetchBeanStatus = async () => {
   try {
     const res = await fetch(`/api/bean/${userId.value}`, {
       headers: {
-        Authorization: `Bearer ${token.value}`
-      }
-    })
+        Authorization: `Bearer ${token.value}`,
+      },
+    });
 
-    if (!res.ok) throw new Error('콩 상태 조회 실패')
+    if (!res.ok) throw new Error("콩 상태 조회 실패");
 
-    const data = await res.json()
-    return data
-
+    const data = await res.json();
+    return data;
   } catch (err) {
-    console.error('콩 상태 조회 실패:', err)
-    return null
+    console.error("콩 상태 조회 실패:", err);
+    return null;
   }
+};
+
+const levelEmojis = {
+  "느긋한 코알라": "🐨",
+  "산책하는 거북이": "🐢",
+  "신나는 강아지": "🐕",
+  "힘찬 질주 말": "🐎",
+  "전광석화 치타": "🐆",
 };
 
 const levelThresholds = {
-  '느긋한 코알라': 100,
-  '산책하는 거북이': 150,
-  '신나는 강아지': 200,
-  '힘찬 질주 말': 250,
-  '전광석화 치타': 999999  
+  "느긋한 코알라": 100,
+  "산책하는 거북이": 500,
+  "신나는 강아지": 1000,
+  "힘찬 질주 말": 5000,
+  "전광석화 치타": 10000,
 };
 
-const loadBeanStatus = async () => {
-  const data = await fetchBeanStatus()
-  if (data) {
-    beanCount.value = data.beanCount
-    const maxBeans = levelThresholds[data.activityLevel] || 100;
-    growthRate.value = Math.min((data.beanCount / maxBeans) * 100, 100);
+const levels = Object.keys(levelThresholds);
+const nextLevelName = ref(null);
+const beansLeftToNextLevel = ref(0);
 
-    activityLevel.value = data.activityLevel
+const loadBeanStatus = async () => {
+  const data = await fetchBeanStatus();
+  if (!data) return;
+
+  beanCount.value = data.beanCount;
+  activityLevel.value = data.activityLevel;
+
+  const currentIndex = levels.indexOf(data.activityLevel);
+  const currentLevel = levels[currentIndex];
+  const currentMin =
+    currentIndex > 0 ? levelThresholds[levels[currentIndex - 1]] : 0;
+  const currentMax = levelThresholds[currentLevel];
+
+  // 최고 레벨이면 100% 고정
+  const isMaxLevel = currentIndex === levels.length - 1;
+
+  if (isMaxLevel) {
+    growthRate.value = 100;
+    nextLevelName.value = null;
+    beansLeftToNextLevel.value = 0;
+  } else {
+    const nextLevel = levels[currentIndex + 1];
+    const nextMax = levelThresholds[nextLevel];
+
+    const progress = data.beanCount - currentMax;
+    const range = nextMax - currentMax;
+
+    growthRate.value = Math.min((progress / range) * 100, 100);
+    nextLevelName.value = nextLevel;
+    beansLeftToNextLevel.value = Math.max(nextMax - data.beanCount, 0);
   }
-}
+};
 
 onMounted(async () => {
   await getCurrentUser();
@@ -439,8 +492,8 @@ onMounted(async () => {
 <style scoped>
 .home-container {
   padding: 24px;
-  background-color: #FFF8F2;
-  font-family: 'Noto Sans KR', sans-serif;
+  background-color: #fff8f2;
+  font-family: "Noto Sans KR", sans-serif;
 }
 
 /* 상단 환영 헤더 */
@@ -478,7 +531,7 @@ onMounted(async () => {
 }
 
 .cta-button {
-  background-color: #FF7043;
+  background-color: #ff7043;
   color: white;
   border: none;
   border-radius: 999px;
@@ -496,7 +549,7 @@ onMounted(async () => {
 }
 
 .stat-card {
-  background: #FFF3ED;
+  background: #fff3ed;
   border-radius: 12px;
   flex: 1;
   text-align: center;
@@ -519,7 +572,7 @@ onMounted(async () => {
 }
 
 .bean-section {
-  background: #FFF3ED;
+  background: #fff3ed;
   padding: 16px;
   border-radius: 12px;
   text-align: center;
@@ -527,7 +580,7 @@ onMounted(async () => {
 }
 
 .progress-bar {
-  background: #FFE5D5;
+  background: #ffe5d5;
   height: 16px;
   border-radius: 999px;
   overflow: hidden;
@@ -540,10 +593,9 @@ onMounted(async () => {
   top: 0;
   left: 0;
   height: 100%;
-  background: #FF7043;
+  background: #ff7043;
   transition: width 0.3s ease;
 }
-
 
 .progress-percent {
   font-size: 13px;
@@ -613,7 +665,7 @@ onMounted(async () => {
 .toggle-btn {
   border: none;
   background: none;
-  color: #FF7043;
+  color: #ff7043;
   font-size: 13px;
   cursor: pointer;
 }
@@ -626,7 +678,7 @@ onMounted(async () => {
 
 .post-card {
   padding: 12px;
-  background: #FFF8F2;
+  background: #fff8f2;
   border-radius: 10px;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
 }
@@ -669,7 +721,7 @@ onMounted(async () => {
 }
 
 .today-card {
-  background: #FF7E47;
+  background: #ff7e47;
   border-radius: 16px;
   padding: 24px;
   margin: 16px 0;
@@ -710,7 +762,6 @@ onMounted(async () => {
 }
 
 @keyframes loading {
-
   0%,
   100% {
     opacity: 0.7;
@@ -758,7 +809,7 @@ onMounted(async () => {
 }
 
 .sub-info span:first-child::before {
-  content: '⏱️예상 소요 시간';
+  content: "⏱️예상 소요 시간";
   font-size: 0.75rem;
   opacity: 0.8;
   margin-top: 2px;
@@ -766,7 +817,7 @@ onMounted(async () => {
 }
 
 .sub-info span:last-child::before {
-  content: '🔥 예상 소모 칼로리';
+  content: "🔥 예상 소모 칼로리";
   font-size: 0.75rem;
   opacity: 0.8;
   margin-top: 2px;
@@ -775,7 +826,7 @@ onMounted(async () => {
 
 .start-run-btn {
   background-color: white;
-  color: #FF7E47;
+  color: #ff7e47;
   border: none;
   border-radius: 50px;
   padding: 10px 20px;
@@ -857,8 +908,6 @@ onMounted(async () => {
     transform: scale(1);
   }
 }
-
-
 
 @media (max-width: 480px) {
   .today-card {
@@ -956,7 +1005,7 @@ onMounted(async () => {
 .single-post-container {
   display: flex;
   align-items: center;
-  justify-content: space-between;  /* 양쪽 끝 정렬로 균형 맞춤 */
+  justify-content: space-between; /* 양쪽 끝 정렬로 균형 맞춤 */
   gap: 8px;
   min-height: 200px;
   position: relative;
@@ -966,26 +1015,26 @@ onMounted(async () => {
 .post-wrapper {
   flex: 1;
   display: flex;
-  justify-content: center;         /* PostCard를 가운데 정렬 */
-  max-width: calc(100% - 64px);    /* 양쪽 화살표 영역 제외 */
-  margin: 0 8px;                   /* 좌우 여백 균등하게 */
+  justify-content: center; /* PostCard를 가운데 정렬 */
+  max-width: calc(100% - 64px); /* 양쪽 화살표 영역 제외 */
+  margin: 0 8px; /* 좌우 여백 균등하게 */
 }
 
 /* 네비게이션 버튼 기본 스타일 */
 .nav-btn {
-  background: transparent;  /* 배경 제거 */
-  color: #FF7043;          /* 기본 화살표 색상 */
+  background: transparent; /* 배경 제거 */
+  color: #ff7043; /* 기본 화살표 색상 */
   border: none;
-  border-radius: 0;        /* 원형 제거 */
-  width: 24px;             /* 36px → 24px */
-  height: 24px;            /* 36px → 24px */
+  border-radius: 0; /* 원형 제거 */
+  width: 24px; /* 36px → 24px */
+  height: 24px; /* 36px → 24px */
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: 16px;         /* 20px → 16px */
-  box-shadow: none;        /* 그림자 제거 */
+  font-size: 16px; /* 20px → 16px */
+  box-shadow: none; /* 그림자 제거 */
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
@@ -993,22 +1042,22 @@ onMounted(async () => {
 
 /* 버튼 호버 효과 */
 .nav-btn:hover:not(:disabled) {
-  color: #FF5722;          /* 호버시 더 진한 주황색 */
-  transform: scale(1.2);   /* 살짝 확대 */
-  background: rgba(255, 112, 67, 0.1);  /* 호버시 연한 배경 */
-  border-radius: 50%;      /* 호버시만 원형 배경 */
+  color: #ff5722; /* 호버시 더 진한 주황색 */
+  transform: scale(1.2); /* 살짝 확대 */
+  background: rgba(255, 112, 67, 0.1); /* 호버시 연한 배경 */
+  border-radius: 50%; /* 호버시만 원형 배경 */
 }
 
 /* 버튼 활성화 효과 */
 .nav-btn:active:not(:disabled) {
   transform: scale(1.1);
-  color: #E64A19;
+  color: #e64a19;
 }
 
 /* 비활성화된 버튼 */
 .nav-btn:disabled {
   background: transparent;
-  color: #BDBDBD;          /* 회색 화살표 */
+  color: #bdbdbd; /* 회색 화살표 */
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
@@ -1016,17 +1065,17 @@ onMounted(async () => {
 
 /* 이전 버튼 */
 .prev-btn {
-  flex-shrink: 0;         /* 버튼 크기 고정 */
+  flex-shrink: 0; /* 버튼 크기 고정 */
 }
 
 .prev-btn::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
   width: 0;
   height: 0;
-  border-top: 6px solid transparent;    /* 8px → 6px */
+  border-top: 6px solid transparent; /* 8px → 6px */
   border-bottom: 6px solid transparent;
   border-right: 8px solid currentColor; /* 10px → 8px */
   transform: translate(-60%, -50%);
@@ -1039,19 +1088,19 @@ onMounted(async () => {
 
 /* 다음 버튼 */
 .next-btn {
-  flex-shrink: 0;         /* 버튼 크기 고정 */
+  flex-shrink: 0; /* 버튼 크기 고정 */
 }
 
 .next-btn::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
   width: 0;
   height: 0;
-  border-top: 6px solid transparent;    /* 8px → 6px */
+  border-top: 6px solid transparent; /* 8px → 6px */
   border-bottom: 6px solid transparent;
-  border-left: 8px solid currentColor;  /* 10px → 8px */
+  border-left: 8px solid currentColor; /* 10px → 8px */
   transform: translate(-40%, -50%);
   transition: transform 0.2s ease;
 }
@@ -1077,12 +1126,12 @@ onMounted(async () => {
 
 .current-number {
   font-weight: 700;
-  color: #FF5722;
+  color: #ff5722;
   font-size: 16px;
 }
 
 .divider {
-  color: #FF7043;
+  color: #ff7043;
   font-weight: 400;
   margin: 0 2px;
 }
@@ -1104,7 +1153,7 @@ onMounted(async () => {
 }
 
 .no-posts::before {
-  content: '📝';
+  content: "📝";
   display: block;
   font-size: 48px;
   margin-bottom: 16px;
@@ -1125,14 +1174,18 @@ onMounted(async () => {
   width: 40px;
   height: 40px;
   border: 4px solid rgba(255, 112, 67, 0.1);
-  border-top: 4px solid #FF7043;
+  border-top: 4px solid #ff7043;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .keyboard-hint {
@@ -1164,28 +1217,28 @@ onMounted(async () => {
 /* 반응형 디자인 */
 @media (max-width: 768px) {
   .single-post-container {
-    gap: 6px;               /* 16px → 6px */
+    gap: 6px; /* 16px → 6px */
   }
-  
+
   .nav-btn {
-    width: 20px;            /* 32px → 20px */
-    height: 20px;           /* 32px → 20px */
-    font-size: 14px;        /* 12px → 14px */
+    width: 20px; /* 32px → 20px */
+    height: 20px; /* 32px → 20px */
+    font-size: 14px; /* 12px → 14px */
   }
-  
+
   .post-wrapper {
-    margin: 0 4px;          /* 좌우 여백 동일하게 */
+    margin: 0 4px; /* 좌우 여백 동일하게 */
   }
-  
+
   .post-indicator {
     font-size: 13px;
     padding: 6px 12px;
   }
-  
+
   .current-number {
     font-size: 15px;
   }
-  
+
   .keyboard-hint {
     display: none; /* 모바일에서는 키보드 힌트 숨김 */
   }
@@ -1195,32 +1248,32 @@ onMounted(async () => {
   .post-display-container {
     padding: 16px;
   }
-  
+
   .single-post-container {
-    gap: 4px;               /* 12px → 4px */
+    gap: 4px; /* 12px → 4px */
     min-height: 180px;
   }
-  
+
   .nav-btn {
-    width: 18px;            /* 28px → 18px */
-    height: 18px;           /* 28px → 18px */
-    font-size: 12px;        /* 11px → 12px */
+    width: 18px; /* 28px → 18px */
+    height: 18px; /* 28px → 18px */
+    font-size: 12px; /* 11px → 12px */
   }
-  
+
   .post-wrapper {
-    margin: 0 2px;          /* 좌우 여백 동일하게 */
+    margin: 0 2px; /* 좌우 여백 동일하게 */
   }
-  
+
   .post-indicator {
     margin-top: 16px;
     font-size: 12px;
   }
-  
+
   .no-posts {
     padding: 40px 16px;
     font-size: 14px;
   }
-  
+
   .no-posts::before {
     font-size: 36px;
     margin-bottom: 12px;
@@ -1230,23 +1283,29 @@ onMounted(async () => {
 /* 다크 모드 지원 (선택사항) */
 @media (prefers-color-scheme: dark) {
   .post-display-container {
-    background: #2A2A2A;
+    background: #2a2a2a;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
-  
+
   .post-indicator {
     background: rgba(255, 112, 67, 0.1);
     border-color: rgba(255, 112, 67, 0.2);
   }
-  
+
   .total-number {
-    color: #BBB;
+    color: #bbb;
   }
-  
+
   .no-posts {
-    color: #AAA;
+    color: #aaa;
     background: rgba(255, 112, 67, 0.05);
     border-color: rgba(255, 112, 67, 0.3);
   }
+}
+
+/* 콩 레벨 */
+.emoji {
+  font-size: 20px;
+  margin-top: 4px;
 }
 </style>
