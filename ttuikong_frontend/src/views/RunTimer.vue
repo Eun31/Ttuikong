@@ -5,12 +5,7 @@
       <div class="modal-box">
         <h3>러닝은 어땠나요?</h3>
         <div class="mood-options">
-          <button
-            v-for="mood in moodOptions"
-            :key="mood.label"
-            class="mood-btn"
-            @click="selectMood(mood.label)"
-          >
+          <button v-for="mood in moodOptions" :key="mood.label" class="mood-btn" @click="selectMood(mood.label)">
             <span class="emoji">{{ mood.emoji }}</span>
             <span class="label">{{ mood.label }}</span>
           </button>
@@ -28,22 +23,13 @@
               {{ addressText || "주소 가져오는 중..." }}
             </div>
             <svg id="route-overlay">
-              <polyline
-                id="running-path"
-                fill="none"
-                stroke="red"
-                stroke-width="4"
-              />
+              <polyline id="running-path" fill="none" stroke="red" stroke-width="4" />
             </svg>
             <!-- 타이머 -->
             <h2 class="time-head">현재 러닝 시간</h2>
             <div class="time">{{ formattedTime }}</div>
             <!-- 강아지 이미지 -->
-            <img
-              class="dog-image"
-              :src="isRunning ? dogRunImg : dogSitImg"
-              alt="강아지 상태"
-            />
+            <img class="dog-image" :src="isRunning ? dogRunImg : dogSitImg" alt="강아지 상태" />
           </div>
         </div>
       </div>
@@ -71,10 +57,7 @@
           </div>
           <div class="form-group">
             <label>소개</label>
-            <textarea
-              v-model="newCrew.roomDescription"
-              placeholder="크루 소개"
-            />
+            <textarea v-model="newCrew.roomDescription" placeholder="크루 소개" />
           </div>
           <div class="form-group">
             <label>목표 유형</label>
@@ -86,49 +69,18 @@
           <div class="form-group">
             <label>목표 시간 (초)</label>
             <div style="display: flex; gap: 8px; align-items: center">
-              <input
-                v-model.number="goalHours"
-                type="number"
-                min="0"
-                max="23"
-                placeholder="시"
-                required
-              />시
-              <input
-                v-model.number="goalMinutes"
-                type="number"
-                min="0"
-                max="59"
-                placeholder="분"
-                required
-              />분
-              <input
-                v-model.number="goalSeconds"
-                type="number"
-                min="0"
-                max="59"
-                placeholder="초"
-                required
-              />초
+              <input v-model.number="goalHours" type="number" min="0" max="23" placeholder="시" required />시
+              <input v-model.number="goalMinutes" type="number" min="0" max="59" placeholder="분" required />분
+              <input v-model.number="goalSeconds" type="number" min="0" max="59" placeholder="초" required />초
             </div>
           </div>
           <div class="form-group">
             <label>시작일</label>
-            <input
-              v-model="newCrew.startDate"
-              type="date"
-              :min="today"
-              required
-            />
+            <input v-model="newCrew.startDate" type="date" :min="today" required />
           </div>
           <div class="form-group">
             <label>종료일</label>
-            <input
-              v-model="newCrew.endDate"
-              type="date"
-              :min="newCrew.startDate"
-              required
-            />
+            <input v-model="newCrew.endDate" type="date" :min="newCrew.startDate" required />
           </div>
           <button type="submit" class="submit-button">크루 생성하기</button>
         </form>
@@ -136,49 +88,31 @@
 
       <!--크루 검색-->
       <div class="group-search">
-        <input
-          type="text"
-          v-model="searchQuery"
-          placeholder="크루 이름으로 검색..."
-          class="search-input"
-        />
+        <input type="text" v-model="searchQuery" placeholder="크루 이름으로 검색..." class="search-input" />
       </div>
-      <div
-        v-for="crew in paginatedCrews"
-        :key="'search-' + crew.id"
-        class="crew-card search-result"
-      >
-        <div
-          class="crew-header"
-          @click="openCrewId = openCrewId === crew.id ? null : crew.id"
-        >
+      <div v-for="crew in paginatedCrews" :key="'search-' + crew.id" class="crew-card search-result">
+        <div class="crew-header" @click="openCrewId = openCrewId === crew.id ? null : crew.id">
           <h4>{{ crew.roomName }}</h4>
           <span>
             {{
               crewMembers.find((c) => c.crewId === crew.id)?.members.length ||
               0
             }}명
-            <button
-              v-if="
-                toKST(crew.startDate) > toKST(new Date()) &&
-                (crewMembers.find((c) => c.crewId === crew.id)?.members
-                  .length || 0) < 10
-              "
-              class="join-btn"
-              @click.stop="joinCrew(crew)"
-            >
+            <button v-if="
+              toKST(crew.startDate) > toKST(new Date()) &&
+              (crewMembers.find((c) => c.crewId === crew.id)?.members
+                .length || 0) < 10
+            " class="join-btn" @click.stop="joinCrew(crew)">
               가입하기
             </button>
           </span>
         </div>
-        <p
-          style="
+        <p style="
             font-size: 1em;
             color: #f57c00;
             padding-top: 5px;
             padding-bottom: 5px;
-          "
-        >
+          ">
           {{ crew.roomDescription }}
         </p>
         <p class="crew-meta">
@@ -197,24 +131,14 @@
 
       <!-- 내 크루 목록 -->
       <h3>내가 속한 크루</h3>
-      <div
-        v-for="crew in mypaginatedCrews"
-        :key="crew.id"
-        class="crew-card"
-        @click="toggleCrew(crew.id)"
-      >
+      <div v-for="crew in mypaginatedCrews" :key="crew.id" class="crew-card" @click="toggleCrew(crew.id)">
         <div class="crew-header">
           <h4>{{ crew.roomName }}</h4>
-          <span
-            >{{
-              crewMembers.find((c) => c.crewId === crew.id)?.members.length ||
-              0
-            }}명
-            <button
-              v-if="crew.creatorId != userId"
-              class="quit-btn"
-              @click.stop="quitCrew(crew)"
-            >
+          <span>{{
+            crewMembers.find((c) => c.crewId === crew.id)?.members.length ||
+            0
+          }}명
+            <button v-if="crew.creatorId != userId" class="quit-btn" @click.stop="quitCrew(crew)">
               탈퇴하기
             </button>
             <button v-else class="delete-btn" @click.stop="deleteCrew(crew)">
@@ -222,14 +146,12 @@
             </button>
           </span>
         </div>
-        <p
-          style="
+        <p style="
             font-size: 1em;
             color: #f57c00;
             padding-top: 5px;
             padding-bottom: 5px;
-          "
-        >
+          ">
           {{ crew.roomDescription }}
         </p>
         <p class="crew-meta">
@@ -247,94 +169,85 @@
             <div class="goal-status-box">
               <h4 class="title">
                 🏅 목표 달성률
-                <span
-                  class="percent-text"
-                  v-if="
-                    (crew.goalType == 'SUM'
-                      ? getPercent(
-                          crew.goalTime,
-                          crewStatusMap[crew.id]?.totalDuration
-                        )
-                      : getPercent(
-                          crew.goalTime,
-                          crewStatusMap[crew.id]?.averageDuration
-                        )) < 100 &&
-                    (crew.goalType == 'SUM'
-                      ? getPercent(
-                          crew.goalTime,
-                          crewStatusMap[crew.id]?.totalDuration
-                        )
-                      : getPercent(
-                          crew.goalTime,
-                          crewStatusMap[crew.id]?.averageDuration
-                        )) >= 0
-                  "
-                >
+                <span class="percent-text" v-if="
+                  (crew.goalType == 'SUM'
+                    ? getPercent(
+                      crew.goalTime,
+                      crewStatusMap[crew.id]?.totalDuration
+                    )
+                    : getPercent(
+                      crew.goalTime,
+                      crewStatusMap[crew.id]?.averageDuration
+                    )) < 100 &&
+                  (crew.goalType == 'SUM'
+                    ? getPercent(
+                      crew.goalTime,
+                      crewStatusMap[crew.id]?.totalDuration
+                    )
+                    : getPercent(
+                      crew.goalTime,
+                      crewStatusMap[crew.id]?.averageDuration
+                    )) >= 0
+                ">
                   {{
                     crew.goalType == "SUM"
                       ? Percentage(
-                          crew.goalTime,
-                          crewStatusMap[crew.id]?.totalDuration
-                        )
+                        crew.goalTime,
+                        crewStatusMap[crew.id]?.totalDuration
+                      )
                       : Percentage(
-                          crew.goalTime,
-                          crewStatusMap[crew.id]?.averageDuration
-                        )
+                        crew.goalTime,
+                        crewStatusMap[crew.id]?.averageDuration
+                      )
                   }}
                 </span>
               </h4>
               <!-- 게이지 바 -->
-              <div
-                v-if="
-                  (crew.goalType == 'SUM'
-                    ? getPercent(
-                        crew.goalTime,
-                        crewStatusMap[crew.id]?.totalDuration
-                      )
-                    : getPercent(
-                        crew.goalTime,
-                        crewStatusMap[crew.id]?.averageDuration
-                      )) < 100 &&
-                  (crew.goalType == 'SUM'
-                    ? getPercent(
-                        crew.goalTime,
-                        crewStatusMap[crew.id]?.totalDuration
-                      )
-                    : getPercent(
-                        crew.goalTime,
-                        crewStatusMap[crew.id]?.averageDuration
-                      )) >= 0
-                "
-                class="progress-bar-container"
-              >
+              <div v-if="
+                (crew.goalType == 'SUM'
+                  ? getPercent(
+                    crew.goalTime,
+                    crewStatusMap[crew.id]?.totalDuration
+                  )
+                  : getPercent(
+                    crew.goalTime,
+                    crewStatusMap[crew.id]?.averageDuration
+                  )) < 100 &&
+                (crew.goalType == 'SUM'
+                  ? getPercent(
+                    crew.goalTime,
+                    crewStatusMap[crew.id]?.totalDuration
+                  )
+                  : getPercent(
+                    crew.goalTime,
+                    crewStatusMap[crew.id]?.averageDuration
+                  )) >= 0
+              " class="progress-bar-container">
                 <div class="progress-bar-bg">
-                  <div
-                    class="progress-bar-fill"
-                    :style="{
-                      width:
-                        crew.goalType == 'SUM'
-                          ? Percentage(
-                              crew.goalTime,
-                              crewStatusMap[crew.id]?.totalDuration
-                            )
-                          : Percentage(
-                              crew.goalTime,
-                              crewStatusMap[crew.id]?.averageDuration
-                            ),
-                    }"
-                  ></div>
+                  <div class="progress-bar-fill" :style="{
+                    width:
+                      crew.goalType == 'SUM'
+                        ? Percentage(
+                          crew.goalTime,
+                          crewStatusMap[crew.id]?.totalDuration
+                        )
+                        : Percentage(
+                          crew.goalTime,
+                          crewStatusMap[crew.id]?.averageDuration
+                        ),
+                  }"></div>
                 </div>
                 <p class="progress-percent">
                   {{
                     crew.goalType == "SUM"
                       ? getPercent(
-                          crew.goalTime,
-                          crewStatusMap[crew.id]?.totalDuration
-                        )
+                        crew.goalTime,
+                        crewStatusMap[crew.id]?.totalDuration
+                      )
                       : getPercent(
-                          crew.goalTime,
-                          crewStatusMap[crew.id]?.averageDuration
-                        )
+                        crew.goalTime,
+                        crewStatusMap[crew.id]?.averageDuration
+                      )
                   }}
                 </p>
               </div>
@@ -360,16 +273,11 @@
                 </p>
               </div>
             </div>
-            <hr
-              style="border: none; border-top: 2px dashed tan; margin: 24px 0"
-            />
+            <hr style="border: none; border-top: 2px dashed tan; margin: 24px 0" />
             <h3 class="sub-title">크루 멤버</h3>
             <div class="user-list">
-              <div
-                v-for="member in crewMembersMap[crew.id] || []"
-                :key="crew.id + '-' + member.nickname"
-                class="user-card"
-              >
+              <div v-for="member in crewMembersMap[crew.id] || []" :key="crew.id + '-' + member.nickname"
+                class="user-card">
                 <strong>{{ member.nickname }}</strong>
                 <span>{{ formatDuration(member.duration) }}</span>
               </div>
@@ -784,8 +692,8 @@ function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
   const a =
     Math.sin(dLat / 2) ** 2 +
     Math.cos(lat1 * (Math.PI / 180)) *
-      Math.cos(lat2 * (Math.PI / 180)) *
-      Math.sin(dLon / 2) ** 2;
+    Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLon / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
@@ -1191,11 +1099,10 @@ const saveRunningData = async () => {
       return;
     }
 
-    infoText.value = `러닝 완료! ${
-      distance.value >= 1000
+    infoText.value = `러닝 완료! ${distance.value >= 1000
         ? (distance.value / 1000).toFixed(2) + "km"
         : Math.round(distance.value) + "m"
-    }를 ${formattedTime.value} 동안 달렸습니다.`;
+      }를 ${formattedTime.value} 동안 달렸습니다.`;
   } catch (error) {
     console.error("러닝 데이터 저장 중 오류:", error);
   }
@@ -1538,7 +1445,7 @@ const getCrewGoal = async (crewId) => {
   }
 };
 
-const stayOnTimer = () => {};
+const stayOnTimer = () => { };
 
 function goToChat(crewId) {
   router.push(`/chat/${crewId}`);
@@ -1609,7 +1516,7 @@ const dogSitImg = dogSit;
 }
 
 .timer-card,
-.section > #info {
+.section>#info {
   position: fixed;
   top: 0;
   left: 0;
@@ -2242,19 +2149,23 @@ textarea {
     transform: scale(0.8);
     opacity: 0;
   }
+
   100% {
     transform: scale(1);
     opacity: 1;
   }
 }
+
 .title {
   display: flex;
   justify-content: space-between;
 }
+
 .percent-text {
   margin-left: 10px;
   font-size: 14px;
-  color: #999; /* 연한 회색 */
+  color: #999;
+  /* 연한 회색 */
   font-weight: normal;
 }
 

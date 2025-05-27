@@ -2,7 +2,7 @@
   <div class="profile-edit-container">
     <div class="page-header">
       <button class="back-button" @click="goBack">
-        
+        ←
       </button>
       <h1 class="page-title">프로필 수정</h1>
       <div class="spacer"></div>
@@ -22,106 +22,74 @@
       <form @submit.prevent="saveProfile" class="profile-form">
         <div class="form-group">
           <label for="nickname">닉네임</label>
-          <input 
-            type="text" 
-            id="nickname" 
-            v-model="userProfile.nickname" 
-            class="form-input" 
-            placeholder="닉네임을 입력하세요"
-            maxlength="10"
-            :class="{ 'error': validationErrors.nickname }"
-            @input="validateField('nickname')"
-            required
-          >
-          <div class="input-counter">{{ userProfile.nickname.length || 0 }}/10</div>
+          <input type="text" id="nickname" v-model="userProfile.nickname" class="form-input" placeholder="닉네임을 입력하세요"
+            maxlength="10" :class="{ 'error': validationErrors.nickname }" @input="validateField('nickname')" required>
+          <div class="input-counter">{{ (userProfile.nickname || '').length }}/10</div>
           <div v-if="validationErrors.nickname" class="error-text">{{ validationErrors.nickname }}</div>
         </div>
 
         <div class="form-group">
+          <label for="password">새 비밀번호</label>
+          <div class="password-input-container">
+            <input :type="showPassword ? 'text' : 'password'" id="password" v-model="userProfile.password"
+              class="form-input password-input" placeholder="새 비밀번호를 입력하세요 (변경하지 않으려면 비워두세요)"
+              :class="{ 'error': validationErrors.password }" @input="validateField('password')">
+            <button type="button" class="password-toggle" @click="togglePasswordVisibility">
+              <svg v-if="showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
+                <path
+                  d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                </path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+              <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+          <div v-if="validationErrors.password" class="error-text">{{ validationErrors.password }}</div>
+        </div>
 
-  <label for="password">새 비밀번호</label>
-  <div class="password-input-container">
-    <input 
-      :type="showPassword ? 'text' : 'password'"
-      id="password" 
-      v-model="userProfile.password" 
-      class="form-input password-input"
-      placeholder="새 비밀번호를 입력하세요 (변경하지 않으려면 비워두세요)" 
-      :class="{ 'error': validationErrors.password }"
-      @input="validateField('password')"
-    >
-    <button 
-      type="button" 
-      class="password-toggle"
-      @click="togglePasswordVisibility"
-    >
-      <svg v-if="showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-        <line x1="1" y1="1" x2="23" y2="23"></line>
-      </svg>
-      <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-        <circle cx="12" cy="12" r="3"></circle>
-      </svg>
-    </button>
-  </div>
-  <div v-if="validationErrors.password" class="error-text">{{ validationErrors.password }}</div>
-</div>
-
-<div class="form-group" v-if="userProfile.password && userProfile.password.trim()">
-  <label for="passwordConfirm">새 비밀번호 확인</label>
-  <div class="password-input-container">
-    <input 
-      :type="showPasswordConfirm ? 'text' : 'password'"
-      id="passwordConfirm" 
-      v-model="userProfile.passwordConfirm" 
-      class="form-input password-input"
-      placeholder="새 비밀번호를 다시 입력하세요" 
-      :class="{ 'error': validationErrors.passwordConfirm }"
-      @input="validateField('passwordConfirm')"
-    >
-    <button 
-      type="button" 
-      class="password-toggle"
-      @click="togglePasswordConfirmVisibility"
-    >
-      <svg v-if="showPasswordConfirm" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-        <line x1="1" y1="1" x2="23" y2="23"></line>
-      </svg>
-      <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-        <circle cx="12" cy="12" r="3"></circle>
-      </svg>
-    </button>
-  </div>
-  <div v-if="validationErrors.passwordConfirm" class="error-text">{{ validationErrors.passwordConfirm }}</div>
-</div>
+        <div class="form-group" v-if="userProfile.password && userProfile.password.trim()">
+          <label for="passwordConfirm">새 비밀번호 확인</label>
+          <div class="password-input-container">
+            <input :type="showPasswordConfirm ? 'text' : 'password'" id="passwordConfirm"
+              v-model="userProfile.passwordConfirm" class="form-input password-input" placeholder="새 비밀번호를 다시 입력하세요"
+              :class="{ 'error': validationErrors.passwordConfirm }" @input="validateField('passwordConfirm')">
+            <button type="button" class="password-toggle" @click="togglePasswordConfirmVisibility">
+              <svg v-if="showPasswordConfirm" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2">
+                <path
+                  d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                </path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+              <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+          <div v-if="validationErrors.passwordConfirm" class="error-text">{{ validationErrors.passwordConfirm }}</div>
+        </div>
 
         <div class="form-row">
           <div class="form-group half">
             <label for="age">나이</label>
-            <input 
-              type="number" 
-              id="age" 
-              v-model.number="userProfile.age" 
-              class="form-input" 
-              placeholder="나이" 
-              min="1"
-              max="120"
-              :class="{ 'error': validationErrors.age }"
-            >
+            <input type="number" id="age" v-model.number="userProfile.age" class="form-input" placeholder="나이" min="1"
+              max="120" :class="{ 'error': validationErrors.age }" @input="validateField('age')">
             <div v-if="validationErrors.age" class="error-text">{{ validationErrors.age }}</div>
           </div>
           <div class="form-group half">
             <label>성별</label>
             <div class="gender-selector">
-              <label class="gender-option" :class="{ 'selected': userProfile.gender === '남성' }">
+              <label class="gender-option" :class="{ 'selected': userProfile.gender === 'MALE' }">
                 <input type="radio" v-model="userProfile.gender" value="MALE">
                 <span class="gender-icon male"></span>
                 <span>남성</span>
               </label>
-              <label class="gender-option" :class="{ 'selected': userProfile.gender === '여성' }">
+              <label class="gender-option" :class="{ 'selected': userProfile.gender === 'FEMALE' }">
                 <input type="radio" v-model="userProfile.gender" value="FEMALE">
                 <span class="gender-icon female"></span>
                 <span>여성</span>
@@ -133,29 +101,13 @@
         <div class="form-row">
           <div class="form-group half">
             <label for="height">키 (cm)</label>
-            <input 
-              type="number" 
-              id="height" 
-              v-model.number="userProfile.height" 
-              class="form-input" 
-              placeholder="키" 
-              min="100"
-              max="250" 
-              step="0.1"
-            >
+            <input type="number" id="height" v-model.number="userProfile.height" class="form-input" placeholder="키"
+              min="100" max="250" step="0.1">
           </div>
           <div class="form-group half">
             <label for="weight">몸무게 (kg)</label>
-            <input 
-              type="number" 
-              id="weight" 
-              v-model.number="userProfile.weight" 
-              class="form-input" 
-              placeholder="몸무게" 
-              min="30"
-              max="200" 
-              step="0.1"
-            >
+            <input type="number" id="weight" v-model.number="userProfile.weight" class="form-input" placeholder="몸무게"
+              min="30" max="200" step="0.1">
           </div>
         </div>
 
@@ -196,6 +148,11 @@
           </button>
         </div>
       </form>
+    </div>
+
+    <!-- 성공 토스트 메시지 -->
+    <div v-if="showSuccessToast" class="success-toast">
+      프로필이 성공적으로 저장되었습니다!
     </div>
   </div>
 </template>
@@ -238,7 +195,7 @@ const userProfile = ref({
 });
 
 const activityLevelOptions = [
-{
+  {
     value: '느긋한 코알라',
     name: '느긋한 코알라',
     icon: '🐨',
@@ -271,7 +228,7 @@ const activityLevelOptions = [
 ];
 
 const activityGoalOptions = [
-{
+  {
     value: '느긋한 코알라',
     name: '느긋한 코알라',
     icon: '🐨',
@@ -304,23 +261,23 @@ const activityGoalOptions = [
 ];
 
 const isFormValid = computed(() => {
-  const hasValidNickname = userProfile.value.nickname && 
-                          userProfile.value.nickname.trim().length > 0 && 
-                          userProfile.value.nickname.length <= 10;
-  
-  const hasValidAge = !userProfile.value.age || 
-                     (userProfile.value.age >= 1 && userProfile.value.age <= 120);
+  const hasValidNickname = userProfile.value.nickname &&
+    userProfile.value.nickname.trim().length > 0 &&
+    userProfile.value.nickname.length <= 10;
 
-  const hasValidPassword = !userProfile.value.password || 
-                          !userProfile.value.password.trim() ||
-                          (userProfile.value.password.length >= 6 && userProfile.value.password.length <= 20);
-  
-  const hasValidPasswordConfirm = !userProfile.value.password || 
-                               !userProfile.value.password.trim() ||
-                               userProfile.value.password === userProfile.value.passwordConfirm;
+  const hasValidAge = !userProfile.value.age ||
+    (userProfile.value.age >= 1 && userProfile.value.age <= 120);
+
+  const hasValidPassword = !userProfile.value.password ||
+    !userProfile.value.password.trim() ||
+    (userProfile.value.password.length >= 6 && userProfile.value.password.length <= 20);
+
+  const hasValidPasswordConfirm = !userProfile.value.password ||
+    !userProfile.value.password.trim() ||
+    userProfile.value.password === userProfile.value.passwordConfirm;
 
   const hasNoErrors = Object.keys(validationErrors.value).length === 0;
-  
+
   return hasValidNickname && hasValidAge && hasValidPassword && hasNoErrors && hasValidPasswordConfirm;
 });
 
@@ -329,24 +286,24 @@ const getCurrentUser = async () => {
   if (!token) {
     throw new Error('로그인이 필요합니다.');
   }
-  
+
   try {
     const response = await axios.get(`${API_BASE_URL}/users/me`, {
       headers: authHeader.value
     });
-    
+
     const userData = response.data.user;
     currentUserId.value = userData.id;
-    
+
     return userData;
   } catch (err) {
     console.error('현재 사용자 정보 조회 실패:', err);
-    
+
     if (err.response && (err.response.status === 401 || err.response.status === 403)) {
       localStorage.removeItem('jwt');
       router.push('/login');
     }
-    
+
     throw err;
   }
 };
@@ -356,6 +313,7 @@ const fetchProfile = async () => {
   try {
     isLoading.value = true;
     error.value = null;
+
     if (!token) {
       error.value = '로그인이 필요합니다.';
       router.push('/login');
@@ -363,33 +321,42 @@ const fetchProfile = async () => {
     }
 
     await getCurrentUser();
-    
+
     // 본인 프로필만 수정 가능
     const response = await axios.get(`${API_BASE_URL}/users/${currentUserId.value}/profile`, {
       headers: authHeader.value
     });
-    
+
     const data = response.data;
-    
-    console.log('프로필 데이터 로드:', data);
-    
+    let genderValue = '';
+    if (data.gender === '남성') {
+      genderValue = 'MALE';
+    } else if (data.gender === '여성') {
+      genderValue = 'FEMALE';
+    } else {
+      genderValue = data.gender; // 이미 MALE/FEMALE인 경우
+    }
+
+    // 강제로 새로운 객체 생성하여 반응성 보장
     userProfile.value = {
       id: data.id,
       nickname: data.nickname || '',
       password: '',
+      passwordConfirm: '',
       age: data.age || null,
-      gender: data.gender,
+      gender: genderValue,
       height: data.height || null,
       weight: data.weight || null,
       activityLevel: data.activityLevel || '',
       activityGoal: data.activityGoal || ''
     };
-    
     await nextTick();
-    
   } catch (err) {
     console.error('프로필 불러오기 실패:', err);
-    if (err.response.status === 401) {
+    error.value = err.response?.data?.message || '프로필을 불러오는데 실패했습니다.';
+
+    if (err.response?.status === 401) {
+      localStorage.removeItem('jwt');
       router.push('/login');
     }
   } finally {
@@ -411,16 +378,24 @@ const goBack = () => {
 
 const saveProfile = async () => {
   if (!validateForm()) {
+    console.log('Form validation failed:', validationErrors.value);
     return;
   }
 
   try {
     isSubmitting.value = true;
-    
+
+    let genderForServer = userProfile.value.gender;
+    if (userProfile.value.gender === 'MALE') {
+      genderForServer = '남성';
+    } else if (userProfile.value.gender === 'FEMALE') {
+      genderForServer = '여성';
+    }
+
     const updateData = {
       id: currentUserId.value,
       nickname: userProfile.value.nickname,
-      gender: userProfile.value.gender,
+      gender: genderForServer, // 서버 형식에 맞게 전송
       age: userProfile.value.age,
       height: userProfile.value.height,
       weight: userProfile.value.weight,
@@ -428,29 +403,76 @@ const saveProfile = async () => {
       activityGoal: userProfile.value.activityGoal
     };
 
+    // 비밀번호 변경이 있을 때만 포함
     if (userProfile.value.password && userProfile.value.password.trim()) {
       updateData.password = userProfile.value.password;
     }
-    
-    await axios.put(`${API_BASE_URL}/users/${currentUserId.value}/profile`, updateData, {
-      headers: authHeader.value
+
+    const response = await axios.put(`${API_BASE_URL}/users/${currentUserId.value}/profile`, updateData, {
+      headers: {
+        ...authHeader.value,
+        'Content-Type': 'application/json'
+      }
     });
-    
+
+    if (response.data.token) {
+      localStorage.setItem('jwt', response.data.token);
+    }
+
+    try {
+      const checkResponse = await axios.get(`${API_BASE_URL}/users/${currentUserId.value}/profile`, {
+        headers: response.data.token ? { 'Authorization': `Bearer ${response.data.token}` } : authHeader.value
+      });
+      const serverData = checkResponse.data;
+      let genderValue = '';
+      if (serverData.gender === '남성') {
+        genderValue = 'MALE';
+      } else if (serverData.gender === '여성') {
+        genderValue = 'FEMALE';
+      } else {
+        genderValue = serverData.gender;
+      }
+
+      userProfile.value = {
+        id: serverData.id,
+        nickname: serverData.nickname || '',
+        password: '',
+        passwordConfirm: '',
+        age: serverData.age || null,
+        gender: genderValue,
+        height: serverData.height || null,
+        weight: serverData.weight || null,
+        activityLevel: serverData.activityLevel || '',
+        activityGoal: serverData.activityGoal || ''
+      };
+
+    } catch (checkErr) {
+      console.error('업데이트 후 프로필 조회 실패:', checkErr);
+    }
+
     showSuccessToast.value = true;
-    
+
     setTimeout(() => {
       showSuccessToast.value = false;
       router.push('/profile');
     }, 2000);
-    
+
   } catch (err) {
-    console.error('프로필 저장 실패:', err);
-    
-    if (err.response?.status === 401) {
-      alert('로그인이 만료되었습니다. 다시 로그인해 주세요.');
+
+    let errorMessage = '프로필 저장에 실패했습니다.';
+
+    if (err.response?.data?.message) {
+      errorMessage = err.response.data.message;
+    } else if (err.response?.status === 400) {
+      errorMessage = '입력 정보를 다시 확인해주세요.';
+    } else if (err.response?.status === 401) {
+      errorMessage = '로그인이 만료되었습니다. 다시 로그인해 주세요.';
       localStorage.removeItem('jwt');
       router.push('/login');
+      return;
     }
+
+    alert(errorMessage);
   } finally {
     isSubmitting.value = false;
   }
@@ -458,32 +480,40 @@ const saveProfile = async () => {
 
 const validateForm = () => {
   const newErrors = {};
-  
+
+  // 닉네임 검증
   if (!userProfile.value.nickname || userProfile.value.nickname.trim().length === 0) {
     newErrors.nickname = '닉네임을 입력해주세요.';
   } else if (userProfile.value.nickname.length > 10) {
     newErrors.nickname = '닉네임은 10자 이하로 입력해주세요.';
   }
-  
+
+  // 나이 검증
   if (userProfile.value.age && (userProfile.value.age < 1 || userProfile.value.age > 120)) {
     newErrors.age = '올바른 나이를 입력해주세요.';
   }
-  
+
+  // 비밀번호 검증
   if (userProfile.value.password && userProfile.value.password.trim()) {
     if (userProfile.value.password.length < 6) {
       newErrors.password = '비밀번호는 6자 이상이어야 합니다.';
     } else if (userProfile.value.password.length > 20) {
       newErrors.password = '비밀번호는 20자 이하여야 합니다.';
     }
+
+    // 비밀번호 확인 검증
+    if (userProfile.value.password !== userProfile.value.passwordConfirm) {
+      newErrors.passwordConfirm = '비밀번호가 일치하지 않습니다.';
+    }
   }
-  
+
   validationErrors.value = newErrors;
   return Object.keys(newErrors).length === 0;
 };
 
 const validateField = (fieldName) => {
   const newErrors = { ...validationErrors.value };
-  
+
   if (fieldName === 'nickname') {
     delete newErrors.nickname;
     if (!userProfile.value.nickname || userProfile.value.nickname.trim().length === 0) {
@@ -492,14 +522,14 @@ const validateField = (fieldName) => {
       newErrors.nickname = '닉네임은 10자 이하로 입력해주세요.';
     }
   }
-  
+
   if (fieldName === 'age') {
     delete newErrors.age;
     if (userProfile.value.age && (userProfile.value.age < 1 || userProfile.value.age > 120)) {
       newErrors.age = '올바른 나이를 입력해주세요.';
     }
   }
-  
+
   if (fieldName === 'password') {
     delete newErrors.password;
     delete newErrors.passwordConfirm;
@@ -510,25 +540,27 @@ const validateField = (fieldName) => {
       } else if (userProfile.value.password.length > 20) {
         newErrors.password = '비밀번호는 20자 이하여야 합니다.';
       }
-    }
 
-    if (userProfile.value.passwordConfirm && userProfile.value.password !== userProfile.value.passwordConfirm) {
-      newErrors.passwordConfirm = '비밀번호가 일치하지 않습니다.';
-    }
-   else {
-    userProfile.value.passwordConfirm = '';
-  }
-}
-
-if (fieldName === 'passwordConfirm') {
-  delete newErrors.passwordConfirm;
-  
-  if (userProfile.value.password && userProfile.value.password.trim()) {
-    if (userProfile.value.password !== userProfile.value.passwordConfirm) {
-      newErrors.passwordConfirm = '비밀번호가 일치하지 않습니다.';
+      // 비밀번호 확인도 같이 검증
+      if (userProfile.value.passwordConfirm && userProfile.value.password !== userProfile.value.passwordConfirm) {
+        newErrors.passwordConfirm = '비밀번호가 일치하지 않습니다.';
+      }
+    } else {
+      // 비밀번호가 비어있으면 확인도 초기화
+      userProfile.value.passwordConfirm = '';
     }
   }
-}
+
+  if (fieldName === 'passwordConfirm') {
+    delete newErrors.passwordConfirm;
+
+    if (userProfile.value.password && userProfile.value.password.trim()) {
+      if (userProfile.value.password !== userProfile.value.passwordConfirm) {
+        newErrors.passwordConfirm = '비밀번호가 일치하지 않습니다.';
+      }
+    }
+  }
+
   validationErrors.value = newErrors;
 };
 
@@ -574,6 +606,8 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
+  font-size: 18px;
+  font-weight: bold;
 }
 
 .back-button:hover {
@@ -594,7 +628,8 @@ onMounted(async () => {
 }
 
 /* 로딩 및 에러 상태 스타일 */
-.loading-container, .error-container {
+.loading-container,
+.error-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -613,18 +648,14 @@ onMounted(async () => {
   margin-bottom: 16px;
 }
 
-.spinner-small {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #f3f3f3;
-  border-top: 2px solid #FF7E36;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .error-message {
@@ -647,65 +678,6 @@ onMounted(async () => {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   margin: 0 16px;
   overflow: hidden;
-}
-
-.profile-image-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 24px 16px;
-  background-color: #FFF3ED;
-  position: relative;
-}
-
-.profile-image-container {
-  position: relative;
-  margin-bottom: 16px;
-}
-
-.profile-image {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid #FF7E36;
-}
-
-.image-loading-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(255, 255, 255, 0.8);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.edit-image-btn {
-  background-color: #FF7E36;
-  color: white;
-  border: none;
-  border-radius: 20px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.edit-image-btn:hover:not(:disabled) {
-  background-color: #e66a1e;
-}
-
-.edit-image-btn:disabled {
-  background-color: #FFB8A3;
-  cursor: not-allowed;
 }
 
 .profile-form {
@@ -744,6 +716,7 @@ label {
   font-size: 14px;
   outline: none;
   transition: border-color 0.2s;
+  box-sizing: border-box;
 }
 
 .form-input:focus,
@@ -821,23 +794,6 @@ label {
 
 .gender-icon.female::before {
   content: "👩";
-}
-
-@media (max-width: 480px) {
-  .gender-selector {
-    gap: 0.5rem;
-  }
-  
-  .gender-option {
-    padding: 0.6rem 0.4rem;
-    font-size: 13px;
-    min-height: 45px;
-  }
-  
-  .gender-icon {
-    font-size: 1.1rem;
-    margin-right: 0.4rem;
-  }
 }
 
 .activity-options {
@@ -928,14 +884,30 @@ label {
   color: #FF7E36;
 }
 
+.success-toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #4CAF50;
+  color: white;
+  padding: 16px 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  font-weight: 500;
+  animation: slideUp 0.3s ease-out;
+}
+
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(20px);
+    transform: translate(-50%, -50%) scale(0.9);
   }
+
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
@@ -947,6 +919,21 @@ label {
 
   .form-group.half {
     margin-bottom: 0;
+  }
+
+  .gender-selector {
+    gap: 0.5rem;
+  }
+
+  .gender-option {
+    padding: 0.6rem 0.4rem;
+    font-size: 13px;
+    min-height: 45px;
+  }
+
+  .gender-icon {
+    font-size: 1.1rem;
+    margin-right: 0.4rem;
   }
 }
 </style>

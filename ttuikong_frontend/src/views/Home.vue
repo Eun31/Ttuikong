@@ -30,12 +30,7 @@
     <div v-if="recommendedVideo" class="recommend-box">
       <h3>오늘의 추천 음악 🎵</h3>
       <p>{{ recommendedVideo.title }}</p>
-      <a
-        v-if="recommendedVideo.url"
-        :href="recommendedVideo.url"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
+      <a v-if="recommendedVideo.url" :href="recommendedVideo.url" target="_blank" rel="noopener noreferrer">
         👉 유튜브에서 듣기
       </a>
     </div>
@@ -74,12 +69,7 @@
 
     <!-- 메인 메뉴 -->
     <div class="main-menu">
-      <router-link
-        v-for="menu in menus"
-        :key="menu.label"
-        :to="menu.path"
-        class="menu-item"
-      >
+      <router-link v-for="menu in menus" :key="menu.label" :to="menu.path" class="menu-item">
         <div class="menu-icon">{{ menu.icon }}</div>
         <div class="menu-label">{{ menu.label }}</div>
       </router-link>
@@ -97,29 +87,17 @@
       <!-- 게시글 표시 영역 -->
       <div class="post-display-container">
         <div v-if="currentPost" class="single-post-container">
-          <button
-            class="nav-btn prev-btn"
-            :disabled="!canGoPrevious"
-            @click="previousPost"
-          >
+          <button class="nav-btn prev-btn" :disabled="!canGoPrevious" @click="previousPost">
             <i class="fas fa-chevron-left"></i>
           </button>
 
           <!-- 게시글 카드 -->
           <div class="post-wrapper">
-            <PostCard
-              :key="currentPost.id"
-              :post="currentPost"
-              @click="goToPost"
-            />
+            <PostCard :key="currentPost.id" :post="currentPost" @click="goToPost" />
           </div>
 
           <!-- 다음 버튼 -->
-          <button
-            class="nav-btn next-btn"
-            :disabled="!canGoNext"
-            @click="nextPost"
-          >
+          <button class="nav-btn next-btn" :disabled="!canGoNext" @click="nextPost">
             <i class="fas fa-chevron-right"></i>
           </button>
         </div>
@@ -781,6 +759,7 @@ onMounted(async () => {
 }
 
 @keyframes loading {
+
   0%,
   100% {
     opacity: 0.7;
@@ -1024,7 +1003,8 @@ onMounted(async () => {
 .single-post-container {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* 양쪽 끝 정렬로 균형 맞춤 */
+  justify-content: space-between;
+  /* 양쪽 끝 정렬로 균형 맞춤 */
   gap: 8px;
   min-height: 200px;
   position: relative;
@@ -1034,26 +1014,36 @@ onMounted(async () => {
 .post-wrapper {
   flex: 1;
   display: flex;
-  justify-content: center; /* PostCard를 가운데 정렬 */
-  max-width: calc(100% - 64px); /* 양쪽 화살표 영역 제외 */
-  margin: 0 8px; /* 좌우 여백 균등하게 */
+  justify-content: center;
+  /* PostCard를 가운데 정렬 */
+  max-width: calc(100% - 64px);
+  /* 양쪽 화살표 영역 제외 */
+  margin: 0 8px;
+  /* 좌우 여백 균등하게 */
 }
 
 /* 네비게이션 버튼 기본 스타일 */
 .nav-btn {
-  background: transparent; /* 배경 제거 */
-  color: #ff7043; /* 기본 화살표 색상 */
+  background: transparent;
+  /* 배경 제거 */
+  color: #ff7043;
+  /* 기본 화살표 색상 */
   border: none;
-  border-radius: 0; /* 원형 제거 */
-  width: 24px; /* 36px → 24px */
-  height: 24px; /* 36px → 24px */
+  border-radius: 0;
+  /* 원형 제거 */
+  width: 24px;
+  /* 36px → 24px */
+  height: 24px;
+  /* 36px → 24px */
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: 16px; /* 20px → 16px */
-  box-shadow: none; /* 그림자 제거 */
+  font-size: 16px;
+  /* 20px → 16px */
+  box-shadow: none;
+  /* 그림자 제거 */
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
@@ -1061,10 +1051,14 @@ onMounted(async () => {
 
 /* 버튼 호버 효과 */
 .nav-btn:hover:not(:disabled) {
-  color: #ff5722; /* 호버시 더 진한 주황색 */
-  transform: scale(1.2); /* 살짝 확대 */
-  background: rgba(255, 112, 67, 0.1); /* 호버시 연한 배경 */
-  border-radius: 50%; /* 호버시만 원형 배경 */
+  color: #ff5722;
+  /* 호버시 더 진한 주황색 */
+  transform: scale(1.2);
+  /* 살짝 확대 */
+  background: rgba(255, 112, 67, 0.1);
+  /* 호버시 연한 배경 */
+  border-radius: 50%;
+  /* 호버시만 원형 배경 */
 }
 
 /* 버튼 활성화 효과 */
@@ -1076,7 +1070,8 @@ onMounted(async () => {
 /* 비활성화된 버튼 */
 .nav-btn:disabled {
   background: transparent;
-  color: #bdbdbd; /* 회색 화살표 */
+  color: #bdbdbd;
+  /* 회색 화살표 */
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
@@ -1084,7 +1079,8 @@ onMounted(async () => {
 
 /* 이전 버튼 */
 .prev-btn {
-  flex-shrink: 0; /* 버튼 크기 고정 */
+  flex-shrink: 0;
+  /* 버튼 크기 고정 */
 }
 
 .prev-btn::before {
@@ -1094,9 +1090,11 @@ onMounted(async () => {
   left: 50%;
   width: 0;
   height: 0;
-  border-top: 6px solid transparent; /* 8px → 6px */
+  border-top: 6px solid transparent;
+  /* 8px → 6px */
   border-bottom: 6px solid transparent;
-  border-right: 8px solid currentColor; /* 10px → 8px */
+  border-right: 8px solid currentColor;
+  /* 10px → 8px */
   transform: translate(-60%, -50%);
   transition: transform 0.2s ease;
 }
@@ -1107,7 +1105,8 @@ onMounted(async () => {
 
 /* 다음 버튼 */
 .next-btn {
-  flex-shrink: 0; /* 버튼 크기 고정 */
+  flex-shrink: 0;
+  /* 버튼 크기 고정 */
 }
 
 .next-btn::before {
@@ -1117,9 +1116,11 @@ onMounted(async () => {
   left: 50%;
   width: 0;
   height: 0;
-  border-top: 6px solid transparent; /* 8px → 6px */
+  border-top: 6px solid transparent;
+  /* 8px → 6px */
   border-bottom: 6px solid transparent;
-  border-left: 8px solid currentColor; /* 10px → 8px */
+  border-left: 8px solid currentColor;
+  /* 10px → 8px */
   transform: translate(-40%, -50%);
   transition: transform 0.2s ease;
 }
@@ -1202,6 +1203,7 @@ onMounted(async () => {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -1236,17 +1238,22 @@ onMounted(async () => {
 /* 반응형 디자인 */
 @media (max-width: 768px) {
   .single-post-container {
-    gap: 6px; /* 16px → 6px */
+    gap: 6px;
+    /* 16px → 6px */
   }
 
   .nav-btn {
-    width: 20px; /* 32px → 20px */
-    height: 20px; /* 32px → 20px */
-    font-size: 14px; /* 12px → 14px */
+    width: 20px;
+    /* 32px → 20px */
+    height: 20px;
+    /* 32px → 20px */
+    font-size: 14px;
+    /* 12px → 14px */
   }
 
   .post-wrapper {
-    margin: 0 4px; /* 좌우 여백 동일하게 */
+    margin: 0 4px;
+    /* 좌우 여백 동일하게 */
   }
 
   .post-indicator {
@@ -1259,7 +1266,8 @@ onMounted(async () => {
   }
 
   .keyboard-hint {
-    display: none; /* 모바일에서는 키보드 힌트 숨김 */
+    display: none;
+    /* 모바일에서는 키보드 힌트 숨김 */
   }
 }
 
@@ -1269,18 +1277,23 @@ onMounted(async () => {
   }
 
   .single-post-container {
-    gap: 4px; /* 12px → 4px */
+    gap: 4px;
+    /* 12px → 4px */
     min-height: 180px;
   }
 
   .nav-btn {
-    width: 18px; /* 28px → 18px */
-    height: 18px; /* 28px → 18px */
-    font-size: 12px; /* 11px → 12px */
+    width: 18px;
+    /* 28px → 18px */
+    height: 18px;
+    /* 28px → 18px */
+    font-size: 12px;
+    /* 11px → 12px */
   }
 
   .post-wrapper {
-    margin: 0 2px; /* 좌우 여백 동일하게 */
+    margin: 0 2px;
+    /* 좌우 여백 동일하게 */
   }
 
   .post-indicator {
@@ -1297,50 +1310,5 @@ onMounted(async () => {
     font-size: 36px;
     margin-bottom: 12px;
   }
-}
-
-/* 다크 모드 지원 (선택사항) */
-@media (prefers-color-scheme: dark) {
-  .post-display-container {
-    background: #2a2a2a;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  }
-
-  .post-indicator {
-    background: rgba(255, 112, 67, 0.1);
-    border-color: rgba(255, 112, 67, 0.2);
-  }
-
-  .total-number {
-    color: #bbb;
-  }
-
-  .no-posts {
-    color: #aaa;
-    background: rgba(255, 112, 67, 0.05);
-    border-color: rgba(255, 112, 67, 0.3);
-  }
-}
-
-/* 콩 레벨 */
-.emoji {
-  font-size: 20px;
-  margin-top: 4px;
-}
-
-/* 유튜브 추천 */
-.recommend-box {
-  background-color: #fefce8;
-  padding: 18px;
-  border: 1px solid #fcd34d;
-  border-radius: 10px;
-  text-align: center;
-  margin: 24px 12px;
-}
-a {
-  display: inline-block;
-  margin-top: 10px;
-  color: #1d4ed8;
-  font-weight: 500;
 }
 </style>

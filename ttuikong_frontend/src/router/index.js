@@ -139,7 +139,13 @@ const routes = [
 // 라우터 생성
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    }
+    return { top: 0 }
+  }
 })
 
 // 로그인 필요한 페이지에 대한 네비게이션 가드 설정

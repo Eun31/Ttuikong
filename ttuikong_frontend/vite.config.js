@@ -23,6 +23,10 @@ export default defineConfig({
         secure: false,
         logLevel: "debug", // 프록시 로그 확인용
       },
+      '/uploads': { 
+        target: 'http://localhost:8080',
+        changeOrigin: true
+      },
       "/flask": {
         target: "http://localhost:5001",
         changeOrigin: true,

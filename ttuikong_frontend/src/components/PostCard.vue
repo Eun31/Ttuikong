@@ -24,10 +24,10 @@
 
       <div class="post-footer">
         <div class="post-stats">
-            <span class="heart-icon" :class="{ 'liked': isLiked, 'loading': likeLoading }">
-              <span>{{ isLiked ? '❤️' : '♡' }}</span>
-            </span>
-            <span>{{ likeCount }}</span>
+          <span class="heart-icon" :class="{ 'liked': isLiked, 'loading': likeLoading }">
+            <span>{{ isLiked ? '❤️' : '♡' }}</span>
+          </span>
+          <span>{{ likeCount }}</span>
           <div class="stat">
             <span class="comment-icon">💬</span>
             <span>{{ comments.length }}</span>
@@ -62,7 +62,7 @@ const isLiked = ref(false);
 const likeCount = ref(0);
 const likeLoading = ref(false);
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = '/api';
 const token = localStorage.getItem('jwt');
 
 // 헤더에 토큰 설정
@@ -98,7 +98,7 @@ const checkLikeStatus = async () => {
     isLiked.value = false;
     return;
   }
-  
+
   try {
     const response = await axios.get(`${API_URL}/board/${post.value.id}/like/status`, {
       headers: authHeader()
@@ -121,7 +121,7 @@ const currentUser = ref({
 });
 
 const goToUserProfile = (userId) => {
-    router.push(`/profile/${userId}`);
+  router.push(`/profile/${userId}`);
 };
 
 onMounted(async () => {
@@ -190,7 +190,7 @@ onMounted(async () => {
   background-color: rgba(255, 87, 34, 0.02);
 }
 
-.post-content:hover ~ * {
+.post-content:hover~* {
   transform: translateY(-2px);
   box-shadow: var(--shadow-lg, 0 4px 12px rgba(0, 0, 0, 0.1));
 }
@@ -277,7 +277,7 @@ onMounted(async () => {
 }
 
 /* 통계 아이콘 호버 효과 - 게시글 콘텐츠 호버 시 */
-.post-content:hover ~ .post-footer .stat {
+.post-content:hover~.post-footer .stat {
   transform: scale(1.05);
 }
 
@@ -324,14 +324,27 @@ onMounted(async () => {
 }
 
 @keyframes heartBeat {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.3); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.3);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes fadeIn {
@@ -339,6 +352,7 @@ onMounted(async () => {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
