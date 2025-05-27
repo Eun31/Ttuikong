@@ -46,7 +46,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // 정적 리소스 매핑
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:src/main/resources/static/uploads/")
+                .addResourceLocations("file:uploads/")
                 .setCachePeriod(3600) // 1시간 캐시
                 .resourceChain(true)
                 .addResolver(new org.springframework.web.servlet.resource.PathResourceResolver() {

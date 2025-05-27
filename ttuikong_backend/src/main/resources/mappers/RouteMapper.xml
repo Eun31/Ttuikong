@@ -15,7 +15,8 @@
 		duration,
 		distance,
 		calories,
-		points
+		points,
+		image_url,
 		)
 		VALUES (
 		#{userId},
@@ -25,6 +26,7 @@
 		#{duration},
 		#{distance},
 		#{calories},
+		#{imageUrl},
 		#{points,
 		typeHandler=com.ttuikong.spring.typehandler.RoutePointsTypeHandler}
 		)
@@ -43,6 +45,7 @@
 		duration,
 		points,
 		calories,
+		image_url,
 		created_at
 		FROM Route
 		WHERE id = #{id}
@@ -61,6 +64,7 @@
 		duration,
 		calories,
 		points,
+		image_url,
 		created_at
 		FROM Route
 		WHERE user_id = #{userId}
@@ -90,6 +94,7 @@
 		<result property="endTime" column="end_time" />
 		<result property="distance" column="distance" />
 		<result property="duration" column="duration" />
+		<result property="imageUrl" column="image_url" />
 		<result property="points" column="points"
 			typeHandler="com.ttuikong.spring.typehandler.RoutePointsTypeHandler" />
 		<result property="createdAt" column="created_at" />

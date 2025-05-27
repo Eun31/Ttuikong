@@ -187,7 +187,7 @@
             <img
               :src="
                 route.imageUrl
-                  ? 'http://localhost:8080' + run.imageUrl
+                  ? 'http://192.168.176.13:8080' + route.imageUrl
                   : defaultImage
               "
               alt="러닝 루트"
