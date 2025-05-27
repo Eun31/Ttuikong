@@ -1269,9 +1269,29 @@ const getCurrentUser = async () => {
 };
 
 /* daily record에 업데이트 */
-const selectMood = async (mood) => {
-  selectedMood.value = mood;
+const isLoading = ref(false);
+
+const selectMood = async (moodLabel) => {
+  selectedMood.value = moodLabel;
   showMoodModal.value = false;
+  isLoading.value = true; // 로딩 시작
+
+  try {
+    const res = await fetch(`/flask/recommend?mood=${moodLabel}`);
+    const data = await res.json();
+
+    localStorage.setItem(
+      "recommendedVideo",
+      JSON.stringify({
+        title: data.recommendation, // 문자열 제목
+        url: data.url || null, // YouTube 링크
+      })
+    );
+  } catch (err) {
+    console.error("추천 실패:", err);
+  } finally {
+    isLoading.value = false; // 로딩 끝
+  }
 
   const routeId = await getRouteId();
   await fetchLatestRoute(routeId);
@@ -1437,6 +1457,9 @@ function toKST(dateStringOrDate) {
   const date = new Date(dateStringOrDate);
   return new Date(date.getTime() + 9 * 60 * 60000); // 9시간 더하기
 }
+
+/* 추천 알고리즘 */
+const recommendedVideo = ref(null);
 
 onMounted(async () => {
   await getCurrentUser();

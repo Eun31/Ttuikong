@@ -27,6 +27,20 @@
       </div>
     </div>
 
+    <div v-if="recommendedVideo" class="recommend-box">
+      <h3>오늘의 추천 음악 🎵</h3>
+      <p>{{ recommendedVideo.title }}</p>
+      <a
+        v-if="recommendedVideo.url"
+        :href="recommendedVideo.url"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        👉 유튜브에서 듣기
+      </a>
+    </div>
+    <div v-else class="loading">⏳ 추천 중입니다...</div>
+
     <!-- 러닝 통계 -->
     <div class="stats-section">
       <div class="stat-card" v-for="stat in stats" :key="stat.label">
@@ -115,6 +129,7 @@ import { useRouter } from "vue-router";
 import PostCard from "@/components/PostCard.vue";
 import profileImg from "@/assets/profile.png";
 
+const recommendedVideo = ref(null);
 const router = useRouter();
 
 const token = ref("");
@@ -143,7 +158,7 @@ const stats = computed(() => {
   return [
     {
       label: "총 거리",
-      value: `${totalDistance.toFixed(1)} km`,
+      value: `${(totalDistance / 1000).toFixed(1)} km`,
       icon: "📏",
     },
     {
@@ -468,6 +483,10 @@ onMounted(async () => {
   await getPopularPosts();
   if (token.value) {
     await getFollowingPosts();
+  }
+  const saved = localStorage.getItem("recommendedVideo");
+  if (saved) {
+    recommendedVideo.value = JSON.parse(saved);
   }
 });
 </script>
@@ -1297,4 +1316,52 @@ onMounted(async () => {
     margin-bottom: 12px;
   }
 }
+<<<<<<< HEAD
+=======
+
+/* 다크 모드 지원 (선택사항) */
+@media (prefers-color-scheme: dark) {
+  .post-display-container {
+    background: #2a2a2a;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .post-indicator {
+    background: rgba(255, 112, 67, 0.1);
+    border-color: rgba(255, 112, 67, 0.2);
+  }
+
+  .total-number {
+    color: #bbb;
+  }
+
+  .no-posts {
+    color: #aaa;
+    background: rgba(255, 112, 67, 0.05);
+    border-color: rgba(255, 112, 67, 0.3);
+  }
+}
+
+/* 콩 레벨 */
+.emoji {
+  font-size: 20px;
+  margin-top: 4px;
+}
+
+/* 유튜브 추천 */
+.recommend-box {
+  background-color: #fefce8;
+  padding: 18px;
+  border: 1px solid #fcd34d;
+  border-radius: 10px;
+  text-align: center;
+  margin: 24px 12px;
+}
+a {
+  display: inline-block;
+  margin-top: 10px;
+  color: #1d4ed8;
+  font-weight: 500;
+}
+>>>>>>> f8743416579c4fd00c83c94f7b22797a42cf84b0
 </style>
